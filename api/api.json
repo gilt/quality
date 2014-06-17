@@ -76,7 +76,7 @@
                     "parameters": [
 			{ "name": "summary", "type": "string", "description": "Summary of the incident." },
 			{ "name": "description", "type": "string", "description": "Full description of the incident" },
-			{ "name": "team", "type": "team", "description": "Team responsible for resolution of this incident" },
+			{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident" },
 			{ "name": "severity", "type": "string", "example": "low or high" }
 		    ],
                     "responses": {
@@ -92,7 +92,7 @@
                     "parameters": [
 			{ "name": "summary", "type": "string", "description": "Summary of the incident." },
 			{ "name": "description", "type": "string", "description": "Full description of the incident" },
-			{ "name": "team", "type": "team", "description": "Team responsible for resolution of this incident" },
+			{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident" },
 			{ "name": "severity", "type": "string", "example": "low or high" }
                     ],
                     "responses": {
