@@ -1,0 +1,30 @@
+@(incidents: lib.PaginatedCollection[apidoc.models.Incident])(implicit flash: Flash)
+
+@main(title = "Perfect Day Incidents")) {
+
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create">Add incident</a>
+  </div>
+
+  <table class="table table-hover table-condensed">
+    <tbody>
+      @incidents.items.map { incident =>
+       <tr>
+         <td><a href="@routes.Incidents.show(incident.key)">@incident.name</a></td>
+       </tr>
+     }
+    </tbody>
+  </table>
+
+  @if(incidents.hasPrevious || incidents.hasNext) {
+    <ul class="pager">
+      @if(incidents.hasPrevious) {
+        <li><a href="@routes.Application.index(incidents.page - 1, membershipRequests.page)">Previous</a></li>
+      }
+      @if(incidents.hasNext) {
+        <li><a href="@routes.Application.index(incidents.page + 1, membershipRequests.page)">Next</a></li>
+      }
+    </ul>
+  }
+
+}

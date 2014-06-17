@@ -1,0 +1,6 @@
+GET        /_internal_/healthcheck         controllers.Internal.healthcheck
+
+GET      /incidents           controllers.Incidents.get(guid: Option[String], team_key: Option[String], limit: Int ?= 25, offset: Int ?= 0)
+GET      /incidents/:guid     controllers.Incidents.getByGuid(guid: String)
+POST     /incidents           controllers.Incidents.post()
+
