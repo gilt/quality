@@ -1,18 +1,9 @@
 name := "quality"
 
-// for now we need to build on 2.10.4 instead of 2.11.1
-// because sbt 0.13.5 is compiled on 2.10.4, and the
-// sbt plugin can only be compiled by that version,
-// due to incompatibilities around macros
-scalaVersion in ThisBuild := "2.10.4"
-
 lazy val api = project
   .in(file("api"))
-  .dependsOn(core)
-  .aggregate(core)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
-  .settings(commonPlaySettings: _*)
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
@@ -25,8 +16,6 @@ lazy val api = project
 
 lazy val www = project
   .in(file("www"))
-  .dependsOn(core)
-  .aggregate(core)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
