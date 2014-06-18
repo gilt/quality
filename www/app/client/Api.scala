@@ -10,6 +10,6 @@ object Api {
     }
   }
 
-  lazy val instance = new quality.Client(configValue("quality.url"), Some(configValue("quality.token")))
+  lazy val instance = new quality.Client(configValue("quality.url"))
 
 }
