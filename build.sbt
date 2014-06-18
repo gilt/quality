@@ -1,5 +1,7 @@
 name := "quality"
 
+scalaVersion in ThisBuild := "2.11.1"
+
 lazy val api = project
   .in(file("api"))
   .enablePlugins(PlayScala)
@@ -25,7 +27,7 @@ lazy val www = project
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("quality-" + _),
   libraryDependencies ++= Seq(
-    "org.scalatest" %% "scalatest" % "2.1.7" % "test"
+    "org.scalatest" %% "scalatest" % "2.2.0" % "test"
   ),
   scalacOptions += "-feature"
 )

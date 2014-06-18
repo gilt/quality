@@ -1,6 +1,6 @@
-@(incidents: lib.PaginatedCollection[apidoc.models.Incident])(implicit flash: Flash)
+@(incidents: lib.PaginatedCollection[quality.models.Incident])(implicit flash: Flash)
 
-@main(title = "Perfect Day Incidents")) {
+@main(title = "Perfect Day Incidents") {
 
   <div class="pull-right">
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create">Add incident</a>
@@ -10,7 +10,7 @@
     <tbody>
       @incidents.items.map { incident =>
        <tr>
-         <td><a href="@routes.Incidents.show(incident.key)">@incident.name</a></td>
+         <td><a href="@routes.Incidents.show(incident.guid)">@incident.summary</a></td>
        </tr>
      }
     </tbody>
@@ -19,10 +19,10 @@
   @if(incidents.hasPrevious || incidents.hasNext) {
     <ul class="pager">
       @if(incidents.hasPrevious) {
-        <li><a href="@routes.Application.index(incidents.page - 1, membershipRequests.page)">Previous</a></li>
+        <li><a href="@routes.Application.index(incidents.page - 1)">Previous</a></li>
       }
       @if(incidents.hasNext) {
-        <li><a href="@routes.Application.index(incidents.page + 1, membershipRequests.page)">Next</a></li>
+        <li><a href="@routes.Application.index(incidents.page + 1)">Next</a></li>
       }
     </ul>
   }

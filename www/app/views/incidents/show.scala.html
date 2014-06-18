@@ -1,0 +1,7 @@
+@(incident: quality.models.Incident)(implicit flash: Flash)
+
+@main(title = s"Incident @{incident.summary}") {
+
+  @incident.description
+
+}
