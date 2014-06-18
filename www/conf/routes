@@ -2,6 +2,7 @@ GET     /_internal_/healthcheck                                   controllers.In
 
 GET     /                                                         controllers.Application.index(incidentsPage: Int ?= 0)
 GET     /incidents/create                                         controllers.Incidents.create()
+POST    /incidents/postCreate                                     controllers.Incidents.postCreate()
 GET     /incidents/:guid                                          controllers.Incidents.show(guid: java.util.UUID)
 
 # Map static resources from the /public folder to the /assets URL path
