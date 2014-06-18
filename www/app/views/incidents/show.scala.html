@@ -1,6 +1,11 @@
 @(incident: quality.models.Incident)(implicit flash: Flash)
 
-@main(title = s"Incident @{incident.summary}") {
+@main(title = s"Incident ${incident.summary}") {
+
+  <ul>
+    <li>Team: @incident.teamKey</li>
+    <li>Severity: @incident.severity</li>
+  </ul>
 
   @incident.description
 

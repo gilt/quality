@@ -4,6 +4,8 @@ import client.Api
 import quality.models.Incident
 import lib.{ Pagination, PaginatedCollection }
 import java.util.UUID
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration._
 
 import play.api._
 import play.api.mvc._
@@ -39,16 +41,16 @@ object Incidents extends Controller {
         Ok(views.html.incidents.create(formWithErrors))
       },
 
-      incident => {
-        val incident = Api.instance.Incidents.post(
-          summary = incident.summary,
-          description = incident.description,
-          teamKey = incident.teamKey,
-          severity = incident.severity
-        )
+      incidentForm => {
+        val incident = Await.result(Api.instance.Incidents.post(
+          summary = incidentForm.summary,
+          description = incidentForm.description,
+          teamKey = incidentForm.teamKey,
+          severity = incidentForm.severity
+        ), 1000.millis).entity
 
-        println("Incident: " + incident.summary)
-        Redirect(routes.Incidents.show(UUID.fromString("ASDF"))).flashing("success" -> "Incident created")
+        println("Incident: " + incident)
+        Redirect(routes.Incidents.show(incident.guid)).flashing("success" -> "Incident created")
 
       }
 

@@ -10,6 +10,8 @@
     <tbody>
       @incidents.items.map { incident =>
        <tr>
+         <td><a href="@routes.Incidents.show(incident.guid)">@incident.teamKey</a></td>
+         <td><a href="@routes.Incidents.show(incident.guid)">@incident.severity</a></td>
          <td><a href="@routes.Incidents.show(incident.guid)">@incident.summary</a></td>
        </tr>
      }

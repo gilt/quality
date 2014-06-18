@@ -14,24 +14,15 @@ object Incidents extends Controller {
     implicit val errorWrites = Json.writes[Error]
   }
 
-  case class Team(key: String)
-
-  object Team {
-    implicit val teamWrites = Json.writes[Team]
-    implicit val teamReads = Json.reads[Team]
-  }
-
-  case class Incident(guid: String, summary: String, description: String, team: Team, severity: String)
+  case class Incident(guid: String, summary: String, description: String, team_key: String, severity: String)
 
   object Incident {
     implicit val incidentWrites = Json.writes[Incident]
-    implicit val incidentReads = Json.reads[Incident]
   }
 
   case class IncidentForm(summary: String, description: String, team_key: String, severity: String)
 
   object IncidentForm {
-    implicit val incidentFormWrites = Json.writes[IncidentForm]
     implicit val incidentFormReads = Json.reads[IncidentForm]
   }
 
@@ -48,19 +39,20 @@ object Incidents extends Controller {
   }
 
   def post() = Action(parse.json) { request =>
+    println("BODY: " + parse.json)
+
     request.body.validate[IncidentForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Error("100", "invalid json")))
       }
       case s: JsSuccess[IncidentForm] => {
         val form = s.get
-        val team = Team(key = form.team_key)
 
         val incident = Incident(
           guid = UUID.randomUUID.toString,
           summary = form.summary,
           description = form.description,
-          team = team,
+          team_key = form.team_key,
           severity = form.severity
         )
         incidents += incident
