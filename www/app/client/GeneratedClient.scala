@@ -4,19 +4,19 @@ package quality.models {
     message: String
   )
   case class Grade(
-    guid: java.util.UUID,
+    id: Long,
     report: Report,
     value: String
   )
   case class Incident(
-    guid: java.util.UUID,
+    id: Long,
     summary: String,
     description: String,
     teamKey: String,
     severity: String
   )
   case class Report(
-    guid: java.util.UUID,
+    id: Long,
     incident: Incident,
     body: String
   )
@@ -66,7 +66,7 @@ package quality.models {
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
+        ((__ \ "id").read[Long] and
          (__ \ "report").read[Report] and
          (__ \ "value").read[String])(Grade.apply _)
       }
@@ -75,7 +75,7 @@ package quality.models {
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
+        ((__ \ "id").write[Long] and
          (__ \ "report").write[Report] and
          (__ \ "value").write[String])(unlift(Grade.unapply))
       }
@@ -84,7 +84,7 @@ package quality.models {
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
+        ((__ \ "id").read[Long] and
          (__ \ "summary").read[String] and
          (__ \ "description").read[String] and
          (__ \ "team_key").read[String] and
@@ -95,7 +95,7 @@ package quality.models {
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
+        ((__ \ "id").write[Long] and
          (__ \ "summary").write[String] and
          (__ \ "description").write[String] and
          (__ \ "team_key").write[String] and
@@ -106,7 +106,7 @@ package quality.models {
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
+        ((__ \ "id").read[Long] and
          (__ \ "incident").read[Incident] and
          (__ \ "body").read[String])(Report.apply _)
       }
@@ -115,7 +115,7 @@ package quality.models {
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
+        ((__ \ "id").write[Long] and
          (__ \ "incident").write[Incident] and
          (__ \ "body").write[String])(unlift(Report.unapply))
       }
@@ -210,15 +210,15 @@ package quality {
        * Search all incidents. Results are always paginated.
        */
       def get(
-        guid: scala.Option[java.util.UUID] = None,
+        id: scala.Option[Long] = None,
         teamKey: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Incident]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
-        queryBuilder ++= guid.map { x =>
-          "guid" -> (
-            { x: java.util.UUID =>
+        queryBuilder ++= id.map { x =>
+          "id" -> (
+            { x: Long =>
               x.toString
             }
           )(x)
@@ -252,10 +252,10 @@ package quality {
       }
       
       /**
-       * Returns information about the incident with this specific guid.
+       * Returns information about the incident with this specific id.
        */
-      def getByGuid(
-        guid: String
+      def getById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Incident]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         
@@ -263,7 +263,7 @@ package quality {
         GET(s"/incidents/${({x: String =>
           val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
-        })(guid)}", queryBuilder.result).map {
+        })(id)}", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[Incident], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
@@ -285,8 +285,6 @@ package quality {
           "severity" -> play.api.libs.json.Json.toJson(severity)
         )
         
-        println("PK: " + payload)
-
         POST(s"/incidents", payload).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[Incident], 201)
           case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
@@ -294,29 +292,14 @@ package quality {
         }
       }
       
-      /**
-       * Updates information about the incident with the specified guid.
-       */
-      def putByGuid(
-        guid: String,
-        summary: String,
-        description: String,
-        teamKey: String,
-        severity: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Incident]] = {
-        val payload = play.api.libs.json.Json.obj(
-          "summary" -> play.api.libs.json.Json.toJson(summary),
-          "description" -> play.api.libs.json.Json.toJson(description),
-          "team_key" -> play.api.libs.json.Json.toJson(teamKey),
-          "severity" -> play.api.libs.json.Json.toJson(severity)
-        )
-        
-        PUT(s"/incidents/${({x: String =>
+      def deleteById(
+        id: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Unit]] = {
+        DELETE(s"/incidents/${({x: String =>
           val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
-        })(guid)}", payload).map {
-          case r if r.status == 201 => new ResponseImpl(r.json.as[Incident], 201)
-          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
+        })(id)}").map {
+          case r if r.status == 204 => new ResponseImpl((), 204)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }

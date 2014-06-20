@@ -16,9 +16,9 @@ object Incidents extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(guid: UUID) = Action.async { implicit request =>
+  def show(id: Long) = Action.async { implicit request =>
     for {
-      incidentResponse <- Api.instance.Incidents.get(guid = Some(guid))
+      incidentResponse <- Api.instance.Incidents.get(id = Some(id))
     } yield {
       incidentResponse.entity.headOption match {
         case None => NotFound
@@ -50,7 +50,7 @@ object Incidents extends Controller {
         ), 1000.millis).entity
 
         println("Incident: " + incident)
-        Redirect(routes.Incidents.show(incident.guid)).flashing("success" -> "Incident created")
+        Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident created")
 
       }
 
