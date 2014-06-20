@@ -63,7 +63,7 @@ object ReportsDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and reports.id = {id}" },
-      incidentId.map { v => "and reports.incident_id = lower(trim({incident_id}))" },
+      incidentId.map { v => "and reports.incident_id = {incident_id}" },
       Some("order by reports.created_at desc, reports.id desc"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
