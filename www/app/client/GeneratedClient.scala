@@ -304,5 +304,52 @@ package quality {
         }
       }
     }
+    
+    object Reports {
+      /**
+       * Search all reports. Results are always paginated.
+       */
+      def get(
+        id: scala.Option[Long] = None,
+        incidentId: scala.Option[Long] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Report]]] = {
+        val queryBuilder = List.newBuilder[(String, String)]
+        queryBuilder ++= id.map { x =>
+          "id" -> (
+            { x: Long =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= incidentId.map { x =>
+          "incident_id" -> (
+            { x: Long =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= limit.map { x =>
+          "limit" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= offset.map { x =>
+          "offset" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
+        
+        GET(s"/reports", queryBuilder.result).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Report]], 200)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+    }
   }
 }

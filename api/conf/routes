@@ -4,3 +4,4 @@ GET        /incidents         controllers.Incidents.get(id: Option[Long], team_k
 GET        /incidents/:id     controllers.Incidents.getById(id: Long)
 POST       /incidents         controllers.Incidents.post()
 DELETE     /incidents/:id     controllers.Incidents.deleteById(id: Long)
+GET        /reports           controllers.Reports.get(id: Option[Long], incident_id: Option[Long], limit: Int ?= 25, offset: Int ?= 0)
