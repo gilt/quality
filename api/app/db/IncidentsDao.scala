@@ -12,7 +12,7 @@ object Incident {
   implicit val incidentWrites = Json.writes[Incident]
 }
 
-case class IncidentForm(team_key: String, severity: String, summary: String, description: Option[String])
+case class IncidentForm(team_key: String, severity: String, summary: String, description: Option[String] = None)
 
 object IncidentForm {
   implicit val readsIncidentForm = Json.reads[IncidentForm]
@@ -31,7 +31,6 @@ object IncidentsDao {
     (team_key, severity, summary, description, created_by_guid, updated_by_guid)
     values
     ({team_key}, {severity}, {summary}, {description}, {user_guid}::uuid, {user_guid}::uuid)
-    returning id
   """
 
   def create(user: User, form: IncidentForm): Incident = {
