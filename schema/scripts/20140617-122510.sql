@@ -38,7 +38,7 @@ comment on table reports is '
 create table grades (
   id                      bigserial primary key,
   report_guid             bigint not null references reports,
-  grade                   text not null check (grade in ('pass', 'fail'))
+  grade                   integer not null check (grade >= 0 and grade <= 100)
 );
 
 select schema_evolution_manager.create_basic_audit_data('public', 'grades');
@@ -48,4 +48,8 @@ create unique index grades_report_guid_not_deleted_un_idx on grades(report_guid)
 
 comment on table grades is '
   A grade captures how well we feel the report is in terms of resolving the incident.
+';
+
+comment on column grades.grade is '
+  A value from 0 - 100, inclusive. A value of 100 is considered perfect.
 ';

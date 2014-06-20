@@ -6,7 +6,7 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class Incident(id: Long, team_key: String, severity: Severity, summary: String, description: Option[String])
+case class Incident(id: Long, team_key: String, severity: String, summary: String, description: Option[String])
 
 object Incident {
   implicit val incidentWrites = Json.writes[Incident]
@@ -34,14 +34,10 @@ object IncidentsDao {
   """
 
   def create(user: User, form: IncidentForm): Incident = {
-    val severity = Severity.fromString(form.severity).getOrElse {
-      sys.error(s"Invalid severity key[%s]".format(form.severity))
-    }
-
     val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'team_key -> form.team_key,
-        'severity -> severity.key,
+        'severity -> form.severity,
         'summary -> form.summary,
         'description -> form.description,
         'user_guid -> user.guid,
@@ -87,9 +83,7 @@ object IncidentsDao {
         Incident(
           id = row[Long]("id"),
           team_key = row[String]("team_key"),
-          severity = Severity.fromString(row[String]("severity")).getOrElse {
-            sys.error(s"Invalid severity key[%s]".format(row[String]("severity")))
-          },
+          severity = row[String]("severity"),
           summary = row[String]("summary"),
           description = row[Option[String]]("description")
         )
