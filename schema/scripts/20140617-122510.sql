@@ -1,9 +1,9 @@
-drop table if exists incidents;
-drop table if exists reports;
 drop table if exists grades;
+drop table if exists reports;
+drop table if exists incidents;
 
 create table incidents (
-  guid                    uuid not null primary key,
+  id                      bigserial primary key,
   team_key                text not null check (lower(trim(team_key)) = team_key),
   severity                text not null check (severity in ('low', 'high')),
   summary                 text not null,
@@ -20,8 +20,8 @@ comment on table incidents is '
 ';
 
 create table reports (
-  guid                    uuid not null primary key,
-  incident_guid           uuid not null references incidents,
+  id                      bigserial not null primary key,
+  incident_guid           bigint not null references incidents,
   body                    text not null
 );
 
@@ -36,8 +36,8 @@ comment on table reports is '
 ';
 
 create table grades (
-  guid                    uuid not null primary key,
-  report_guid             uuid not null references reports,
+  id                      bigserial primary key,
+  report_guid             bigint not null references reports,
   grade                   text not null check (grade in ('pass', 'fail'))
 );
 

@@ -3,6 +3,7 @@ package controllers
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
+import db.IncidentsDao
 
 object Incidents extends Controller {
 
