@@ -19,16 +19,12 @@ class ReportsDaoSpec extends FunSpec with Matchers {
 
   it("find by incident id") {
     running(FakeApplication()) {
-      /*
-      val teamKey = UUID.randomUUID.toString
+      val incident = Util.incident()
+      val report = Util.report(Some(ReportForm(incident_id = incident.id, body = "test")))
+      val other = Util.report()
 
-      val i1 = ReportsDao.create(user, form.copy(team_key = teamKey))
-      val i2 = ReportsDao.create(user, form.copy(team_key = teamKey))
-      val other = ReportsDao.create(user, form)
-
-      ReportsDao.findAll(teamKey = Some(teamKey)).map(_.id).sorted should be(Seq(i1.id, i2.id))
-      ReportsDao.findAll(teamKey = Some(UUID.randomUUID.toString)).map(_.id) should be(Seq.empty)
-       */
+      ReportsDao.findAll(incidentId = Some(incident.id)).map(_.id).sorted should be(Seq(report.id))
+      ReportsDao.findAll(incidentId = Some(0)).map(_.id).sorted should be(Seq.empty)
     }
   }
 

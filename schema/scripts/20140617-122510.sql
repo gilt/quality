@@ -1,5 +1,6 @@
 drop table if exists grades;
 drop table if exists reports;
+drop table if exists incident_tags;
 drop table if exists incidents;
 
 create table incidents (
@@ -18,6 +19,23 @@ comment on table incidents is '
   A bug or error that affected public or internal users in a negative way. App
   will journal updates by soft deleting and re-inserting so no history is list.
 ';
+
+create table incident_tags (
+  id                      bigserial not null primary key,
+  incident_id             bigint not null references incidents,
+  tag                     text not null
+);
+
+select schema_evolution_manager.create_basic_audit_data('public', 'incident_tags');
+
+create index on incident_tags(incident_id);
+create unique index incident_tags_incident_id_not_deleted_un_idx on incident_tags(incident_id) where deleted_at is null;
+
+comment on table incident_tags is '
+  Incident tags are used for things like reporting where we can assign
+  tags to a given incident.
+';
+
 
 create table reports (
   id                      bigserial not null primary key,
@@ -38,7 +56,7 @@ comment on table reports is '
 create table grades (
   id                      bigserial primary key,
   report_id               bigint not null references reports,
-  grade                   integer not null check (grade >= 0 and grade <= 100)
+  score                   integer not null check (score >= 0 and score <= 100)
 );
 
 select schema_evolution_manager.create_basic_audit_data('public', 'grades');
@@ -50,6 +68,6 @@ comment on table grades is '
   A grade captures how well we feel the report is in terms of resolving the incident.
 ';
 
-comment on column grades.grade is '
+comment on column grades.score is '
   A value from 0 - 100, inclusive. A value of 100 is considered perfect.
 ';

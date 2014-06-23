@@ -6,15 +6,15 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class Grade(id: Long, report_id: Long, grade: Int) {
-  require(grade >= 0 && grade <= 100, "Grade must be between 0-100 and not[%s]".format(grade))
+case class Grade(id: Long, report_id: Long, score: Int) {
+  require(score >= 0 && score <= 100, "Score must be between 0-100 and not[%s]".format(score))
 }
 
 object Grade {
   implicit val reportWrites = Json.writes[Grade]
 }
 
-case class GradeForm(report_id: Long, grade: Int)
+case class GradeForm(report_id: Long, score: Int)
 
 object GradeForm {
   implicit val readsGradeForm = Json.reads[GradeForm]
@@ -23,23 +23,23 @@ object GradeForm {
 object GradesDao {
 
   private val BaseQuery = """
-    select id, report_id, grade
+    select id, report_id, score
       from grades
      where deleted_at is null
   """
 
   private val InsertQuery = """
     insert into grades
-    (report_id, grade, created_by_guid, updated_by_guid)
+    (report_id, score, created_by_guid, updated_by_guid)
     values
-    ({report_id}, {grade}, {user_guid}::uuid, {user_guid}::uuid)
+    ({report_id}, {score}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
   def create(user: User, form: GradeForm): Grade = {
     val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'report_id -> form.report_id,
-        'grade -> form.grade,
+        'score -> form.score,
         'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
@@ -65,7 +65,7 @@ object GradesDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and grades.id = {id}" },
-      reportId.map { v => "and grades.report_id = report_id" },
+      reportId.map { v => "and grades.report_id = {report_id}" },
       Some("order by grades.created_at desc, grades.id desc"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -80,7 +80,7 @@ object GradesDao {
         Grade(
           id = row[Long]("id"),
           report_id = row[Long]("report_id"),
-          grade = row[Int]("grade")
+          score = row[Int]("score")
         )
       }.toSeq
     }
