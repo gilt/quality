@@ -12,7 +12,8 @@
                 { "name": "summary", "type": "string", "description": "Summary of the incident." },
                 { "name": "description", "type": "string", "description": "Full description of the incident" },
                 { "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident. Must be in lower case." },
-                { "name": "severity", "type": "string", "example": "low or high" }
+                { "name": "severity", "type": "string", "example": "low or high" },
+		{ "name": "tags", "type": "[string]", "required": false, "description": "Optional list of tags to apply to this incident" }
             ]
         },
 
@@ -77,7 +78,8 @@
 			{ "name": "summary", "type": "string", "description": "Summary of the incident." },
 			{ "name": "description", "type": "string", "description": "Full description of the incident" },
 			{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident" },
-			{ "name": "severity", "type": "string", "example": "low or high" }
+			{ "name": "severity", "type": "string", "example": "low or high" },
+			{ "name": "tags", "type": "[string]", "required": false, "description": "Optional list of tags to apply to this incident" }
 		    ],
                     "responses": {
                         "201": { "type": "incident" },

@@ -6,13 +6,26 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class Incident(id: Long, team_key: String, severity: String, summary: String, description: Option[String])
+case class Incident(
+  id: Long,
+  team_key: String,
+  severity: String,
+  summary: String,
+  description: Option[String],
+  tags: Seq[String]
+)
 
 object Incident {
   implicit val incidentWrites = Json.writes[Incident]
 }
 
-case class IncidentForm(team_key: String, severity: String, summary: String, description: Option[String] = None)
+case class IncidentForm(
+  team_key: String,
+  severity: String,
+  summary: String,
+  description: Option[String] = None,
+  tags: Option[Seq[String]] = None
+)
 
 object IncidentForm {
   implicit val readsIncidentForm = Json.reads[IncidentForm]
@@ -34,8 +47,8 @@ object IncidentsDao {
   """
 
   def create(user: User, form: IncidentForm): Incident = {
-    val id: Long = DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
+    val id: Long = DB.withTransaction { implicit c =>
+      val id = SQL(InsertQuery).on(
         'team_key -> form.team_key,
         'severity -> form.severity,
         'summary -> form.summary,
@@ -43,6 +56,14 @@ object IncidentsDao {
         'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
+
+      form.tags.foreach { tags =>
+        tags.foreach { tag =>
+          IncidentTagsDao.doInsert(c, user, IncidentTagForm(incident_id = id, tag = tag))
+        }
+      }
+
+      id
     }
 
     findById(id).getOrElse {
@@ -55,7 +76,11 @@ object IncidentsDao {
   }
 
   def findById(id: Long): Option[Incident] = {
-    findAll(id = Some(id), limit = 1).headOption
+    findAll(id = Some(id), limit = 1).headOption.map { i => findDetails(i) }
+  }
+
+  private def findDetails(incident: Incident): Incident = {
+    incident.copy(tags = IncidentTagsDao.findAll(incidentId = Some(incident.id)).map(_.tag))
   }
 
   def findAll(id: Option[Long] = None,
@@ -85,7 +110,8 @@ object IncidentsDao {
           team_key = row[String]("team_key"),
           severity = row[String]("severity"),
           summary = row[String]("summary"),
-          description = row[Option[String]]("description")
+          description = row[Option[String]]("description"),
+          tags = Seq.empty
         )
       }.toSeq
     }

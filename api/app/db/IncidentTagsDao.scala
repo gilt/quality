@@ -5,6 +5,7 @@ import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
+import java.sql.Connection
 
 case class IncidentTag(id: Long, incident_id: Long, tag: String)
 
@@ -34,18 +35,22 @@ object IncidentTagsDao {
   """
 
   def create(user: User, form: IncidentTagForm): IncidentTag = {
-    val id: Long = DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
-        'incident_id -> form.incident_id,
-        'tag -> form.tag,
-        'user_guid -> user.guid,
-        'user_guid -> user.guid
-      ).executeInsert().getOrElse(sys.error("Missing id"))
+    val id = DB.withConnection { implicit c =>
+      doInsert(c, user, form)
     }
 
     findById(id).getOrElse {
       sys.error("Failed to create incidentTag")
     }
+  }
+
+  private[db] def doInsert(implicit conn: Connection, user: User, form: IncidentTagForm): Long = {
+    SQL(InsertQuery).on(
+      'incident_id -> form.incident_id,
+      'tag -> form.tag,
+      'user_guid -> user.guid,
+      'user_guid -> user.guid
+    ).executeInsert().getOrElse(sys.error("Missing id"))
   }
 
   def softDelete(deletedBy: User, incidentTag: IncidentTag) {
@@ -64,7 +69,7 @@ object IncidentTagsDao {
       Some(BaseQuery.trim),
       id.map { v => "and incident_tags.id = {id}" },
       incidentId.map { v => "and incident_tags.incident_id = {incident_id}" },
-      Some("order by incident_tags.created_at desc, incident_tags.id desc"),
+      Some("order by incident_tags.created_at, incident_tags.id"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

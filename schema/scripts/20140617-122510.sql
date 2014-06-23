@@ -29,7 +29,7 @@ create table incident_tags (
 select schema_evolution_manager.create_basic_audit_data('public', 'incident_tags');
 
 create index on incident_tags(incident_id);
-create unique index incident_tags_incident_id_not_deleted_un_idx on incident_tags(incident_id) where deleted_at is null;
+create unique index incident_tags_incident_id_lower_trim_tag_not_deleted_un_idx on incident_tags(incident_id, lower(trim(tag))) where deleted_at is null;
 
 comment on table incident_tags is '
   Incident tags are used for things like reporting where we can assign

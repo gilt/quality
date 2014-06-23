@@ -18,6 +18,14 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
     }
   }
 
+  it("create with tags") {
+    running(FakeApplication()) {
+      val tags = Seq("a", "b")
+      val incident = Util.createIncident(Some(Util.incidentForm.copy(tags = Some(tags))))
+      IncidentsDao.findById(incident.id).get.tags should be(tags)
+    }
+  }
+
   it("find by team key") {
     running(FakeApplication()) {
       val teamKey = UUID.randomUUID.toString
