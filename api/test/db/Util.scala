@@ -26,7 +26,7 @@ object Util {
     )
   }
 
-  def incidentTag(form: Option[IncidentTagForm] = None): IncidentTag = {
+  def createIncidentTag(form: Option[IncidentTagForm] = None): IncidentTag = {
     IncidentTagsDao.create(user, form.getOrElse(incidentTagForm()))
   }
 
