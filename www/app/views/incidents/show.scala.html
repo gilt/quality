@@ -5,10 +5,16 @@
   <ul>
     <li>Team: @incident.teamKey</li>
     <li>Severity: @incident.severity</li>
+    <li>Tags:
+      @if(incident.tags.isEmpty) {
+        <em>N/A</em>
+      } else {
+        @Html(incident.tags.mkString("<ul><li>", "</li><li>", "</li></ul>"))
+      }
+    </li>
   </ul>
 
   @incident.description
 
-   @incident.tags.mkString("\n")
 
 }

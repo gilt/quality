@@ -14,7 +14,7 @@ package quality.models {
     description: scala.Option[String] = None,
     teamKey: String,
     severity: String,
-    tags: scala.collection.Seq[String] = Nil
+    tags: scala.collection.Seq[String]
   )
   case class Report(
     id: Long,

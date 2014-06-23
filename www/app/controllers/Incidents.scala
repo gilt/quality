@@ -17,14 +17,15 @@ object Incidents extends Controller {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def show(id: Long) = Action.async { implicit request =>
-    for {
-      incidentResponse <- Api.instance.Incidents.get(id = Some(id))
+    val future = for {
+      incidentResponse <- Api.instance.Incidents.getById(id)
     } yield {
-      incidentResponse.entity.headOption match {
-        case None => NotFound
-        case Some(i: Incident) => {
-          Ok(views.html.incidents.show(i))
-        }
+      Ok(views.html.incidents.show(incidentResponse.entity))
+    }
+
+    future.recover {
+      case client.Api.instance.FailedResponse(_, 404) => {
+        Redirect(routes.Application.index()).flashing("warning" -> s"Incident $id not found")
       }
     }
   }
