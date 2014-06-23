@@ -11,9 +11,10 @@ package quality.models {
   case class Incident(
     id: Long,
     summary: String,
-    description: String,
+    description: scala.Option[String] = None,
     teamKey: String,
-    severity: String
+    severity: String,
+    tags: scala.collection.Seq[String] = Nil
   )
   case class Report(
     id: Long,
@@ -86,9 +87,12 @@ package quality.models {
         import play.api.libs.functional.syntax._
         ((__ \ "id").read[Long] and
          (__ \ "summary").read[String] and
-         (__ \ "description").read[String] and
+         (__ \ "description").readNullable[String] and
          (__ \ "team_key").read[String] and
-         (__ \ "severity").read[String])(Incident.apply _)
+         (__ \ "severity").read[String] and
+         (__ \ "tags").readNullable[scala.collection.Seq[String]].map { x =>
+          x.getOrElse(Nil)
+        })(Incident.apply _)
       }
     
     implicit def writesIncident: play.api.libs.json.Writes[Incident] =
@@ -97,9 +101,10 @@ package quality.models {
         import play.api.libs.functional.syntax._
         ((__ \ "id").write[Long] and
          (__ \ "summary").write[String] and
-         (__ \ "description").write[String] and
+         (__ \ "description").write[scala.Option[String]] and
          (__ \ "team_key").write[String] and
-         (__ \ "severity").write[String])(unlift(Incident.unapply))
+         (__ \ "severity").write[String] and
+         (__ \ "tags").write[scala.collection.Seq[String]])(unlift(Incident.unapply))
       }
     
     implicit def readsReport: play.api.libs.json.Reads[Report] =
@@ -255,13 +260,13 @@ package quality {
        * Returns information about the incident with this specific id.
        */
       def getById(
-        id: String
+        id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Incident]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         
         
-        GET(s"/incidents/${({x: String =>
-          val s = x
+        GET(s"/incidents/${({x: Long =>
+          val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(id)}", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[Incident], 200)
@@ -276,13 +281,15 @@ package quality {
         summary: String,
         description: String,
         teamKey: String,
-        severity: String
+        severity: String,
+        tags: scala.collection.Seq[String] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Incident]] = {
         val payload = play.api.libs.json.Json.obj(
           "summary" -> play.api.libs.json.Json.toJson(summary),
           "description" -> play.api.libs.json.Json.toJson(description),
           "team_key" -> play.api.libs.json.Json.toJson(teamKey),
-          "severity" -> play.api.libs.json.Json.toJson(severity)
+          "severity" -> play.api.libs.json.Json.toJson(severity),
+          "tags" -> play.api.libs.json.Json.toJson(tags)
         )
         
         POST(s"/incidents", payload).map {
@@ -293,10 +300,10 @@ package quality {
       }
       
       def deleteById(
-        id: String
+        id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Unit]] = {
-        DELETE(s"/incidents/${({x: String =>
-          val s = x
+        DELETE(s"/incidents/${({x: Long =>
+          val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(id)}").map {
           case r if r.status == 204 => new ResponseImpl((), 204)
