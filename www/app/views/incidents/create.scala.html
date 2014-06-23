@@ -25,10 +25,16 @@
               '_error -> form.error("summary")
           )
 
-          @helper.inputText(
+          @helper.textarea(
               form("description"),
               '_label -> "Description",
               '_error -> form.error("description")
+          )
+
+          @helper.inputText(
+              form("tags"),
+              '_label -> "Tags (space separated)",
+              '_error -> form.error("tags")
           )
 
       </fieldset>

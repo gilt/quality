@@ -46,7 +46,8 @@ object Incidents extends Controller {
           summary = incidentForm.summary,
           description = incidentForm.description,
           teamKey = incidentForm.teamKey,
-          severity = incidentForm.severity
+          severity = incidentForm.severity,
+          tags = incidentForm.tags.split(" +").map(_.trim)
         ), 1000.millis).entity
 
         println("Incident: " + incident)
@@ -61,7 +62,8 @@ object Incidents extends Controller {
     summary: String,
     description: String,
     teamKey: String,
-    severity: String
+    severity: String,
+    tags: String
   )
 
   private val incidentForm = Form(
@@ -69,7 +71,8 @@ object Incidents extends Controller {
       "summary" -> nonEmptyText,
       "description" -> nonEmptyText,
       "teamKey" -> nonEmptyText,
-      "severity" -> nonEmptyText
+      "severity" -> nonEmptyText,
+      "tags" -> text
     )(IncidentForm.apply)(IncidentForm.unapply)
   )
 
