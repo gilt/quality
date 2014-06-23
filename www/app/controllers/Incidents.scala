@@ -17,13 +17,9 @@ object Incidents extends Controller {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def show(id: Long) = Action.async { implicit request =>
-    val future = for {
-      incidentResponse <- Api.instance.Incidents.getById(id)
-    } yield {
-      Ok(views.html.incidents.show(incidentResponse.entity))
-    }
-
-    future.recover {
+    Api.instance.Incidents.getById(id).map { r =>
+      Ok(views.html.incidents.show(r.entity))
+    }.recover {
       case client.Api.instance.FailedResponse(_, 404) => {
         Redirect(routes.Application.index()).flashing("warning" -> s"Incident $id not found")
       }
