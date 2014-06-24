@@ -34,7 +34,7 @@ package quality.models {
         * We use all CAPS for the variable name to avoid possible
         * collisions with the camel cased values above.
         */
-      case class UNDEFINED(override val toString: String) extends Severity
+      case class UNDEFINED(value: String) extends Severity
 
       val all = Seq(Low, High).map(x => x.toString -> x).toMap
 
