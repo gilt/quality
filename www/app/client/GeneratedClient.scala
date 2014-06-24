@@ -16,6 +16,24 @@ package quality.models {
     severity: String,
     tags: scala.collection.Seq[String] = Nil
   )
+  object Incident {
+
+    sealed trait Severity
+
+    object Severity {
+
+      case object Val extends Severity { override def toString = "val" }
+      case object Low extends Severity { override def toString = "low" }
+      case object High extends Severity { override def toString = "high" }
+
+      val AllSeverities = Seq(Val, Low, High)
+      private[this]
+      val NameLookup = AllSeverities.map(x => x.toString -> x).toMap
+
+      def apply(value: String): Option[Severity] = NameLookup.get(value)
+
+    }
+  }
   case class Report(
     id: Long,
     incident: Incident,
