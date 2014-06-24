@@ -34,7 +34,7 @@ package quality.models {
         * We use all CAPS for the variable name to avoid collisions
         * with the camel cased values above.
         */
-      case class UNDEFINED(value: String) extends Severity
+      case class UNDEFINED(override val toString: String) extends Severity
 
       /**
         * all returns a list of all the valid, known values for
