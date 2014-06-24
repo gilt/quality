@@ -14,7 +14,7 @@ package quality.models {
     description: scala.Option[String] = None,
     teamKey: String,
     severity: String,
-    tags: scala.collection.Seq[String]
+    tags: scala.collection.Seq[String] = Nil
   )
   case class Report(
     id: Long,
@@ -278,21 +278,50 @@ package quality {
        * Create a new incident.
        */
       def post(
-        summary: String,
-        description: String,
         teamKey: String,
         severity: String,
+        summary: String,
+        description: scala.Option[String] = None,
         tags: scala.collection.Seq[String] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Incident]] = {
         val payload = play.api.libs.json.Json.obj(
-          "summary" -> play.api.libs.json.Json.toJson(summary),
-          "description" -> play.api.libs.json.Json.toJson(description),
           "team_key" -> play.api.libs.json.Json.toJson(teamKey),
           "severity" -> play.api.libs.json.Json.toJson(severity),
+          "summary" -> play.api.libs.json.Json.toJson(summary),
+          "description" -> play.api.libs.json.Json.toJson(description),
           "tags" -> play.api.libs.json.Json.toJson(tags)
         )
         
         POST(s"/incidents", payload).map {
+          case r if r.status == 201 => new ResponseImpl(r.json.as[Incident], 201)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+      
+      /**
+       * Updates an incident.
+       */
+      def putById(
+        id: Long,
+        teamKey: String,
+        severity: String,
+        summary: String,
+        description: scala.Option[String] = None,
+        tags: scala.collection.Seq[String] = Nil
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Incident]] = {
+        val payload = play.api.libs.json.Json.obj(
+          "team_key" -> play.api.libs.json.Json.toJson(teamKey),
+          "severity" -> play.api.libs.json.Json.toJson(severity),
+          "summary" -> play.api.libs.json.Json.toJson(summary),
+          "description" -> play.api.libs.json.Json.toJson(description),
+          "tags" -> play.api.libs.json.Json.toJson(tags)
+        )
+        
+        PUT(s"/incidents/${({x: Long =>
+          val s = x.toString
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(id)}", payload).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[Incident], 201)
           case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)

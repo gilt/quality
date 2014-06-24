@@ -1,0 +1,41 @@
+@(form: Form[controllers.Incidents.IncidentForm],
+  cancelUrl: play.api.mvc.Call)(implicit flash: Flash)
+
+<fieldset>
+    @helper.inputText(
+        form("teamKey"),
+        '_label -> "Team",
+        '_error -> form.error("teamKey")
+    )
+
+    @helper.inputText(
+        form("severity"),
+        '_label -> "Severity",
+        '_error -> form.error("severity")
+    )
+
+    @helper.inputText(
+        form("summary"),
+        '_label -> "Summary",
+        '_error -> form.error("summary")
+    )
+
+    @helper.textarea(
+        form("description"),
+        '_label -> "Description",
+        '_error -> form.error("description")
+    )
+
+    @helper.inputText(
+        form("tags"),
+        '_label -> "Tags (space separated)",
+        '_error -> form.error("tags")
+    )
+
+</fieldset>
+
+<div class="actions">
+  <button class="btn btn-large btn-primary" type="submit">Submit</button>
+  <a href="@cancelUrl" class="btn">Cancel</a>
+</div>
+

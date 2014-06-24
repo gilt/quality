@@ -3,6 +3,8 @@ GET     /_internal_/healthcheck                                   controllers.In
 GET     /                                                         controllers.Application.index(incidentsPage: Int ?= 0)
 GET     /incidents/create                                         controllers.Incidents.create()
 POST    /incidents/postCreate                                     controllers.Incidents.postCreate()
+GET     /incidents/edit                                           controllers.Incidents.edit(id: Long)
+POST    /incidents/postEdit                                       controllers.Incidents.postEdit(id: Long)
 GET     /incidents/:id                                            controllers.Incidents.show(id: Long)
 
 # Map static resources from the /public folder to the /assets URL path

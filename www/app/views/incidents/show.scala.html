@@ -2,6 +2,8 @@
 
 @main(title = s"Incident ${incident.summary}") {
 
+  <a href="@routes.Incidents.edit(incident.id)">Edit</a>
+
   <ul>
     <li>Team: @incident.teamKey</li>
     <li>Severity: @incident.severity</li>

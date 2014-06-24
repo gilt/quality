@@ -44,20 +44,70 @@ object Incidents extends Controller {
           description = incidentForm.description,
           teamKey = incidentForm.teamKey,
           severity = incidentForm.severity,
-          tags = incidentForm.tags.split(" +").map(_.trim)
+          tags = incidentForm.tags.split(" +").map(_.trim).filter(t => !t.isEmpty)
         ), 1000.millis).entity
 
-        println("Incident: " + incident)
         Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident created")
-
       }
 
     )
   }
 
+  def edit(id: Long) = Action.async { implicit request =>
+    Api.instance.Incidents.getById(id).map { r =>
+      val incident = r.entity
+      val form = incidentForm.fill(
+        IncidentForm(
+          summary = incident.summary,
+          description = incident.description,
+          teamKey = incident.teamKey,
+          severity = incident.severity,
+          tags = incident.tags.mkString(" ")
+        )
+      )
+      Ok(views.html.incidents.edit(incident, form))
+    }.recover {
+      case client.Api.instance.FailedResponse(_, 404) => {
+        Redirect(routes.Application.index()).flashing("warning" -> s"Incident $id not found")
+      }
+    }
+  }
+
+  def postEdit(id: Long) = Action.async { implicit request =>
+    Api.instance.Incidents.getById(id).map { r =>
+      val incident = r.entity
+
+      incidentForm.bindFromRequest.fold (
+
+        formWithErrors => {
+          Ok(views.html.incidents.edit(incident, formWithErrors))
+        },
+
+        incidentForm => {
+          Await.result(Api.instance.Incidents.putById(
+            id = incident.id,
+            summary = incidentForm.summary,
+            description = incidentForm.description,
+            teamKey = incidentForm.teamKey,
+            severity = incidentForm.severity,
+            tags = incidentForm.tags.split(" +").map(_.trim).filter(t => !t.isEmpty)
+          ), 1000.millis).entity
+
+          Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident updated")
+        }
+
+      )
+
+    }.recover {
+      case client.Api.instance.FailedResponse(_, 404) => {
+        Redirect(routes.Application.index()).flashing("warning" -> s"Incident $id not found")
+      }
+    }
+  }
+
   case class IncidentForm(
     summary: String,
-    description: String,
+    description: Option[String],
     teamKey: String,
     severity: String,
     tags: String
@@ -66,7 +116,7 @@ object Incidents extends Controller {
   private val incidentForm = Form(
     mapping(
       "summary" -> nonEmptyText,
-      "description" -> nonEmptyText,
+      "description" -> optional(text),
       "teamKey" -> nonEmptyText,
       "severity" -> nonEmptyText,
       "tags" -> text

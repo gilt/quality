@@ -7,6 +7,8 @@ import db.{ IncidentsDao, Incident, IncidentForm, User }
 
 object Incidents extends Controller {
 
+  private lazy val user = User(guid = UUID.randomUUID) // TODO
+
   case class Error(code: String, message: String)
 
   object Error {
@@ -36,15 +38,30 @@ object Incidents extends Controller {
         Conflict(Json.toJson(Error("100", "invalid json")))
       }
       case s: JsSuccess[IncidentForm] => {
-        val user = User(guid = UUID.randomUUID) // TODO
         val incident = IncidentsDao.create(user, s.get)
         Created(Json.toJson(incident)).withHeaders(LOCATION -> routes.Incidents.getById(incident.id).url)
       }
     }
   }
 
+  def putById(id: Long) = Action(parse.json) { request =>
+    IncidentsDao.findById(id) match {
+      case None => NotFound
+      case Some(i: Incident) => {
+        request.body.validate[IncidentForm] match {
+          case e: JsError => {
+            Conflict(Json.toJson(Error("100", "invalid json")))
+          }
+          case s: JsSuccess[IncidentForm] => {
+            val updated = IncidentsDao.update(user, i, s.get)
+            Created(Json.toJson(updated)).withHeaders(LOCATION -> routes.Incidents.getById(updated.id).url)
+          }
+        }
+      }
+    }
+  }
+
   def deleteById(id: Long) = Action { request =>
-    val user = User(guid = UUID.randomUUID) // TODO
     IncidentsDao.findById(id).foreach { i =>
       IncidentsDao.softDelete(user, i)
     }

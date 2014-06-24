@@ -1,0 +1,17 @@
+@(incident: quality.models.Incident,
+  form: Form[controllers.Incidents.IncidentForm])(implicit flash: Flash)
+
+@main(title = s"Edit Incident ${incident.id}") {
+
+  <div class="container">
+
+    @helper.form(action = routes.Incidents.postEdit(incident.id)) {
+
+      @incidentForm(form, routes.Incidents.show(incident.id))
+
+    }
+
+  </div>
+
+}
+

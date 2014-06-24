@@ -46,6 +46,16 @@ object IncidentsDao {
     ({team_key}, {severity}, {summary}, {description}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
+  private val UpdateQuery = """
+    update incidents
+       set team_key = {team_key},
+           severity = {severity},
+           summary = {summary},
+           description = {description},
+           updated_by_guid = {user_guid}::uuid
+     where id = {id}
+  """
+
   def create(user: User, form: IncidentForm): Incident = {
     val id: Long = DB.withTransaction { implicit c =>
       val id = SQL(InsertQuery).on(
@@ -58,9 +68,7 @@ object IncidentsDao {
       ).executeInsert().getOrElse(sys.error("Missing id"))
 
       form.tags.foreach { tags =>
-        tags.foreach { tag =>
-          IncidentTagsDao.doInsert(c, user, IncidentTagForm(incident_id = id, tag = tag))
-        }
+        IncidentTagsDao.doUpdate(c, user, id, Seq.empty, tags)
       }
 
       id
@@ -68,6 +76,25 @@ object IncidentsDao {
 
     findById(id).getOrElse {
       sys.error("Failed to create incident")
+    }
+  }
+
+  def update(user: User, incident: Incident, form: IncidentForm): Incident = {
+    DB.withTransaction { implicit c =>
+      SQL(UpdateQuery).on(
+        'id -> incident.id,
+        'team_key -> form.team_key,
+        'severity -> form.severity,
+        'summary -> form.summary,
+        'description -> form.description,
+        'user_guid -> user.guid
+      ).executeUpdate()
+
+      IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, form.tags.getOrElse(Seq.empty))
+    }
+
+    findById(incident.id).getOrElse {
+      sys.error("Failed to update incident")
     }
   }
 

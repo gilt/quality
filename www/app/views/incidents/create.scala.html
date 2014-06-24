@@ -1,0 +1,16 @@
+@(form: Form[controllers.Incidents.IncidentForm])(implicit flash: Flash)
+
+@main(title = s"Create Incident") {
+
+  <div class="container">
+
+    @helper.form(action = routes.Incidents.postCreate) {
+
+      @incidentForm(form, routes.Application.index())
+
+    }
+
+  </div>
+
+}
+

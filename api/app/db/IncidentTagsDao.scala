@@ -34,6 +34,13 @@ object IncidentTagsDao {
     ({incident_id}, {tag}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
+  private val DeleteTagQuery = """
+    update incident_tags
+       set deleted_at = now(), deleted_by_guid = {user_guid}::uuid
+     where incident_id = {incident_id}
+       and tag = {tag}
+  """
+
   def create(user: User, form: IncidentTagForm): IncidentTag = {
     val id = DB.withConnection { implicit c =>
       doInsert(c, user, form)
@@ -44,17 +51,31 @@ object IncidentTagsDao {
     }
   }
 
-  private[db] def doInsert(implicit conn: Connection, user: User, form: IncidentTagForm): Long = {
+  def softDelete(deletedBy: User, incidentTag: IncidentTag) {
+    SoftDelete.delete("incident_tags", deletedBy, incidentTag.id)
+  }
+
+  private[db] def doUpdate(implicit conn: Connection, user: User, incidentId: Long, from: Seq[String], to: Seq[String]) {
+    to.filter(tag => !from.contains(tag)).foreach { tag =>
+      doInsert(conn, user, IncidentTagForm(incident_id = incidentId, tag = tag))
+    }
+
+    from.filter(tag => !to.contains(tag)).foreach { tag =>
+      SQL(DeleteTagQuery).on(
+        'incident_id -> incidentId,
+        'tag -> tag,
+        'user_guid -> user.guid
+      ).execute()
+    }
+  }
+
+  private[this] def doInsert(implicit conn: Connection, user: User, form: IncidentTagForm): Long = {
     SQL(InsertQuery).on(
       'incident_id -> form.incident_id,
       'tag -> form.tag,
       'user_guid -> user.guid,
       'user_guid -> user.guid
     ).executeInsert().getOrElse(sys.error("Missing id"))
-  }
-
-  def softDelete(deletedBy: User, incidentTag: IncidentTag) {
-    SoftDelete.delete("incident_tags", deletedBy, incidentTag.id)
   }
 
   def findById(id: Long): Option[IncidentTag] = {

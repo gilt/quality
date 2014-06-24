@@ -3,5 +3,6 @@ GET        /_internal_/healthcheck         controllers.Internal.healthcheck
 GET        /incidents         controllers.Incidents.get(id: Option[Long], team_key: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 GET        /incidents/:id     controllers.Incidents.getById(id: Long)
 POST       /incidents         controllers.Incidents.post()
+PUT        /incidents/:id     controllers.Incidents.putById(id: Long)
 DELETE     /incidents/:id     controllers.Incidents.deleteById(id: Long)
 GET        /reports           controllers.Reports.get(id: Option[Long], incident_id: Option[Long], limit: Int ?= 25, offset: Int ?= 0)
