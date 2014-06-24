@@ -71,7 +71,7 @@ object Incidents extends Controller {
           summary = incident.summary,
           description = incident.description,
           teamKey = incident.teamKey,
-          severity = incident.severity.name,
+          severity = incident.severity.toString,
           tags = incident.tags.mkString(" ")
         )
       )

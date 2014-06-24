@@ -14,23 +14,31 @@ package quality.models {
     description: scala.Option[String] = None,
     teamKey: String,
     severity: Incident.Severity,
-    subSeverity: Option[Incident.Severity],
     tags: scala.collection.Seq[String] = Nil
   )
   object Incident {
 
-    sealed class Severity private (val name: String)
+    sealed trait Severity
 
     object Severity {
 
-      case object Low extends Severity("low")
-      case object High extends Severity("high")
+      case object Low extends Severity { override def toString = "low" }
+      case object High extends Severity { override def toString = "high" }
 
-      val all = Seq(Low, High).map(x => x.name -> x).toMap
+      /**
+        * UNDEFINED captures values that are sent either in error or
+        * that were added by the server after this library was
+        * generated. We want to make it easy and obvious for users of
+        * this library to handle this case gracefully.
+        * 
+        * We use all CAPS for the variable name to avoid possible
+        * collisions with the camel cased values above.
+        */
+      case class UNDEFINED(override val toString: String) extends Severity
 
-      def unapply(severity: Severity): Option[String] = Option(severity.name)
+      val all = Seq(Low, High).map(x => x.toString -> x).toMap
 
-      def apply(value: String): Severity = all.get(value).getOrElse(new Severity(value))
+      def apply(value: String): Severity = all.get(value).getOrElse(UNDEFINED(value))
 
     }
   }
@@ -55,7 +63,7 @@ package quality.models {
     implicit val jsonReadsIncidentSeverity = __.read[String].map(Incident.Severity.apply)
 
     implicit val jsonWritesIncidentSeverity = new Writes[Incident.Severity] {
-      def writes(x: Incident.Severity) = JsString(x.name)
+      def writes(x: Incident.Severity) = JsString(x.toString)
     }
 
     implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
@@ -114,7 +122,6 @@ package quality.models {
          (__ \ "description").readNullable[String] and
          (__ \ "team_key").read[String] and
          (__ \ "severity").read[Incident.Severity] and
-         (__ \ "sub_severity").read[Option[Incident.Severity]] and
          (__ \ "tags").readNullable[scala.collection.Seq[String]].map { x =>
           x.getOrElse(Nil)
         })(Incident.apply _)
@@ -129,7 +136,6 @@ package quality.models {
          (__ \ "description").write[scala.Option[String]] and
          (__ \ "team_key").write[String] and
          (__ \ "severity").write[Incident.Severity] and
-         (__ \ "sub_severity").write[Option[Incident.Severity]] and
          (__ \ "tags").write[scala.collection.Seq[String]])(unlift(Incident.unapply))
       }
     
