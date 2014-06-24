@@ -31,11 +31,16 @@ package quality.models {
         * generated. We want to make it easy and obvious for users of
         * this library to handle this case gracefully.
         * 
-        * We use all CAPS for the variable name to avoid possible
-        * collisions with the camel cased values above.
+        * We use all CAPS for the variable name to avoid collisions
+        * with the camel cased values above.
         */
       case class UNDEFINED(value: String) extends Severity
 
+      /**
+        * all returns a list of all the valid, known values for
+        * Severity.  It is in lower case to avoid collisions with the
+        * camel cased values above.
+        */
       val all = Seq(Low, High).map(x => x.toString -> x).toMap
 
       def apply(value: String): Severity = all.get(value).getOrElse(UNDEFINED(value))
