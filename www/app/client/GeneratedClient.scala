@@ -13,24 +13,24 @@ package quality.models {
     summary: String,
     description: scala.Option[String] = None,
     teamKey: String,
-    severity: String,
+    severity: Incident.Severity,
+    subSeverity: Option[Incident.Severity],
     tags: scala.collection.Seq[String] = Nil
   )
   object Incident {
 
-    sealed trait Severity
+    sealed class Severity private (val name: String)
 
     object Severity {
 
-      case object Val extends Severity { override def toString = "val" }
-      case object Low extends Severity { override def toString = "low" }
-      case object High extends Severity { override def toString = "high" }
+      case object Low extends Severity("low")
+      case object High extends Severity("high")
 
-      val AllSeverities = Seq(Val, Low, High)
-      private[this]
-      val NameLookup = AllSeverities.map(x => x.toString -> x).toMap
+      val all = Seq(Low, High).map(x => x.name -> x).toMap
 
-      def apply(value: String): Option[Severity] = NameLookup.get(value)
+      def unapply(severity: Severity): Option[String] = Option(severity.name)
+
+      def apply(value: String): Severity = all.get(value).getOrElse(new Severity(value))
 
     }
   }
@@ -50,6 +50,12 @@ package quality.models {
 
     implicit val jsonWritesUUID = new Writes[java.util.UUID] {
       def writes(x: java.util.UUID) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsIncidentSeverity = __.read[String].map(Incident.Severity.apply)
+
+    implicit val jsonWritesIncidentSeverity = new Writes[Incident.Severity] {
+      def writes(x: Incident.Severity) = JsString(x.name)
     }
 
     implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
@@ -107,7 +113,8 @@ package quality.models {
          (__ \ "summary").read[String] and
          (__ \ "description").readNullable[String] and
          (__ \ "team_key").read[String] and
-         (__ \ "severity").read[String] and
+         (__ \ "severity").read[Incident.Severity] and
+         (__ \ "sub_severity").read[Option[Incident.Severity]] and
          (__ \ "tags").readNullable[scala.collection.Seq[String]].map { x =>
           x.getOrElse(Nil)
         })(Incident.apply _)
@@ -121,7 +128,8 @@ package quality.models {
          (__ \ "summary").write[String] and
          (__ \ "description").write[scala.Option[String]] and
          (__ \ "team_key").write[String] and
-         (__ \ "severity").write[String] and
+         (__ \ "severity").write[Incident.Severity] and
+         (__ \ "sub_severity").write[Option[Incident.Severity]] and
          (__ \ "tags").write[scala.collection.Seq[String]])(unlift(Incident.unapply))
       }
     

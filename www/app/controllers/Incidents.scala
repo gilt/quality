@@ -17,6 +17,16 @@ object Incidents extends Controller {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def show(id: Long) = Action.async { implicit request =>
+    val low: quality.models.Incident.Severity = quality.models.Incident.Severity.Low
+    low match {
+      case quality.models.Incident.Severity.Low => {
+        println("low")
+      }
+      case quality.models.Incident.Severity.High => {
+        println("high")
+      }
+    }
+
     Api.instance.Incidents.getById(id).map { r =>
       Ok(views.html.incidents.show(r.entity))
     }.recover {
@@ -61,7 +71,7 @@ object Incidents extends Controller {
           summary = incident.summary,
           description = incident.description,
           teamKey = incident.teamKey,
-          severity = incident.severity,
+          severity = incident.severity.name,
           tags = incident.tags.mkString(" ")
         )
       )
