@@ -26,24 +26,29 @@ package quality.models {
       case object High extends Severity { override def toString = "high" }
 
       /**
-        * UNDEFINED captures values that are sent either in error or
-        * that were added by the server after this library was
-        * generated. We want to make it easy and obvious for users of
-        * this library to handle this case gracefully.
-        * 
-        * We use all CAPS for the variable name to avoid collisions
-        * with the camel cased values above.
-        */
+       * UNDEFINED captures values that are sent either in error or
+       * that were added by the server after this library was
+       * generated. We want to make it easy and obvious for users of
+       * this library to handle this case gracefully.
+       * 
+       * We use all CAPS for the variable name to avoid collisions
+       * with the camel cased values above.
+       */
       case class UNDEFINED(override val toString: String) extends Severity
 
       /**
-        * all returns a list of all the valid, known values for
-        * Severity.  It is in lower case to avoid collisions with the
-        * camel cased values above.
-        */
-      val all = Seq(Low, High).map(x => x.toString -> x).toMap
+       * all returns a list of all the valid, known values. We use
+       * lower case to avoid collisions with the camel cased values
+       * above.
+       */
+      val all = Seq(Low, High)
 
-      def apply(value: String): Severity = all.get(value).getOrElse(UNDEFINED(value))
+      private[this]
+      val byName = all.map(x => x.toString -> x).toMap
+
+      def apply(value: String): Severity = fromString(value).getOrElse(UNDEFINED(value))
+
+      def fromString(value: String): Option[Severity] = byName.get(value)
 
     }
   }
@@ -65,12 +70,6 @@ package quality.models {
       def writes(x: java.util.UUID) = JsString(x.toString)
     }
 
-    implicit val jsonReadsIncidentSeverity = __.read[String].map(Incident.Severity.apply)
-
-    implicit val jsonWritesIncidentSeverity = new Writes[Incident.Severity] {
-      def writes(x: Incident.Severity) = JsString(x.toString)
-    }
-
     implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
       import org.joda.time.format.ISODateTimeFormat.dateTimeParser
       dateTimeParser.parseDateTime(str)
@@ -82,6 +81,12 @@ package quality.models {
         val str = dateTime.print(x)
         JsString(str)
       }
+    }
+
+    implicit val jsonReadsIncidentSeverity = __.read[String].map(Incident.Severity.apply)
+    
+    implicit val jsonWritesIncidentSeverity = new Writes[Incident.Severity] {
+      def writes(x: Incident.Severity) = JsString(x.toString)
     }
 
     implicit def readsError: play.api.libs.json.Reads[Error] =
