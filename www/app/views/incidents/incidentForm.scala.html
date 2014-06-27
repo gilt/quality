@@ -8,8 +8,9 @@
         '_error -> form.error("teamKey")
     )
 
-    @helper.inputText(
+    @helper.select(
         form("severity"),
+        Seq( ("" -> "-- select --") ) ++ quality.models.Incident.Severity.all.map( v => (v.toString -> v.toString) ),
         '_label -> "Severity",
         '_error -> form.error("severity")
     )
