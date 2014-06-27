@@ -38,8 +38,17 @@ object Incidents extends Controller {
     }
   }
 
-  def create() = Action { implicit request =>
-    Ok(views.html.incidents.create(incidentForm))
+  def create(teamKey: Option[String] = None) = Action { implicit request =>
+    val form = incidentForm.fill(
+      IncidentForm(
+        summary = "",
+        description = Some(util.ExampleIncident.description),
+        teamKey = teamKey.getOrElse(""),
+        severity = "",
+        tags = ""
+      )
+    )
+    Ok(views.html.incidents.create(form))
   }
 
   def postCreate() = Action.async { implicit request =>

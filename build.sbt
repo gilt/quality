@@ -27,7 +27,10 @@ lazy val www = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    version := "1.0-SNAPSHOT"
+    version := "1.0-SNAPSHOT",
+    libraryDependencies ++= Seq(
+      "org.commonjava.googlecode.markdown4j" % "markdown4j" % "2.2-cj-1.0"
+    )
   )
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(

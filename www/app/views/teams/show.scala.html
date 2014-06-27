@@ -2,6 +2,10 @@
 
 @main(title = s"Team ${team.key}") {
 
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(teamKey = Some(team.key))">Create Incident</a>
+  </div>
+
   <ul>
     <li>Key: @team.key</li>
     <li><a href="@routes.Incidents.index(teamKey = Some(team.key))">Incidents</a></li>

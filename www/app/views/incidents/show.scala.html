@@ -16,6 +16,8 @@
     </li>
   </ul>
 
-  @incident.description
+  @incident.description.map { desc =>
+    @Html(util.Markdown.toHtml(desc))
+  }
 
 }

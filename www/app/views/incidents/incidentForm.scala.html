@@ -23,7 +23,7 @@
 
     @helper.textarea(
         form("description"),
-        '_label -> "Description",
+        '_label -> "Description (in markdown)",
         '_error -> form.error("description"),
         'cols -> 100,
         'rows -> 20
@@ -36,6 +36,7 @@
     )
 
 </fieldset>
+
 
 <div class="actions">
   <button class="btn btn-large btn-primary" type="submit">Submit</button>

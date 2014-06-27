@@ -3,7 +3,7 @@ GET     /_internal_/healthcheck                                   controllers.In
 GET     /                                                         controllers.Dashboard.index(page: Int ?= 0)
 
 GET     /incidents/                                               controllers.Incidents.index(teamKey: Option[String] ?= None, page: Int ?= 0)
-GET     /incidents/create                                         controllers.Incidents.create()
+GET     /incidents/create                                         controllers.Incidents.create(teamKey: Option[String] ?= None)
 POST    /incidents/postCreate                                     controllers.Incidents.postCreate()
 GET     /incidents/edit                                           controllers.Incidents.edit(id: Long)
 POST    /incidents/postEdit                                       controllers.Incidents.postEdit(id: Long)
