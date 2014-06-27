@@ -58,9 +58,9 @@ comment on table incident_tags is '
 
 
 create table reports (
-  id                      bigserial not null primary key,
-  incident_id             bigint not null references incidents,
-  body                    text not null
+  id                          bigserial not null primary key,
+  incident_id                 bigint not null references incidents,
+  body                        text not null
 );
 
 select schema_evolution_manager.create_basic_audit_data('public', 'reports');
