@@ -25,7 +25,24 @@ case class IncidentForm(
   summary: String,
   description: Option[String] = None,
   tags: Option[Seq[String]] = None
-)
+) {
+
+  private lazy val teamIdOption: Option[Long] = TeamsDao.lookupId(team_key)
+
+  def teamId(): Long = {
+    teamIdOption.getOrElse(sys.error(s"Team with key[$team_key] not found"))
+  }
+
+  def validate(): Option[String] = {
+    if (teamIdOption.isEmpty) {
+      Some(s"Team with key[$team_key] not found")
+    } else {
+      None
+    }
+  }
+
+}
+
 
 object IncidentForm {
   implicit val readsIncidentForm = Json.reads[IncidentForm]
@@ -34,21 +51,22 @@ object IncidentForm {
 object IncidentsDao {
 
   private val BaseQuery = """
-    select id, team_key, severity, summary, description
+    select incidents.id, teams.key as team_key, incidents.severity, incidents.summary, incidents.description
       from incidents
-     where deleted_at is null
+      join teams on teams.id = incidents.team_id
+     where incidents.deleted_at is null
   """
 
   private val InsertQuery = """
     insert into incidents
-    (team_key, severity, summary, description, created_by_guid, updated_by_guid)
+    (team_id, severity, summary, description, created_by_guid, updated_by_guid)
     values
-    ({team_key}, {severity}, {summary}, {description}, {user_guid}::uuid, {user_guid}::uuid)
+    ({team_id}, {severity}, {summary}, {description}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
   private val UpdateQuery = """
     update incidents
-       set team_key = {team_key},
+       set team_id = {team_id},
            severity = {severity},
            summary = {summary},
            description = {description},
@@ -59,7 +77,7 @@ object IncidentsDao {
   def create(user: User, form: IncidentForm): Incident = {
     val id: Long = DB.withTransaction { implicit c =>
       val id = SQL(InsertQuery).on(
-        'team_key -> form.team_key,
+        'team_id -> form.teamId,
         'severity -> form.severity,
         'summary -> form.summary,
         'description -> form.description,
@@ -83,7 +101,7 @@ object IncidentsDao {
     DB.withTransaction { implicit c =>
       SQL(UpdateQuery).on(
         'id -> incident.id,
-        'team_key -> form.team_key,
+        'team_id -> form.teamId,
         'severity -> form.severity,
         'summary -> form.summary,
         'description -> form.description,
@@ -118,7 +136,7 @@ object IncidentsDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and incidents.id = {id}" },
-      teamKey.map { v => "and incidents.team_key = lower(trim({team_key}))" },
+      teamKey.map { v => "and incidents.team_id = (select id from teams where deleted_at is null and key = lower(trim({team_key})))" },
       severity.map { v => "and incidents.severity = {severity}" },
       Some("order by incidents.created_at desc, incidents.id desc"),
       Some(s"limit ${limit} offset ${offset}")

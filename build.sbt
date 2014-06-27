@@ -2,8 +2,13 @@ name := "quality"
 
 scalaVersion in ThisBuild := "2.11.1"
 
+lazy val core = project
+  .in(file("core"))
+  .settings(commonSettings: _*)
+
 lazy val api = project
   .in(file("api"))
+  .dependsOn(core)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
@@ -18,6 +23,7 @@ lazy val api = project
 
 lazy val www = project
   .in(file("www"))
+  .dependsOn(core)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(

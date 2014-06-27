@@ -35,11 +35,19 @@ object Incidents extends Controller {
   def post() = Action(parse.json) { request =>
     request.body.validate[IncidentForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Error("100", "invalid json")))
+        Conflict(Json.toJson(Error("100", "invalid json: " + e.toString)))
       }
       case s: JsSuccess[IncidentForm] => {
-        val incident = IncidentsDao.create(user, s.get)
-        Created(Json.toJson(incident)).withHeaders(LOCATION -> routes.Incidents.getById(incident.id).url)
+        val form = s.get
+        form.validate match {
+          case None => {
+            val incident = IncidentsDao.create(user, s.get)
+            Created(Json.toJson(incident)).withHeaders(LOCATION -> routes.Incidents.getById(incident.id).url)
+          }
+          case Some(error) => {
+            Conflict(Json.toJson(Error("101", "Validation error: " + error)))
+          }
+        }
       }
     }
   }

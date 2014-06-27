@@ -6,6 +6,18 @@ object Util {
 
   val user = User(guid = UUID.randomUUID)
 
+  def teamForm() = {
+    TeamForm(
+      key = "architecture"
+    )
+  }
+
+  def upsertTeam(key: String) {
+    TeamsDao.lookupId(key).getOrElse {
+      TeamsDao.create(user, TeamForm(key = key))
+    }
+  }
+
   def incidentForm() = {
     IncidentForm(
       team_key = "architecture",
@@ -16,7 +28,9 @@ object Util {
   }
 
   def createIncident(form: Option[IncidentForm] = None): Incident = {
-    IncidentsDao.create(user, form.getOrElse(incidentForm()))
+    val f = form.getOrElse(incidentForm())
+    Util.upsertTeam(f.team_key)
+    IncidentsDao.create(user, f)
   }
 
   def incidentTagForm(incident: Option[Incident] = None): IncidentTagForm = {

@@ -3,9 +3,29 @@ drop table if exists reports;
 drop table if exists incident_tags;
 drop table if exists incidents;
 
+create table teams (
+  id                      bigserial primary key,
+  key                     text not null
+                            check (lower(trim(key)) = key)
+                            check (key != '')
+);
+
+select schema_evolution_manager.create_basic_audit_data('public', 'teams');
+
+create unique index teams_key_not_deleted_un_idx on teams(key) where deleted_at is null;
+
+comment on table teams is '
+  Teams are the primary actors in the system - they own incidents.
+';
+
+comment on column teams.key is '
+  Unique team identifier - in lower case and trimmed.
+';
+
+
 create table incidents (
   id                      bigserial primary key,
-  team_key                text not null check (lower(trim(team_key)) = team_key),
+  team_id                 bigint not null references teams,
   severity                text not null check (severity in ('low', 'high')),
   summary                 text not null,
   description             text
@@ -13,7 +33,7 @@ create table incidents (
 
 select schema_evolution_manager.create_basic_audit_data('public', 'incidents');
 
-create index on incidents(team_key);
+create index on incidents(team_id);
 
 comment on table incidents is '
   A bug or error that affected public or internal users in a negative way. App
