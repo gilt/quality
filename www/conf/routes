@@ -1,6 +1,6 @@
 GET     /_internal_/healthcheck                                   controllers.Internal.healthcheck
 
-GET     /                                                         controllers.Dashboard.index(incidentsPage: Int ?= 0)
+GET     /                                                         controllers.Dashboard.index(page: Int ?= 0)
 
 GET     /incidents/                                               controllers.Incidents.index(teamKey: Option[String] ?= None, page: Int ?= 0)
 GET     /incidents/create                                         controllers.Incidents.create()

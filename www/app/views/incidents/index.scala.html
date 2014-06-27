@@ -11,18 +11,7 @@
   @if(incidents.isEmpty) {
     <em>No incidents found</em>
   } else {
-    <table class="table table-hover table-condensed">
-      <tbody>
-        @incidents.items.map { incident =>
-         <tr>
-           <td><a href="@routes.Incidents.show(incident.id)">Details</a></td>
-           <td><a href="@routes.Teams.show(incident.teamKey)">@incident.teamKey</a></td>
-           <td>@incident.severity</td>
-           <td>@incident.summary</td>
-         </tr>
-       }
-      </tbody>
-    </table>
+    @incidentsTable(incidents.items)
   
     @if(incidents.hasPrevious || incidents.hasNext) {
       <ul class="pager">

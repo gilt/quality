@@ -1,4 +1,6 @@
-@(teams: lib.PaginatedCollection[quality.models.Team])(implicit flash: Flash)
+@(teams: lib.PaginatedCollection[quality.models.Team],
+  incidents: Seq[quality.models.Incident]
+)(implicit flash: Flash)
 
 @main(title = "Gilt Quality", section = Some("dashboard")) {
 
@@ -28,5 +30,8 @@
       }
     </ul>
   }
+
+  <h2>Latest Incidents</h2>
+  @views.html.incidents.incidentsTable(incidents)
 
 }

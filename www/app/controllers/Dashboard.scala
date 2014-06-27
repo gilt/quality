@@ -17,8 +17,12 @@ object Dashboard extends Controller {
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(page * Pagination.DefaultLimit)
       )
+      incidents <- Api.instance.Incidents.get(limit = Some(10))
     } yield {
-      Ok(views.html.dashboard.index(PaginatedCollection(page, teams.entity)))
+      Ok(views.html.dashboard.index(
+        PaginatedCollection(page, teams.entity),
+        incidents.entity
+      ))
     }
   }
 
