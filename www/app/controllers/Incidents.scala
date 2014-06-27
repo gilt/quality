@@ -89,26 +89,31 @@ object Incidents extends Controller {
   }
 
   def postEdit(id: Long) = Action.async { implicit request =>
-    Api.instance.Incidents.getById(id).map { r =>
+    Api.instance.Incidents.getById(id).flatMap { r =>
       val incident = r.entity
 
-      incidentForm.bindFromRequest.fold (
+      val boundForm = incidentForm.bindFromRequest
+      boundForm.fold (
 
-        formWithErrors => {
+        formWithErrors => Future {
           Ok(views.html.incidents.edit(incident, formWithErrors))
         },
 
         incidentForm => {
-          Await.result(Api.instance.Incidents.putById(
+          Api.instance.Incidents.putById(
             id = incident.id,
             summary = incidentForm.summary,
             description = incidentForm.description,
             teamKey = incidentForm.teamKey,
             severity = incidentForm.severity,
             tags = incidentForm.tags.split(" +").map(_.trim).filter(t => !t.isEmpty)
-          ), 1000.millis).entity
-
-          Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident updated")
+          ).map { r =>
+            Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident updated")
+          }.recover {
+            case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
+              Ok(views.html.incidents.create(boundForm, Some(errors.map(_.message).mkString("\n"))))
+            }
+          }
         }
 
       )

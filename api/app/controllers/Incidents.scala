@@ -61,8 +61,16 @@ object Incidents extends Controller {
             Conflict(Json.toJson(Error("100", "invalid json")))
           }
           case s: JsSuccess[IncidentForm] => {
-            val updated = IncidentsDao.update(user, i, s.get)
-            Created(Json.toJson(updated)).withHeaders(LOCATION -> routes.Incidents.getById(updated.id).url)
+            val form = s.get
+            form.validate match {
+              case None => {
+                val updated = IncidentsDao.update(user, i, s.get)
+                Created(Json.toJson(updated)).withHeaders(LOCATION -> routes.Incidents.getById(updated.id).url)
+              }
+              case Some(error) => {
+                Conflict(Json.toJson(Seq(Error("101", "Validation error: " + error))))
+              }
+            }
           }
         }
       }
