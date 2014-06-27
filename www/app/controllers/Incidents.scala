@@ -42,26 +42,29 @@ object Incidents extends Controller {
     Ok(views.html.incidents.create(incidentForm))
   }
 
-  def postCreate() = Action { implicit request =>
+  def postCreate() = Action.async { implicit request =>
     val boundForm = incidentForm.bindFromRequest
     boundForm.fold (
 
-      formWithErrors => {
+      formWithErrors => Future {
         Ok(views.html.incidents.create(formWithErrors))
       },
 
       incidentForm => {
-        val incident = Await.result(Api.instance.Incidents.post(
+        Api.instance.Incidents.post(
           summary = incidentForm.summary,
           description = incidentForm.description,
           teamKey = incidentForm.teamKey,
           severity = incidentForm.severity,
           tags = incidentForm.tags.split(" +").map(_.trim).filter(t => !t.isEmpty)
-        ), 1000.millis).entity
-
-        Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident created")
+        ).map { r =>
+          Redirect(routes.Incidents.show(r.entity.id)).flashing("success" -> "Incident created")
+        }.recover {
+          case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
+            Ok(views.html.incidents.create(boundForm, Some(errors.map(_.message).mkString("\n"))))
+          }
+        }
       }
-
     )
   }
 

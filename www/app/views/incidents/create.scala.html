@@ -1,6 +1,10 @@
-@(form: Form[controllers.Incidents.IncidentForm])(implicit flash: Flash)
+@(form: Form[controllers.Incidents.IncidentForm],
+  errorMessage: Option[String] = None
+)(implicit flash: Flash)
 
 @main(title = s"Create Incident") {
+
+  <dd class="error">@errorMessage.map { msg => @msg }</dd>
 
   <div class="container">
 

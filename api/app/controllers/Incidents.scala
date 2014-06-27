@@ -35,7 +35,7 @@ object Incidents extends Controller {
   def post() = Action(parse.json) { request =>
     request.body.validate[IncidentForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Error("100", "invalid json: " + e.toString)))
+        Conflict(Json.toJson(Seq(Error("100", "invalid json: " + e.toString))))
       }
       case s: JsSuccess[IncidentForm] => {
         val form = s.get
@@ -45,7 +45,7 @@ object Incidents extends Controller {
             Created(Json.toJson(incident)).withHeaders(LOCATION -> routes.Incidents.getById(incident.id).url)
           }
           case Some(error) => {
-            Conflict(Json.toJson(Error("101", "Validation error: " + error)))
+            Conflict(Json.toJson(Seq(Error("101", "Validation error: " + error))))
           }
         }
       }

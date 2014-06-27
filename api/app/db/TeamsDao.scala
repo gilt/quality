@@ -41,7 +41,7 @@ object TeamsDao {
   def create(user: User, form: TeamForm): Team = {
     val id: Long = DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(
-        'key -> form.key,
+        'key -> form.key.trim.toLowerCase,
         'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
@@ -59,12 +59,12 @@ object TeamsDao {
   }
 
   def findByKey(key: String): Option[Team] = {
-    findAll(key = Some(key), limit = 1).headOption
+    findAll(key = Some(key.trim.toLowerCase), limit = 1).headOption
   }
 
   def lookupId(key: String): Option[Long] = {
     DB.withConnection { implicit c =>
-      SQL(LookupIdQuery).on('key -> key)().toList.map { row =>
+      SQL(LookupIdQuery).on('key -> key.trim.toLowerCase)().toList.map { row =>
         row[Long]("id")
       }.toSeq.headOption
     }
@@ -81,7 +81,7 @@ object TeamsDao {
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      key.map { v => NamedParameter("key", toParameterValue(v)) }
+      key.map { v => NamedParameter("key", toParameterValue(v.trim.toLowerCase)) }
     ).flatten
 
     DB.withConnection { implicit c =>
