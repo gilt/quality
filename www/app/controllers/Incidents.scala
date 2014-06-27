@@ -20,7 +20,7 @@ object Incidents extends Controller {
     Api.instance.Incidents.getById(id).map { r =>
       Ok(views.html.incidents.show(r.entity))
     }.recover {
-      case client.Api.instance.FailedResponse(_, 404) => {
+      case quality.FailedResponse(_, 404) => {
         Redirect(routes.Application.index()).flashing("warning" -> s"Incident $id not found")
       }
     }
@@ -67,7 +67,7 @@ object Incidents extends Controller {
       )
       Ok(views.html.incidents.edit(incident, form))
     }.recover {
-      case client.Api.instance.FailedResponse(_, 404) => {
+      case quality.FailedResponse(_, 404) => {
         Redirect(routes.Application.index()).flashing("warning" -> s"Incident $id not found")
       }
     }
@@ -99,7 +99,7 @@ object Incidents extends Controller {
       )
 
     }.recover {
-      case client.Api.instance.FailedResponse(_, 404) => {
+      case quality.FailedResponse(_, 404) => {
         Redirect(routes.Application.index()).flashing("warning" -> s"Incident $id not found")
       }
     }
