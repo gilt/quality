@@ -8,6 +8,14 @@
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create()">Add incident</a>
   </div>
 
+  <form role="form">
+    <div class="form-group">
+      <label for="teamKey">Team key</label>
+      <input type="team_key" class="form-control" id="teamKey" value="@teamKey.getOrElse("")">
+    </div>
+    <button type="submit" class="btn btn-default">Filter</button>
+  </form>
+
   @if(incidents.isEmpty) {
     <em>No incidents found</em>
   } else {

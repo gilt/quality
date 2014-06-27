@@ -21,13 +21,10 @@
         '_error -> form.error("summary")
     )
 
-    @helper.textarea(
-        form("description"),
-        '_label -> "Description (in markdown)",
-        '_error -> form.error("description"),
-        'cols -> 100,
-        'rows -> 20
-    )
+    @helper.input(field = form("description"), '_label -> "Description", '_error -> form.error("description")) { (id, name, value, args) =>
+      <textarea name="@name" id="@id" @toHtmlArgs(args) rows="25" cols="80">@value</textarea>
+      <span class="help-block"><a href="https://code.google.com/p/markdown4j/#Using_Markdown4j">Markdown reference</a></span>
+    }
 
     @helper.inputText(
         form("tags"),
