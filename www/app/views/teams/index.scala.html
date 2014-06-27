@@ -12,7 +12,7 @@
     <tbody>
       @teams.items.map { team =>
        <tr>
-         <td>@team.key</td>
+         <td><a href="@routes.Teams.show(team.key)">@team.key</a></td>
        </tr>
      }
     </tbody>
