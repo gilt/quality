@@ -1,0 +1,22 @@
+@(form: Form[controllers.Teams.TeamForm],
+  errorMessage: Option[String] = None
+)(implicit flash: Flash)
+
+@main(title = s"Create Team") {
+
+  <dd class="error">
+    @errorMessage.map { msg => @msg }
+  </dd>
+
+  <div class="container">
+
+    @helper.form(action = routes.Teams.postCreate) {
+
+      @teamForm(form, routes.Teams.index())
+
+    }
+
+  </div>
+
+}
+

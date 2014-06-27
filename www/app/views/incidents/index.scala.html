@@ -1,0 +1,40 @@
+@(teamKey: Option[String],
+  incidents: lib.PaginatedCollection[quality.models.Incident]
+)(implicit flash: Flash)
+
+@main(title = "Perfect Day Incidents", section = Some("incidents")) {
+
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create">Add incident</a>
+  </div>
+
+  @if(incidents.isEmpty) {
+    <em>No incidents found</em>
+  } else {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @incidents.items.map { incident =>
+         <tr>
+           <td><a href="@routes.Incidents.show(incident.id)">Details</a></td>
+           <td><a href="@routes.Teams.show(incident.teamKey)">@incident.teamKey</a></td>
+           <td>@incident.severity</td>
+           <td>@incident.summary</td>
+         </tr>
+       }
+      </tbody>
+    </table>
+  
+    @if(incidents.hasPrevious || incidents.hasNext) {
+      <ul class="pager">
+        @if(incidents.hasPrevious) {
+          <li><a href="@routes.Incidents.index(teamKey, incidents.page - 1)">Previous</a></li>
+        }
+        @if(incidents.hasNext) {
+          <li><a href="@routes.Incidents.index(teamKey, incidents.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}
+  

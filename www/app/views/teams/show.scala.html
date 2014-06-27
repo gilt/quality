@@ -1,0 +1,10 @@
+@(team: quality.models.Team)(implicit flash: Flash)
+
+@main(title = s"Team ${team.key}") {
+
+  <ul>
+    <li>Key: @team.key</li>
+    <li><a href="@routes.Incidents.index(teamKey = Some(team.key))">Incidents</a></li>
+  </ul>
+
+}

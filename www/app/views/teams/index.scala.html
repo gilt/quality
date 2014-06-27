@@ -1,0 +1,32 @@
+@(key: Option[String],
+ teams: lib.PaginatedCollection[quality.models.Team]
+)(implicit flash: Flash)
+
+@main(title = "Teams", section = Some("teams")) {
+
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Teams.create">Add team</a>
+  </div>
+
+  <table class="table table-hover table-condensed">
+    <tbody>
+      @teams.items.map { team =>
+       <tr>
+         <td>@team.key</td>
+       </tr>
+     }
+    </tbody>
+  </table>
+
+  @if(teams.hasPrevious || teams.hasNext) {
+    <ul class="pager">
+      @if(teams.hasPrevious) {
+        <li><a href="@routes.Teams.index(key, teams.page - 1)">Previous</a></li>
+      }
+      @if(teams.hasNext) {
+        <li><a href="@routes.Teams.index(key, teams.page + 1)">Next</a></li>
+      }
+    </ul>
+  }
+
+}

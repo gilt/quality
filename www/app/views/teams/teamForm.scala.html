@@ -1,0 +1,16 @@
+@(form: Form[controllers.Teams.TeamForm],
+  cancelUrl: play.api.mvc.Call)(implicit flash: Flash)
+
+<fieldset>
+    @helper.inputText(
+        form("key"),
+        '_label -> "Key",
+        '_error -> form.error("key")
+    )
+</fieldset>
+
+<div class="actions">
+  <button class="btn btn-large btn-primary" type="submit">Submit</button>
+  <a href="@cancelUrl" class="btn">Cancel</a>
+</div>
+

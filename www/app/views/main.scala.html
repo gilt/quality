@@ -1,4 +1,4 @@
-@(title: String)(content: Html)(implicit flash: Flash)
+@(title: String, section: Option[String] = None)(content: Html)(implicit flash: Flash)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -26,7 +26,9 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar models">
           <ul class="nav nav-sidebar">
-            <li><a href="/">Incidents</a></li>
+            <li><a@if(section == Some("dashboard")) { class="active" } href="/">Dashboard</a></li>
+            <li><a@if(section == Some("incidents")) { class="active" } href="@routes.Incidents.index()">Incidents</a></li>
+            <li><a@if(section == Some("teams")) { class="active" } href="@routes.Teams.index()">Teams</a></li>
           </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">

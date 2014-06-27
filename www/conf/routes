@@ -1,11 +1,18 @@
 GET     /_internal_/healthcheck                                   controllers.Internal.healthcheck
 
-GET     /                                                         controllers.Application.index(incidentsPage: Int ?= 0)
+GET     /                                                         controllers.Dashboard.index(incidentsPage: Int ?= 0)
+
+GET     /incidents/                                               controllers.Incidents.index(teamKey: Option[String] ?= None, page: Int ?= 0)
 GET     /incidents/create                                         controllers.Incidents.create()
 POST    /incidents/postCreate                                     controllers.Incidents.postCreate()
 GET     /incidents/edit                                           controllers.Incidents.edit(id: Long)
 POST    /incidents/postEdit                                       controllers.Incidents.postEdit(id: Long)
 GET     /incidents/:id                                            controllers.Incidents.show(id: Long)
+
+GET     /teams/                                                   controllers.Teams.index(key: Option[String] ?= None, page: Int ?= 0)
+GET     /teams/create                                             controllers.Teams.create()
+POST    /teams/postCreate                                         controllers.Teams.postCreate()
+GET     /teams/:key                                               controllers.Teams.show(key: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                                             controllers.Assets.at(path="/public", file)

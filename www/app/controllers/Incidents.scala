@@ -16,12 +16,24 @@ object Incidents extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  def index(teamKey: Option[String], page: Int = 0) = Action.async { implicit request =>
+    for {
+      incidents <- Api.instance.Incidents.get(
+        teamKey = teamKey,
+        limit = Some(Pagination.DefaultLimit+1),
+        offset = Some(page * Pagination.DefaultLimit)
+      )
+    } yield {
+      Ok(views.html.incidents.index(teamKey, PaginatedCollection(page, incidents.entity)))
+    }
+  }
+
   def show(id: Long) = Action.async { implicit request =>
     Api.instance.Incidents.getById(id).map { r =>
       Ok(views.html.incidents.show(r.entity))
     }.recover {
       case quality.FailedResponse(_, 404) => {
-        Redirect(routes.Application.index()).flashing("warning" -> s"Incident $id not found")
+        Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $id not found")
       }
     }
   }
@@ -68,7 +80,7 @@ object Incidents extends Controller {
       Ok(views.html.incidents.edit(incident, form))
     }.recover {
       case quality.FailedResponse(_, 404) => {
-        Redirect(routes.Application.index()).flashing("warning" -> s"Incident $id not found")
+        Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $id not found")
       }
     }
   }
@@ -100,7 +112,7 @@ object Incidents extends Controller {
 
     }.recover {
       case quality.FailedResponse(_, 404) => {
-        Redirect(routes.Application.index()).flashing("warning" -> s"Incident $id not found")
+        Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $id not found")
       }
     }
   }
