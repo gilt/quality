@@ -24,7 +24,9 @@
     @helper.textarea(
         form("description"),
         '_label -> "Description",
-        '_error -> form.error("description")
+        '_error -> form.error("description"),
+        'cols -> 100,
+        'rows -> 20
     )
 
     @helper.inputText(
