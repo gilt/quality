@@ -7,6 +7,7 @@ GET     /incidents/create                                         controllers.In
 POST    /incidents/postCreate                                     controllers.Incidents.postCreate()
 GET     /incidents/edit                                           controllers.Incidents.edit(id: Long)
 POST    /incidents/postEdit                                       controllers.Incidents.postEdit(id: Long)
+POST    /incidents/delete/:id                                     controllers.Incidents.postDeleteById(id: Long)
 GET     /incidents/:id                                            controllers.Incidents.show(id: Long)
 
 GET     /teams/                                                   controllers.Teams.index(key: Option[String] ?= None, page: Int ?= 0)

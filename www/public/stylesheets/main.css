@@ -83,3 +83,18 @@ dd.error {
 span.error {
   color: #cc3333;
 }
+
+div.incident {
+  border: 1px solid;
+  padding: 1px 10px 1px 10px;
+}
+
+div.incident h1 {
+  font-size: 125%;
+  font-weight: bold;
+}
+
+div.incident h2 {
+  font-size: 115%;
+
+}

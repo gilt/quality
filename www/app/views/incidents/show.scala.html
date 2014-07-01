@@ -2,7 +2,8 @@
 
 @main(title = s"Incident ${incident.summary}") {
 
-  <a href="@routes.Incidents.edit(incident.id)">Edit</a>
+  <a href="@routes.Incidents.edit(incident.id)">Edit</a> |
+  <a href="@routes.Incidents.postDeleteById(incident.id)" class="delete" data-confirm="Are you sure to delete this incident?">Delete</a>
 
   <ul>
     <li>Team: @incident.teamKey</li>
@@ -16,8 +17,10 @@
     </li>
   </ul>
 
-  @incident.description.map { desc =>
-    @Html(util.Markdown.toHtml(desc))
-  }
+  <div class="incident">
+    @incident.description.map { desc =>
+      @Html(util.Markdown.toHtml(desc))
+    }
+  </div>
 
 }

@@ -38,6 +38,14 @@ object Incidents extends Controller {
     }
   }
 
+  def postDeleteById(id: Long) = Action.async { implicit request =>
+    for {
+      result <- Api.instance.Incidents.deleteById(id)
+    } yield {
+      Redirect(routes.Incidents.index()).flashing("success" -> s"Incident $id deleted")
+    }
+  }
+
   def create(teamKey: Option[String] = None) = Action { implicit request =>
     val form = incidentForm.fill(
       IncidentForm(

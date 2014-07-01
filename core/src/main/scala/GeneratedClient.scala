@@ -211,19 +211,20 @@ package quality {
 
     logger.info(s"Initializing quality.client for url $apiUrl")
 
-    private def requestHolder(path: String) = {
+    def requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
       val url = apiUrl + path
       val holder = play.api.libs.ws.WS.url(url)
-      apiToken.map { token =>
-        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
-      }.getOrElse {
-        holder
+      apiToken match {
+        case None => holder
+        case Some(token: String) => {
+          holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
+        }
       }
     }
 
-    private def logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
+    def logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
       val q = req.queryString.flatMap { case (name, values) =>
         values.map(name -> _).map { case (name, value) =>
           s"$name=$value"
@@ -238,7 +239,7 @@ package quality {
       req
     }
 
-    private def processResponse(f: scala.concurrent.Future[play.api.libs.ws.WSResponse])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    def processResponse(f: scala.concurrent.Future[play.api.libs.ws.WSResponse])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       f.map { response =>
         lazy val body: String = scala.util.Try {
           play.api.libs.json.Json.prettyPrint(response.json)
@@ -465,12 +466,12 @@ package quality {
        * Create a report.
        */
       def post(
-        incidentId: Long,
+        incident: Incident,
         body: String,
         grade: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Report]] = {
         val payload = play.api.libs.json.Json.obj(
-          "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
+          "incident" -> play.api.libs.json.Json.toJson(incident),
           "body" -> play.api.libs.json.Json.toJson(body),
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
@@ -484,18 +485,22 @@ package quality {
       /**
        * Update a report.
        */
-      def put(
-        incidentId: Long,
+      def putById(
+        id: Long,
+        incident: Incident,
         body: String,
         grade: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Report]] = {
         val payload = play.api.libs.json.Json.obj(
-          "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
+          "incident" -> play.api.libs.json.Json.toJson(incident),
           "body" -> play.api.libs.json.Json.toJson(body),
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
         
-        PUT(s"/reports", payload).map {
+        PUT(s"/reports/${({x: Long =>
+          val s = x.toString
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(id)}", payload).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[Report], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
@@ -530,26 +535,6 @@ package quality {
           java.net.URLEncoder.encode(s, "UTF-8")
         })(id)}").map {
           case r if r.status == 204 => new ResponseImpl((), 204)
-          case r => throw new FailedResponse(r.body, r.status)
-        }
-      }
-      
-      /**
-       * Set the grade for a report.
-       */
-      def putGradeById(
-        id: Long,
-        score: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Report]] = {
-        val payload = play.api.libs.json.Json.obj(
-          "score" -> play.api.libs.json.Json.toJson(score)
-        )
-        
-        PUT(s"/reports/${({x: Long =>
-          val s = x.toString
-          java.net.URLEncoder.encode(s, "UTF-8")
-        })(id)}/grade", payload).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[Report], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }

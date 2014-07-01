@@ -41,7 +41,7 @@ object ReportsDao {
   def create(user: User, form: Report): ReportWithId = {
     val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'incident_id -> form.incident_id,
+        'incident_id -> form.incident.id,
         'body -> form.body,
         'user_guid -> user.guid,
         'user_guid -> user.guid

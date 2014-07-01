@@ -34,9 +34,15 @@ object Reports extends Controller {
       }
       case s: JsSuccess[Report] => {
         val form = s.get
-        // TODO: Check if report already exists - need to validate
-        val report = ReportsDao.create(User.Default, s.get)
-        Created(Json.toJson(report)).withHeaders(LOCATION -> routes.Reports.getById(report.id).url)
+        ReportValidator.validate(form) match {
+          case Nil => {
+            val report = ReportsDao.create(User.Default, s.get)
+            Created(Json.toJson(report)).withHeaders(LOCATION -> routes.Reports.getById(report.id).url)
+          }
+          case errors => {
+            Conflict(Json.toJson(errors))
+          }
+        }
       }
     }
   }
@@ -71,17 +77,6 @@ object Reports extends Controller {
       ReportsDao.softDelete(User.Default, i)
     }
     NoContent
-  }
-
-  def putGradeById(id: Long) = Action { request =>
-    ReportsDao.findById(id) match {
-      case None => NotFound
-      case (r: ReportWithId) => {
-        ReportsDao.update((User.Default, r, grade)
-      }
-    }
-    NoContent
-
   }
 
 }
