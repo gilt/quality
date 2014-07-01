@@ -24,7 +24,7 @@
                 { "name": "id", "type": "long", "description": "Internal unique identifier for this incident." },
                 { "name": "summary", "type": "string", "description": "Summary of the incident." },
                 { "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
-                { "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident. Must be in lower case." },
+                { "name": "team", "type": "team", "description": "Team responsible for resolution of this incident" },
                 { "name": "severity", "type": "string", "values": ["low", "high"] },
 		{ "name": "tags", "type": "[string]", "required": false, "description": "Optional list of tags to apply to this incident" }
             ]

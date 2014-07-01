@@ -6,7 +6,7 @@
   <a href="@routes.Incidents.postDeleteById(incident.id)" class="delete" data-confirm="Are you sure to delete this incident?">Delete</a>
 
   <ul>
-    <li>Team: @incident.teamKey</li>
+    <li>Team: <a href="@routes.Teams.show(incident.team.key)">@incident.team.key</a></li>
     <li>Severity: @incident.severity</li>
     <li>Tags:
       @if(incident.tags.isEmpty) {

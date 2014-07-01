@@ -92,7 +92,7 @@ object Incidents extends Controller {
         IncidentForm(
           summary = incident.summary,
           description = incident.description,
-          teamKey = incident.teamKey,
+          teamKey = incident.team.key,
           severity = incident.severity.toString,
           tags = incident.tags.mkString(" ")
         )

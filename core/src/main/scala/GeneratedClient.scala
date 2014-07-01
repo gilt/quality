@@ -10,7 +10,7 @@ package quality.models {
     id: Long,
     summary: String,
     description: scala.Option[String] = None,
-    teamKey: String,
+    team: Team,
     severity: Incident.Severity,
     tags: scala.collection.Seq[String] = Nil
   )
@@ -130,7 +130,7 @@ package quality.models {
         ((__ \ "id").read[Long] and
          (__ \ "summary").read[String] and
          (__ \ "description").readNullable[String] and
-         (__ \ "team_key").read[String] and
+         (__ \ "team").read[Team] and
          (__ \ "severity").read[Incident.Severity] and
          (__ \ "tags").readNullable[scala.collection.Seq[String]].map { x =>
           x.getOrElse(Nil)
@@ -144,7 +144,7 @@ package quality.models {
         ((__ \ "id").write[Long] and
          (__ \ "summary").write[String] and
          (__ \ "description").write[scala.Option[String]] and
-         (__ \ "team_key").write[String] and
+         (__ \ "team").write[Team] and
          (__ \ "severity").write[Incident.Severity] and
          (__ \ "tags").write[scala.collection.Seq[String]])(unlift(Incident.unapply))
       }

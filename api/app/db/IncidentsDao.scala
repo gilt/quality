@@ -5,11 +5,12 @@ import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-//import quality.models.Incident
+import quality.models.Team
+import quality.models.json._
 
 case class Incident(
   id: Long,
-  team_key: String,
+  team: Team,
   severity: String,
   summary: String,
   description: Option[String],
@@ -153,7 +154,7 @@ object IncidentsDao {
       SQL(sql).on(bind: _*)().toList.map { row =>
         Incident(
           id = row[Long]("id"),
-          team_key = row[String]("team_key"),
+          team = Team(key = row[String]("team_key")),
           severity = row[String]("severity"),
           summary = row[String]("summary"),
           description = row[Option[String]]("description"),
