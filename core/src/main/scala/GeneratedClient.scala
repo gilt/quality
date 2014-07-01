@@ -3,11 +3,6 @@ package quality.models {
     code: String,
     message: String
   )
-  case class Grade(
-    id: Long,
-    report: Report,
-    value: String
-  )
   case class Healthcheck(
     status: String
   )
@@ -58,7 +53,8 @@ package quality.models {
   case class Report(
     id: Long,
     incident: Incident,
-    body: String
+    body: String,
+    grade: scala.Option[Int] = None
   )
   case class Team(
     key: String
@@ -111,24 +107,6 @@ package quality.models {
          (__ \ "message").write[String])(unlift(Error.unapply))
       }
     
-    implicit def readsGrade: play.api.libs.json.Reads[Grade] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "id").read[Long] and
-         (__ \ "report").read[Report] and
-         (__ \ "value").read[String])(Grade.apply _)
-      }
-    
-    implicit def writesGrade: play.api.libs.json.Writes[Grade] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "id").write[Long] and
-         (__ \ "report").write[Report] and
-         (__ \ "value").write[String])(unlift(Grade.unapply))
-      }
-    
     implicit def readsHealthcheck: play.api.libs.json.Reads[Healthcheck] =
       {
         import play.api.libs.json._
@@ -177,7 +155,8 @@ package quality.models {
         import play.api.libs.functional.syntax._
         ((__ \ "id").read[Long] and
          (__ \ "incident").read[Incident] and
-         (__ \ "body").read[String])(Report.apply _)
+         (__ \ "body").read[String] and
+         (__ \ "grade").readNullable[Int])(Report.apply _)
       }
     
     implicit def writesReport: play.api.libs.json.Writes[Report] =
@@ -186,7 +165,8 @@ package quality.models {
         import play.api.libs.functional.syntax._
         ((__ \ "id").write[Long] and
          (__ \ "incident").write[Incident] and
-         (__ \ "body").write[String])(unlift(Report.unapply))
+         (__ \ "body").write[String] and
+         (__ \ "grade").write[scala.Option[Int]])(unlift(Report.unapply))
       }
     
     implicit def readsTeam: play.api.libs.json.Reads[Team] =
@@ -477,6 +457,99 @@ package quality {
         
         GET(s"/reports", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Report]], 200)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+      
+      /**
+       * Create a report.
+       */
+      def post(
+        incidentId: Long,
+        body: String,
+        grade: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Report]] = {
+        val payload = play.api.libs.json.Json.obj(
+          "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
+          "body" -> play.api.libs.json.Json.toJson(body),
+          "grade" -> play.api.libs.json.Json.toJson(grade)
+        )
+        
+        POST(s"/reports", payload).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[Report], 200)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+      
+      /**
+       * Update a report.
+       */
+      def put(
+        incidentId: Long,
+        body: String,
+        grade: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Report]] = {
+        val payload = play.api.libs.json.Json.obj(
+          "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
+          "body" -> play.api.libs.json.Json.toJson(body),
+          "grade" -> play.api.libs.json.Json.toJson(grade)
+        )
+        
+        PUT(s"/reports", payload).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[Report], 200)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+      
+      /**
+       * Get a single report.
+       */
+      def getById(
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Report]] = {
+        val queryBuilder = List.newBuilder[(String, String)]
+        
+        
+        GET(s"/reports/${({x: Long =>
+          val s = x.toString
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(id)}", queryBuilder.result).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[Report], 200)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+      
+      /**
+       * Delete a report.
+       */
+      def deleteById(
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Unit]] = {
+        DELETE(s"/reports/${({x: Long =>
+          val s = x.toString
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(id)}").map {
+          case r if r.status == 204 => new ResponseImpl((), 204)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+      
+      /**
+       * Set the grade for a report.
+       */
+      def putGradeById(
+        id: Long,
+        score: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Report]] = {
+        val payload = play.api.libs.json.Json.obj(
+          "score" -> play.api.libs.json.Json.toJson(score)
+        )
+        
+        PUT(s"/reports/${({x: Long =>
+          val s = x.toString
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(id)}/grade", payload).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[Report], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }

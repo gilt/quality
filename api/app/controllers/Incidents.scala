@@ -1,5 +1,7 @@
 package controllers
 
+import quality.models.Error
+import quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -7,13 +9,6 @@ import db.{ IncidentsDao, Incident, IncidentForm, User }
 
 object Incidents extends Controller {
 
-  private lazy val user = User(guid = UUID.randomUUID) // TODO
-
-  case class Error(code: String, message: String)
-
-  object Error {
-    implicit val errorWrites = Json.writes[Error]
-  }
   def get(id: Option[Long], team_key: Option[String], limit: Int = 25, offset: Int = 0) = Action { request =>
     val matches = IncidentsDao.findAll(
       id = id,
@@ -41,7 +36,7 @@ object Incidents extends Controller {
         val form = s.get
         form.validate match {
           case None => {
-            val incident = IncidentsDao.create(user, s.get)
+            val incident = IncidentsDao.create(User.Default, s.get)
             Created(Json.toJson(incident)).withHeaders(LOCATION -> routes.Incidents.getById(incident.id).url)
           }
           case Some(error) => {
@@ -64,7 +59,7 @@ object Incidents extends Controller {
             val form = s.get
             form.validate match {
               case None => {
-                val updated = IncidentsDao.update(user, i, s.get)
+                val updated = IncidentsDao.update(User.Default, i, s.get)
                 Created(Json.toJson(updated)).withHeaders(LOCATION -> routes.Incidents.getById(updated.id).url)
               }
               case Some(error) => {
@@ -79,7 +74,7 @@ object Incidents extends Controller {
 
   def deleteById(id: Long) = Action { request =>
     IncidentsDao.findById(id).foreach { i =>
-      IncidentsDao.softDelete(user, i)
+      IncidentsDao.softDelete(User.Default, i)
     }
     NoContent
   }

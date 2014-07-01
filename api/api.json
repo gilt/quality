@@ -35,16 +35,8 @@
             "fields": [
                 { "name": "id", "type": "long", "description": "Internal unique identifier for this incident." },
                 { "name": "incident", "type": "incident" },
-                { "name": "body", "type": "string", "description": "Full description of the incident" }
-            ]
-        },
-
-        "grade": {
-            "description": "Grade given to a report",
-            "fields": [
-                { "name": "id", "type": "long", "description": "Internal unique identifier for this incident." },
-                { "name": "report", "type": "report" },
-                { "name": "value", "type": "string", "example": "pass or fail" }
+                { "name": "body", "type": "string", "description": "Full description of the incident" },
+                { "name": "grade", "type": "integer", "required": false, "minimum": 0, "maximum": 100, "description": "Grade given to this report on a scale of 0 (bad) to 100 (good)" }
             ]
         },
 
@@ -195,7 +187,62 @@
                     "responses": {
                         "200": { "type": "[report]" }
                     }
+                },
+
+		{
+		    "method": "POST",
+                    "description": "Create a report.",
+                    "parameters": [
+                        { "name": "incident_id", "type": "long" },
+                        { "name": "body", "type": "string" },
+                        { "name": "grade", "type": "integer", "required": false }
+                    ],
+                    "responses": {
+                        "200": { "type": "report" }
+                    }
+                },
+
+		{
+		    "method": "PUT",
+                    "description": "Update a report.",
+                    "parameters": [
+                        { "name": "incident_id", "type": "long" },
+                        { "name": "body", "type": "string" },
+                        { "name": "grade", "type": "integer", "required": false }
+                    ],
+                    "responses": {
+                        "200": { "type": "report" }
+                    }
+                },
+
+		{
+		    "method": "GET",
+                    "description": "Get a single report.",
+                    "path": "/:id",
+                    "responses": {
+                        "200": { "type": "report" }
+                    }
+                },
+
+		{
+		    "method": "DELETE",
+                    "description": "Delete a report.",
+                    "path": "/:id"
+                },
+
+
+		{
+		    "method": "PUT",
+                    "description": "Set the grade for a report.",
+                    "path": "/:id/grade",
+                    "parameters": [
+                        { "name": "score", "type": "long" }
+                    ],
+                    "responses": {
+                        "200": { "type": "report" }
+                    }
                 }
+
 	    ]
 	}
 

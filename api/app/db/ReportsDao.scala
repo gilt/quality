@@ -1,28 +1,33 @@
 package db
 
+import quality.models.{ Error, Report }
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class Report(id: Long, incident_id: Long, body: String)
+case class ReportWithId(id: Long, incident_id: Long, body: String, grade: Option[Long])
 
-object Report {
-  implicit val reportWrites = Json.writes[Report]
+object ReportWithId {
+  implicit val reportWithIdWrites = Json.writes[ReportWithId]
 }
 
-case class ReportForm(incident_id: Long, body: String)
+object ReportValidator {
 
-object ReportForm {
-  implicit val readsReportForm = Json.reads[ReportForm]
+  // TODO
+  def validate(report: Report): Seq[Error] = {
+    Seq.empty
+  }
+
 }
 
 object ReportsDao {
 
   private val BaseQuery = """
-    select id, incident_id, body
+    select id, incident_id, body, grades.score as grade
       from reports
+      left join grades on grades.report_id = reports.id and grade.deleted_at is null
      where deleted_at is null
   """
 
@@ -33,7 +38,7 @@ object ReportsDao {
     ({incident_id}, {body}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
-  def create(user: User, form: ReportForm): Report = {
+  def create(user: User, form: Report): ReportWithId = {
     val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'incident_id -> form.incident_id,
@@ -48,18 +53,22 @@ object ReportsDao {
     }
   }
 
-  def softDelete(deletedBy: User, report: Report) {
+  def update(user: User, report: ReportWithId, form: Report): ReportWithId = {
+    sys.error("TODO")
+  }
+
+  def softDelete(deletedBy: User, report: ReportWithId) {
     SoftDelete.delete("reports", deletedBy, report.id)
   }
 
-  def findById(id: Long): Option[Report] = {
+  def findById(id: Long): Option[ReportWithId] = {
     findAll(id = Some(id), limit = 1).headOption
   }
 
   def findAll(id: Option[Long] = None,
               incidentId: Option[Long] = None,
               limit: Int = 50,
-              offset: Int = 0): Seq[Report] = {
+              offset: Int = 0): Seq[ReportWithId] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and reports.id = {id}" },
@@ -75,10 +84,11 @@ object ReportsDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        Report(
+        ReportWithId(
           id = row[Long]("id"),
           incident_id = row[Long]("incident_id"),
-          body = row[String]("body")
+          body = row[String]("body"),
+          grade = row[Option[Long]]("grade")
         )
       }.toSeq
     }
