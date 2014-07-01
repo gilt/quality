@@ -12,19 +12,19 @@ class GradesDaoSpec extends FunSpec with Matchers {
       val grade = Util.createGrade()
       val fetched = GradesDao.findById(grade.id).get
       fetched.id should be(grade.id)
-      fetched.report_id should be(grade.report_id)
+      fetched.plan_id should be(grade.plan_id)
       fetched.score should be(grade.score)
     }
   }
 
-  it("find by report id") {
+  it("find by plan id") {
     running(FakeApplication()) {
-      val report = Util.createReport()
-      val grade = Util.createGrade(Some(GradeForm(report_id = report.id, score = 100)))
+      val plan = Util.createPlan()
+      val grade = Util.createGrade(Some(GradeForm(plan_id = plan.id, score = 100)))
       val other = Util.createGrade()
 
-      GradesDao.findAll(reportId = Some(report.id)).map(_.id).sorted should be(Seq(grade.id))
-      GradesDao.findAll(reportId = Some(0)).map(_.id).sorted should be(Seq.empty)
+      GradesDao.findAll(planId = Some(plan.id)).map(_.id).sorted should be(Seq(grade.id))
+      GradesDao.findAll(planId = Some(0)).map(_.id).sorted should be(Seq.empty)
     }
   }
 }

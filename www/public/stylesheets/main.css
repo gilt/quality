@@ -84,19 +84,19 @@ span.error {
   color: #cc3333;
 }
 
-div.incident {
+div.markdown {
   border: 1px solid;
   border-color: #ddd;
   background: #eee;
   padding: 1px 10px 1px 10px;
 }
 
-div.incident h1 {
+div.markdown h1 {
   font-size: 125%;
   font-weight: bold;
 }
 
-div.incident h2 {
+div.markdown h2 {
   font-size: 115%;
 
 }

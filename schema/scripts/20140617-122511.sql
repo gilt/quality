@@ -1,5 +1,5 @@
 drop table if exists grades;
-drop table if exists reports;
+drop table if exists plans;
 drop table if exists incident_tags;
 drop table if exists incidents;
 
@@ -52,40 +52,40 @@ create index on incident_tags(incident_id);
 create unique index incident_tags_incident_id_lower_trim_tag_not_deleted_un_idx on incident_tags(incident_id, lower(trim(tag))) where deleted_at is null;
 
 comment on table incident_tags is '
-  Incident tags are used for things like reporting where we can assign
+  Incident tags are used for things like planing where we can assign
   tags to a given incident.
 ';
 
 
-create table reports (
+create table plans (
   id                          bigserial not null primary key,
   incident_id                 bigint not null references incidents,
   body                        text not null
 );
 
-select schema_evolution_manager.create_basic_audit_data('public', 'reports');
+select schema_evolution_manager.create_basic_audit_data('public', 'plans');
 
-create index on reports(incident_id);
-create unique index reports_incident_id_not_deleted_un_idx on reports(incident_id) where deleted_at is null;
+create index on plans(incident_id);
+create unique index plans_incident_id_not_deleted_un_idx on plans(incident_id) where deleted_at is null;
 
-comment on table reports is '
-  A report describes what we are doing to prevent the recurrence of a
+comment on table plans is '
+  A plan describes what we are doing to prevent the recurrence of a
   given incident.
 ';
 
 create table grades (
   id                      bigserial primary key,
-  report_id               bigint not null references reports,
+  plan_id                 bigint not null references plans,
   score                   integer not null check (score >= 0 and score <= 100)
 );
 
 select schema_evolution_manager.create_basic_audit_data('public', 'grades');
 
-create index on grades(report_id);
-create unique index grades_report_id_not_deleted_un_idx on grades(report_id) where deleted_at is null;
+create index on grades(plan_id);
+create unique index grades_plan_id_not_deleted_un_idx on grades(plan_id) where deleted_at is null;
 
 comment on table grades is '
-  A grade captures how well we feel the report is in terms of resolving the incident.
+  A grade captures how well we feel the plan is in terms of resolving the incident.
 ';
 
 comment on column grades.score is '

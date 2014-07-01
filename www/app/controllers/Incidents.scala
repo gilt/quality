@@ -29,11 +29,15 @@ object Incidents extends Controller {
   }
 
   def show(id: Long) = Action.async { implicit request =>
-    Api.instance.Incidents.getById(id).map { r =>
-      Ok(views.html.incidents.show(r.entity))
-    }.recover {
-      case quality.FailedResponse(_, 404) => {
-        Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $id not found")
+    for {
+      incidentResult <- Api.instance.Incidents.get(id = Some(id))
+      planResult <- Api.instance.Plans.get(incidentId = Some(id))
+    } yield {
+      incidentResult.entity.headOption match {
+        case None => Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $id not found")
+        case Some(incident) => {
+          Ok(views.html.incidents.show(incident, planResult.entity.headOption))
+        }
       }
     }
   }

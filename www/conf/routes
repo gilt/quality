@@ -10,6 +10,9 @@ POST    /incidents/postEdit                                       controllers.In
 POST    /incidents/delete/:id                                     controllers.Incidents.postDeleteById(id: Long)
 GET     /incidents/:id                                            controllers.Incidents.show(id: Long)
 
+GET     /plans/uploadByIncidentId/incident_id                     controllers.Plans.uploadByIncidentId(incidentId: Long)
+POST    /plans/postUploadByIncidentId/incident_id                 controllers.Plans.postUploadByIncidentId(incidentId: Long)
+
 GET     /teams/                                                   controllers.Teams.index(key: Option[String] ?= None, page: Int ?= 0)
 GET     /teams/create                                             controllers.Teams.create()
 POST    /teams/postCreate                                         controllers.Teams.postCreate()

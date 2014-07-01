@@ -6,15 +6,15 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class Grade(id: Long, report_id: Long, score: Int) {
+case class Grade(id: Long, plan_id: Long, score: Int) {
   require(score >= 0 && score <= 100, "Score must be between 0-100 and not[%s]".format(score))
 }
 
 object Grade {
-  implicit val reportWrites = Json.writes[Grade]
+  implicit val planWrites = Json.writes[Grade]
 }
 
-case class GradeForm(report_id: Long, score: Int)
+case class GradeForm(plan_id: Long, score: Int)
 
 object GradeForm {
   implicit val readsGradeForm = Json.reads[GradeForm]
@@ -23,22 +23,22 @@ object GradeForm {
 object GradesDao {
 
   private val BaseQuery = """
-    select id, report_id, score
+    select id, plan_id, score
       from grades
      where deleted_at is null
   """
 
   private val InsertQuery = """
     insert into grades
-    (report_id, score, created_by_guid, updated_by_guid)
+    (plan_id, score, created_by_guid, updated_by_guid)
     values
-    ({report_id}, {score}, {user_guid}::uuid, {user_guid}::uuid)
+    ({plan_id}, {score}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
   def create(user: User, form: GradeForm): Grade = {
     val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'report_id -> form.report_id,
+        'plan_id -> form.plan_id,
         'score -> form.score,
         'user_guid -> user.guid,
         'user_guid -> user.guid
@@ -46,12 +46,12 @@ object GradesDao {
     }
 
     findById(id).getOrElse {
-      sys.error("Failed to create report")
+      sys.error("Failed to create plan")
     }
   }
 
-  def softDelete(deletedBy: User, report: Grade) {
-    SoftDelete.delete("grades", deletedBy, report.id)
+  def softDelete(deletedBy: User, plan: Grade) {
+    SoftDelete.delete("grades", deletedBy, plan.id)
   }
 
   def findById(id: Long): Option[Grade] = {
@@ -59,27 +59,27 @@ object GradesDao {
   }
 
   def findAll(id: Option[Long] = None,
-              reportId: Option[Long] = None,
+              planId: Option[Long] = None,
               limit: Int = 50,
               offset: Int = 0): Seq[Grade] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and grades.id = {id}" },
-      reportId.map { v => "and grades.report_id = {report_id}" },
+      planId.map { v => "and grades.plan_id = {plan_id}" },
       Some("order by grades.created_at desc, grades.id desc"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
       id.map { v => NamedParameter("id", toParameterValue(v)) },
-      reportId.map { v => NamedParameter("report_id", toParameterValue(v)) }
+      planId.map { v => NamedParameter("plan_id", toParameterValue(v)) }
     ).flatten
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         Grade(
           id = row[Long]("id"),
-          report_id = row[Long]("report_id"),
+          plan_id = row[Long]("plan_id"),
           score = row[Int]("score")
         )
       }.toSeq

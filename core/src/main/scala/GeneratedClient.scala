@@ -50,7 +50,7 @@ package quality.models {
 
     }
   }
-  case class Report(
+  case class Plan(
     id: Long,
     incident: Incident,
     body: String,
@@ -149,24 +149,24 @@ package quality.models {
          (__ \ "tags").write[scala.collection.Seq[String]])(unlift(Incident.unapply))
       }
     
-    implicit def readsReport: play.api.libs.json.Reads[Report] =
+    implicit def readsPlan: play.api.libs.json.Reads[Plan] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
         ((__ \ "id").read[Long] and
          (__ \ "incident").read[Incident] and
          (__ \ "body").read[String] and
-         (__ \ "grade").readNullable[Int])(Report.apply _)
+         (__ \ "grade").readNullable[Int])(Plan.apply _)
       }
     
-    implicit def writesReport: play.api.libs.json.Writes[Report] =
+    implicit def writesPlan: play.api.libs.json.Writes[Plan] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
         ((__ \ "id").write[Long] and
          (__ \ "incident").write[Incident] and
          (__ \ "body").write[String] and
-         (__ \ "grade").write[scala.Option[Int]])(unlift(Report.unapply))
+         (__ \ "grade").write[scala.Option[Int]])(unlift(Plan.unapply))
       }
     
     implicit def readsTeam: play.api.libs.json.Reads[Team] =
@@ -416,16 +416,16 @@ package quality {
       }
     }
     
-    object Reports {
+    object Plans {
       /**
-       * Search all reports. Results are always paginated.
+       * Search all plans. Results are always paginated.
        */
       def get(
         id: scala.Option[Long] = None,
         incidentId: scala.Option[Long] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Report]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Plan]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= id.map { x =>
           "id" -> (
@@ -456,81 +456,81 @@ package quality {
           )(x)
         }
         
-        GET(s"/reports", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Report]], 200)
+        GET(s"/plans", queryBuilder.result).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Plan]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
       
       /**
-       * Create a report.
+       * Create a plan.
        */
       def post(
         incident: Incident,
         body: String,
         grade: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Report]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Plan]] = {
         val payload = play.api.libs.json.Json.obj(
           "incident" -> play.api.libs.json.Json.toJson(incident),
           "body" -> play.api.libs.json.Json.toJson(body),
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
         
-        POST(s"/reports", payload).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[Report], 200)
+        POST(s"/plans", payload).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[Plan], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
       
       /**
-       * Update a report.
+       * Update a plan.
        */
       def putById(
         id: Long,
         incident: Incident,
         body: String,
         grade: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Report]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Plan]] = {
         val payload = play.api.libs.json.Json.obj(
           "incident" -> play.api.libs.json.Json.toJson(incident),
           "body" -> play.api.libs.json.Json.toJson(body),
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
         
-        PUT(s"/reports/${({x: Long =>
+        PUT(s"/plans/${({x: Long =>
           val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(id)}", payload).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[Report], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[Plan], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
       
       /**
-       * Get a single report.
+       * Get a single plan.
        */
       def getById(
         id: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Report]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Plan]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         
         
-        GET(s"/reports/${({x: Long =>
+        GET(s"/plans/${({x: Long =>
           val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(id)}", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[Report], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[Plan], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
       
       /**
-       * Delete a report.
+       * Delete a plan.
        */
       def deleteById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Unit]] = {
-        DELETE(s"/reports/${({x: Long =>
+        DELETE(s"/plans/${({x: Long =>
           val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(id)}").map {

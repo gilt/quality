@@ -1,4 +1,6 @@
-@(incident: quality.models.Incident)(implicit flash: Flash)
+@(incident: quality.models.Incident,
+  plan: Option[quality.models.Plan]
+)(implicit flash: Flash)
 
 @main(title = s"Incident ${incident.summary}") {
 
@@ -8,6 +10,14 @@
   <ul>
     <li>Team: <a href="@routes.Teams.show(incident.team.key)">@incident.team.key</a></li>
     <li>Severity: @incident.severity</li>
+    <li>Plan:
+        @if(plan.isEmpty) {
+          N/A
+        } else {
+          <a href="#plan">See below</a>
+        }
+        (<a href="@routes.Plans.uploadByIncidentId(incident.id)">Upload</a>)
+    </li>
     <li>Tags:
       @if(incident.tags.isEmpty) {
         <em>N/A</em>
@@ -17,10 +27,17 @@
     </li>
   </ul>
 
-  <div class="incident">
+  <div class="markdown">
     @incident.description.map { desc =>
       @Html(util.Markdown.toHtml(desc))
     }
   </div>
+
+  @plan.map { rep =>
+    <a name="plan"></a>   
+    <div class="markdown">
+      @Html(util.Markdown.toHtml(rep.body))
+    </div>
+  }
 
 }

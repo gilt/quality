@@ -1,44 +1,44 @@
 package db
 
-import quality.models.{ Error, Report }
+import quality.models.{ Error, Plan }
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class ReportWithId(id: Long, incident_id: Long, body: String, grade: Option[Long])
+case class PlanWithId(id: Long, incident_id: Long, body: String, grade: Option[Long])
 
-object ReportWithId {
-  implicit val reportWithIdWrites = Json.writes[ReportWithId]
+object PlanWithId {
+  implicit val planWithIdWrites = Json.writes[PlanWithId]
 }
 
-object ReportValidator {
+object PlanValidator {
 
   // TODO
-  def validate(report: Report): Seq[Error] = {
+  def validate(plan: Plan): Seq[Error] = {
     Seq.empty
   }
 
 }
 
-object ReportsDao {
+object PlansDao {
 
   private val BaseQuery = """
-    select id, incident_id, body, grades.score as grade
-      from reports
-      left join grades on grades.report_id = reports.id and grade.deleted_at is null
-     where deleted_at is null
+    select plans.id, plans.incident_id, plans.body, grades.score as grade
+      from plans
+      left join grades on grades.plan_id = plans.id and grades.deleted_at is null
+     where plans.deleted_at is null
   """
 
   private val InsertQuery = """
-    insert into reports
+    insert into plans
     (incident_id, body, created_by_guid, updated_by_guid)
     values
     ({incident_id}, {body}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
-  def create(user: User, form: Report): ReportWithId = {
+  def create(user: User, form: Plan): PlanWithId = {
     val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'incident_id -> form.incident.id,
@@ -49,31 +49,31 @@ object ReportsDao {
     }
 
     findById(id).getOrElse {
-      sys.error("Failed to create report")
+      sys.error("Failed to create plan")
     }
   }
 
-  def update(user: User, report: ReportWithId, form: Report): ReportWithId = {
+  def update(user: User, plan: PlanWithId, form: Plan): PlanWithId = {
     sys.error("TODO")
   }
 
-  def softDelete(deletedBy: User, report: ReportWithId) {
-    SoftDelete.delete("reports", deletedBy, report.id)
+  def softDelete(deletedBy: User, plan: PlanWithId) {
+    SoftDelete.delete("plans", deletedBy, plan.id)
   }
 
-  def findById(id: Long): Option[ReportWithId] = {
+  def findById(id: Long): Option[PlanWithId] = {
     findAll(id = Some(id), limit = 1).headOption
   }
 
   def findAll(id: Option[Long] = None,
               incidentId: Option[Long] = None,
               limit: Int = 50,
-              offset: Int = 0): Seq[ReportWithId] = {
+              offset: Int = 0): Seq[PlanWithId] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      id.map { v => "and reports.id = {id}" },
-      incidentId.map { v => "and reports.incident_id = {incident_id}" },
-      Some("order by reports.created_at desc, reports.id desc"),
+      id.map { v => "and plans.id = {id}" },
+      incidentId.map { v => "and plans.incident_id = {incident_id}" },
+      Some("order by plans.created_at desc, plans.id desc"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
@@ -84,7 +84,7 @@ object ReportsDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        ReportWithId(
+        PlanWithId(
           id = row[Long]("id"),
           incident_id = row[Long]("incident_id"),
           body = row[String]("body"),

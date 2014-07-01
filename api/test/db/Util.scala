@@ -44,20 +44,20 @@ object Util {
     IncidentTagsDao.create(user, form.getOrElse(incidentTagForm()))
   }
 
-  def reportForm(incident: Option[Incident] = None): ReportForm = {
-    ReportForm(
+  def planForm(incident: Option[Incident] = None): PlanForm = {
+    PlanForm(
       incident_id = incident.getOrElse(createIncident()).id,
       body = "test"
     )
   }
 
-  def createReport(form: Option[ReportForm] = None): Report = {
-    ReportsDao.create(user, form.getOrElse(reportForm()))
+  def createPlan(form: Option[PlanForm] = None): Plan = {
+    PlansDao.create(user, form.getOrElse(planForm()))
   }
 
-  def gradeForm(report: Option[Report] = None): GradeForm = {
+  def gradeForm(plan: Option[Plan] = None): GradeForm = {
     GradeForm(
-      report_id = createReport().id,
+      plan_id = createPlan().id,
       score = 100
     )
   }
