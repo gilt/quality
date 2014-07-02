@@ -1,5 +1,7 @@
 package db
 
+import quality.models.{ Error, Incident }
+
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
@@ -7,19 +9,6 @@ import play.api.Play.current
 import play.api.libs.json._
 import quality.models.Team
 import quality.models.json._
-
-case class Incident(
-  id: Long,
-  team: Team,
-  severity: String,
-  summary: String,
-  description: Option[String],
-  tags: Seq[String]
-)
-
-object Incident {
-  implicit val incidentWrites = Json.writes[Incident]
-}
 
 case class IncidentForm(
   team_key: String,
@@ -36,6 +25,7 @@ case class IncidentForm(
   }
 
   def validate(): Option[String] = {
+    // TODO: Return Seq[Error]
     if (teamIdOption.isEmpty) {
       Some(s"Team with key[$team_key] not found")
     } else {
@@ -155,7 +145,7 @@ object IncidentsDao {
         Incident(
           id = row[Long]("id"),
           team = Team(key = row[String]("team_key")),
-          severity = row[String]("severity"),
+          severity = Incident.Severity(row[String]("severity")),
           summary = row[String]("summary"),
           description = row[Option[String]]("description"),
           tags = Seq.empty

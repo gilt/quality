@@ -5,7 +5,7 @@ import quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{ PlansDao, PlanValidator, PlanWithId, User }
+import db.{ PlansDao, PlanForm, User }
 
 object Plans extends Controller {
 
@@ -23,20 +23,20 @@ object Plans extends Controller {
   def getById(id: Long) = Action {
     PlansDao.findById(id) match {
       case None => NotFound
-      case Some(i: PlanWithId) => Ok(Json.toJson(i))
+      case Some(i: Plan) => Ok(Json.toJson(i))
     }
   }
 
   def post() = Action(parse.json) { request =>
-    request.body.validate[Plan] match {
+    request.body.validate[PlanForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Seq(Error("100", "invalid json: " + e.toString))))
       }
-      case s: JsSuccess[Plan] => {
+      case s: JsSuccess[PlanForm] => {
         val form = s.get
-        PlanValidator.validate(form) match {
+        form.validate match {
           case Nil => {
-            val plan = PlansDao.create(User.Default, s.get)
+            val plan = PlansDao.create(User.Default, form)
             Created(Json.toJson(plan)).withHeaders(LOCATION -> routes.Plans.getById(plan.id).url)
           }
           case errors => {
@@ -50,14 +50,14 @@ object Plans extends Controller {
   def putById(id: Long) = Action(parse.json) { request =>
     PlansDao.findById(id) match {
       case None => NotFound
-      case Some(i: PlanWithId) => {
-        request.body.validate[Plan] match {
+      case Some(i: Plan) => {
+        request.body.validate[PlanForm] match {
           case e: JsError => {
             Conflict(Json.toJson(Error("100", "invalid json")))
           }
-          case s: JsSuccess[Plan] => {
+          case s: JsSuccess[PlanForm] => {
             val form = s.get
-            PlanValidator.validate(form) match {
+            form.validate match {
               case Nil => {
                 val updated = PlansDao.update(User.Default, i, s.get)
                 Created(Json.toJson(updated)).withHeaders(LOCATION -> routes.Plans.getById(updated.id).url)

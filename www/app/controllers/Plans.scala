@@ -1,12 +1,14 @@
 package controllers
 
 import client.Api
-import quality.models.Plan
+import quality.models.{ Error, Plan }
 
 import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration._
 
 object Plans extends Controller {
 
@@ -20,14 +22,57 @@ object Plans extends Controller {
       incidentResult.entity.headOption match {
         case None => Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $incidentId not found")
         case Some(incident) => {
-          Ok(views.html.plans.upload(incident, planResult.entity.headOption))
+          val form = planForm.fill(
+            PlanForm(body = planResult.entity.headOption.map(_.body).getOrElse(""))
+          )
+          Ok(views.html.plans.upload(incident, form))
         }
       }
     }
   }
 
   def postUploadByIncidentId(incidentId: Long) = Action.async { implicit request =>
-    sys.error("TODO")
+    for {
+      incidentResult <- Api.instance.Incidents.get(id = Some(incidentId))
+      planResult <- Api.instance.Plans.get(incidentId = Some(incidentId))
+    } yield {
+      val incident = incidentResult.entity.headOption.getOrElse {
+        sys.error("Invalid incident")
+      }
+
+      val boundForm = planForm.bindFromRequest
+      boundForm.fold (
+
+        formWithErrors => {
+          Ok(views.html.plans.upload(incident, formWithErrors))
+        },
+
+        planForm => {
+          Await.result(
+            Api.instance.Plans.post(
+              incidentId = incident.id,
+              body = planForm.body
+            ).map { r =>
+              Redirect(routes.Incidents.show(r.entity.id)).flashing("success" -> "Incident created")
+            }.recover {
+              case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
+                Ok(views.html.plans.upload(incident, boundForm, Some(errors.map(_.message).mkString("\n"))))
+              }
+            }
+          , 1000.millis)
+        }
+      )
+    }
   }
+
+  case class PlanForm(
+    body: String
+  )
+
+  private val planForm = Form(
+    mapping(
+      "body" -> text
+    )(PlanForm.apply)(PlanForm.unapply)
+  )
 
 }

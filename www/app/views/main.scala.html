@@ -1,4 +1,7 @@
-@(title: String, section: Option[String] = None)(content: Html)(implicit flash: Flash)
+@(title: String,
+  section: Option[String] = None,
+  errorMessage: Option[String] = None
+)(content: Html)(implicit flash: Flash)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -38,6 +41,10 @@
           @flash.get("error").map { msg => <span class="label label-error">@msg</span> }
 
           <h2>@title</h2>
+
+          @if(!errorMessage.isEmpty) {
+            <dd class="error">@errorMessage.get</dd>
+          }
 
           <p>@content</p>
 

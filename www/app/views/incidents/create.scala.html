@@ -2,9 +2,7 @@
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(title = s"Create Incident") {
-
-  <dd class="error">@errorMessage.map { msg => @msg }</dd>
+@main(title = s"Create Incident", errorMessage = errorMessage) {
 
   <div class="container">
 

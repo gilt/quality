@@ -1,9 +1,22 @@
 @(incident: quality.models.Incident,
-  plan: Option[quality.models.Plan]
+  form: Form[controllers.Plans.PlanForm],
+  errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(title = s"Upload Prevention Plan for Incident ${incident.id}") {
+@main(title = s"Upload Prevention Plan for Incident ${incident.id}", errorMessage = errorMessage) {
 
-TODO
+  @helper.form(action = routes.Plans.postUploadByIncidentId(incident.id)) {
+    <fieldset>
+      @helper.input(field = form("body"), '_label -> "Plan to Prevent Recurrence", '_error -> form.error("body")) { (id, name, value, args) =>
+        <textarea name="@name" id="@id" @toHtmlArgs(args) rows="25" cols="80">@value</textarea>
+        <span class="help-block"><a href="https://code.google.com/p/markdown4j/#Using_Markdown4j">Markdown reference</a></span>
+      }
+    </fieldset>
+
+    <div class="actions">
+      <button class="btn btn-large btn-primary" type="submit">Submit</button>
+      <a href="@routes.Incidents.show(incident.id)" class="btn">Cancel</a>
+    </div>
+  }
 
 }

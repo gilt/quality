@@ -466,18 +466,19 @@ package quality {
        * Create a plan.
        */
       def post(
-        incident: Incident,
+        incidentId: Long,
         body: String,
         grade: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Plan]] = {
         val payload = play.api.libs.json.Json.obj(
-          "incident" -> play.api.libs.json.Json.toJson(incident),
+          "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
           "body" -> play.api.libs.json.Json.toJson(body),
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
         
         POST(s"/plans", payload).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[Plan], 200)
+          case r if r.status == 201 => new ResponseImpl(r.json.as[Plan], 201)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -487,12 +488,12 @@ package quality {
        */
       def putById(
         id: Long,
-        incident: Incident,
+        incidentId: Long,
         body: String,
         grade: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Plan]] = {
         val payload = play.api.libs.json.Json.obj(
-          "incident" -> play.api.libs.json.Json.toJson(incident),
+          "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
           "body" -> play.api.libs.json.Json.toJson(body),
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
@@ -502,6 +503,7 @@ package quality {
           java.net.URLEncoder.encode(s, "UTF-8")
         })(id)}", payload).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[Plan], 200)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }

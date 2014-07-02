@@ -1,11 +1,11 @@
 package controllers
 
-import quality.models.Error
+import quality.models.{ Error, Incident }
 import quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{ IncidentsDao, Incident, IncidentForm, User }
+import db.{ IncidentsDao, IncidentForm, User }
 
 object Incidents extends Controller {
 

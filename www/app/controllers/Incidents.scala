@@ -4,8 +4,7 @@ import client.Api
 import quality.models.Incident
 import lib.{ Pagination, PaginatedCollection }
 import java.util.UUID
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration._
+import scala.concurrent.Future
 
 import play.api._
 import play.api.mvc._

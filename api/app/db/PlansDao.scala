@@ -1,33 +1,40 @@
 package db
 
-import quality.models.{ Error, Plan }
+import quality.models.{ Error, Incident, Plan, Team }
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class PlanWithId(id: Long, incident_id: Long, body: String, grade: Option[Long])
-
-object PlanWithId {
-  implicit val planWithIdWrites = Json.writes[PlanWithId]
-}
-
-object PlanValidator {
+case class PlanForm(incident_id: Long, body: String, grade: Option[Long]) {
 
   // TODO
-  def validate(plan: Plan): Seq[Error] = {
+  def validate(): Seq[Error] = {
     Seq.empty
   }
 
 }
 
+object PlanForm {
+  implicit val planFormReads = Json.reads[PlanForm]
+}
+
 object PlansDao {
 
   private val BaseQuery = """
-    select plans.id, plans.incident_id, plans.body, grades.score as grade
+    select plans.id,
+           plans.incident_id,
+           plans.body,
+           grades.score as grade_score,
+           incidents.summary as incident_summary,
+           incidents.description as incident_description,
+           incidents.severity as incident_severity,
+           teams.key as team_key
       from plans
-      left join grades on grades.plan_id = plans.id and grades.deleted_at is null
+      join incidents on incidents.deleted_at is null and incidents.id = plans.incident_id
+      join teams on teams.deleted_at is null and teams.id = incidents.team_id
+      left join grades on grades.deleted_at is null and grades.plan_id = plans.id
      where plans.deleted_at is null
   """
 
@@ -38,10 +45,10 @@ object PlansDao {
     ({incident_id}, {body}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
-  def create(user: User, form: Plan): PlanWithId = {
+  def create(user: User, form: PlanForm): Plan = {
     val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'incident_id -> form.incident.id,
+        'incident_id -> form.incident_id,
         'body -> form.body,
         'user_guid -> user.guid,
         'user_guid -> user.guid
@@ -53,22 +60,22 @@ object PlansDao {
     }
   }
 
-  def update(user: User, plan: PlanWithId, form: Plan): PlanWithId = {
+  def update(user: User, plan: Plan, form: PlanForm): Plan = {
     sys.error("TODO")
   }
 
-  def softDelete(deletedBy: User, plan: PlanWithId) {
+  def softDelete(deletedBy: User, plan: Plan) {
     SoftDelete.delete("plans", deletedBy, plan.id)
   }
 
-  def findById(id: Long): Option[PlanWithId] = {
+  def findById(id: Long): Option[Plan] = {
     findAll(id = Some(id), limit = 1).headOption
   }
 
   def findAll(id: Option[Long] = None,
               incidentId: Option[Long] = None,
               limit: Int = 50,
-              offset: Int = 0): Seq[PlanWithId] = {
+              offset: Int = 0): Seq[Plan] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and plans.id = {id}" },
@@ -84,11 +91,20 @@ object PlansDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        PlanWithId(
+        Plan(
           id = row[Long]("id"),
-          incident_id = row[Long]("incident_id"),
           body = row[String]("body"),
-          grade = row[Option[Long]]("grade")
+          grade = row[Option[Int]]("grade_score"),
+          incident = Incident(
+            id = row[Long]("incident_id"),
+            summary = row[String]("incident_summary"),
+            description = row[Option[String]]("incident_description"),
+            team = Team(
+              key = row[String]("team_key")
+            ),
+            severity = Incident.Severity(row[String]("incident_severity")),
+            tags = Nil
+          )
         )
       }.toSeq
     }

@@ -10,14 +10,6 @@
   <ul>
     <li>Team: <a href="@routes.Teams.show(incident.team.key)">@incident.team.key</a></li>
     <li>Severity: @incident.severity</li>
-    <li>Plan:
-        @if(plan.isEmpty) {
-          N/A
-        } else {
-          <a href="#plan">See below</a>
-        }
-        (<a href="@routes.Plans.uploadByIncidentId(incident.id)">Upload</a>)
-    </li>
     <li>Tags:
       @if(incident.tags.isEmpty) {
         <em>N/A</em>
@@ -33,11 +25,15 @@
     }
   </div>
 
-  @plan.map { rep =>
-    <a name="plan"></a>   
+  <p><h2>Prevention Plan</h2></p>
+
+  @if(plan.isEmpty) {
+    (<a href="@routes.Plans.uploadByIncidentId(incident.id)">Upload</a>)
+  } else {
     <div class="markdown">
-      @Html(util.Markdown.toHtml(rep.body))
+      @Html(util.Markdown.toHtml(plan.get.body))
     </div>
+    (<a href="@routes.Plans.uploadByIncidentId(incident.id)">Replace</a>)
   }
 
 }
