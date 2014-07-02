@@ -28,4 +28,15 @@ class PlansDaoSpec extends FunSpec with Matchers {
     }
   }
 
+  it("find by team key") {
+    running(FakeApplication()) {
+      val incident = Util.createIncident(Some(IncidentForm(team_key = "test-team", severity = "high", summary = "test")))
+      val plan = Util.createPlan(Some(PlanForm(incident_id = incident.id, body = "test")))
+      val other = Util.createPlan()
+
+      PlansDao.findAll(teamKey = Some("test-team")).map(_.id).sorted should be(Seq(plan.id))
+      PlansDao.findAll(teamKey = Some("wrong-name")).map(_.id).sorted should be(Seq.empty)
+    }
+  }
+
 }

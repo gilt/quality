@@ -26,7 +26,7 @@
                 { "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
                 { "name": "team", "type": "team", "description": "Team responsible for resolution of this incident" },
                 { "name": "severity", "type": "string", "values": ["low", "high"] },
-		{ "name": "tags", "type": "[string]", "required": false, "description": "Optional list of tags to apply to this incident" }
+		        { "name": "tags", "type": "[string]", "required": false, "description": "Optional list of tags to apply to this incident" }
             ]
         },
 
@@ -181,6 +181,7 @@
                     "parameters": [
                         { "name": "id", "type": "long", "description": "Find plan with this id. Exact match", "required": false },
                         { "name": "incident_id", "type": "long", "description": "Find plan for this incident_id", "required": false },
+                        { "name": "team_key", "type": "string", "description": "Find all plans for requested team", "required": false},
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],

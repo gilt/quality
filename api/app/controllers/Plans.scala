@@ -9,10 +9,11 @@ import db.{ PlansDao, PlanForm, User }
 
 object Plans extends Controller {
 
-  def get(id: Option[Long], incident_id: Option[Long], limit: Int = 25, offset: Int = 0) = Action { Request =>
+  def get(id: Option[Long], incident_id: Option[Long], team_key: Option[String], limit: Int = 25, offset: Int = 0) = Action { Request =>
     val matches = PlansDao.findAll(
       id = id,
       incidentId = incident_id,
+      teamKey = team_key,
       limit = limit,
       offset = offset
     )

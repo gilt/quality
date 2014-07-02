@@ -93,19 +93,22 @@ object PlansDao {
 
   def findAll(id: Option[Long] = None,
               incidentId: Option[Long] = None,
+              teamKey: Option[String] = None,
               limit: Int = 50,
               offset: Int = 0): Seq[Plan] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and plans.id = {id}" },
       incidentId.map { v => "and plans.incident_id = {incident_id}" },
+      teamKey.map {v => "and teams.key = {team_key}"},
       Some("order by plans.created_at desc, plans.id desc"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
       id.map { v => NamedParameter("id", toParameterValue(v)) },
-      incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) }
+      incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
+      teamKey.map {v => NamedParameter("team_key", v)}
     ).flatten
 
     DB.withConnection { implicit c =>
