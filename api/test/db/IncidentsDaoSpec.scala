@@ -12,7 +12,7 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
       val incident = Util.createIncident()
       val fetched = IncidentsDao.findById(incident.id).get
       fetched.id should be(incident.id)
-      fetched.team_key should be(incident.team_key)
+      fetched.team.key should be(incident.team.key)
       fetched.severity should be(incident.severity)
       fetched.description should be(incident.description)
     }

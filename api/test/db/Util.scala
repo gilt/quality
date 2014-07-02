@@ -1,5 +1,6 @@
 package db
 
+import quality.models.{ Incident, Plan }
 import java.util.UUID
 
 object Util {

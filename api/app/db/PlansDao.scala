@@ -7,7 +7,7 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class PlanForm(incident_id: Long, body: String, grade: Option[Long]) {
+case class PlanForm(incident_id: Long, body: String, grade: Option[Long] = None) {
 
   // TODO
   def validate(): Seq[Error] = {

@@ -12,7 +12,7 @@ class PlansDaoSpec extends FunSpec with Matchers {
       val plan = Util.createPlan()
       val fetched = PlansDao.findById(plan.id).get
       fetched.id should be(plan.id)
-      fetched.incident_id should be(plan.incident_id)
+      fetched.incident.id should be(plan.incident.id)
       fetched.body should be(plan.body)
     }
   }
