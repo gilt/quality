@@ -45,6 +45,14 @@ object PlansDao {
     ({incident_id}, {body}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
+  private val UpdateQuery = """
+    update plans
+       set incident_id = {incident_id},
+           body = {body},
+           updated_by_guid = {user_guid}::uuid
+     where id = {id}
+  """
+
   def create(user: User, form: PlanForm): Plan = {
     val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
@@ -61,7 +69,18 @@ object PlansDao {
   }
 
   def update(user: User, plan: Plan, form: PlanForm): Plan = {
-    sys.error("TODO")
+    DB.withConnection { implicit c =>
+      SQL(UpdateQuery).on(
+        'id -> plan.id,
+        'incident_id -> form.incident_id,
+        'body -> form.body,
+        'user_guid -> user.guid
+      ).executeUpdate()
+    }
+
+    findById(plan.id).getOrElse {
+      sys.error("Failed to update plan")
+    }
   }
 
   def softDelete(deletedBy: User, plan: Plan) {

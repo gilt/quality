@@ -11,7 +11,8 @@ POST    /incidents/delete/:id                                     controllers.In
 GET     /incidents/:id                                            controllers.Incidents.show(id: Long)
 
 GET     /plans/uploadByIncidentId/:incident_id                    controllers.Plans.uploadByIncidentId(incident_id: Long)
-POST    /plans/postUploadByIncidentId/:incident_id                controllers.Plans.postUploadByIncidentId(incident_id: Long)
+POST    /plans/uploadByIncidentId/:incident_id                    controllers.Plans.postUploadByIncidentId(incident_id: Long)
+POST    /plans/deleteById/:id                                     controllers.Plans.postDeleteById(id: Long, incident_id: Long)
 
 GET     /teams/                                                   controllers.Teams.index(key: Option[String] ?= None, page: Int ?= 0)
 GET     /teams/create                                             controllers.Teams.create()

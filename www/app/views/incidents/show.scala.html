@@ -2,10 +2,7 @@
   plan: Option[quality.models.Plan]
 )(implicit flash: Flash)
 
-@main(title = s"Incident ${incident.summary}") {
-
-  <a href="@routes.Incidents.edit(incident.id)">Edit</a> |
-  <a href="@routes.Incidents.postDeleteById(incident.id)" class="delete" data-confirm="Are you sure to delete this incident?">Delete</a>
+@main(title = s"#${incident.id}: ${incident.summary}") {
 
   <ul>
     <li>Team: <a href="@routes.Teams.show(incident.team.key)">@incident.team.key</a></li>
@@ -16,6 +13,9 @@
       } else {
         @Html(incident.tags.mkString("<ul><li>", "</li><li>", "</li></ul>"))
       }
+    </li>
+    <li><a href="@routes.Incidents.edit(incident.id)">Edit</a> |
+        <a href="@routes.Incidents.postDeleteById(incident.id)" class="delete" data-confirm="Are you sure to delete this incident?">Delete</a>
     </li>
   </ul>
 
@@ -28,12 +28,14 @@
   <p><h2>Prevention Plan</h2></p>
 
   @if(plan.isEmpty) {
-    (<a href="@routes.Plans.uploadByIncidentId(incident.id)">Upload</a>)
+    <p><em>No plan</em></p>
+    (<a href="@routes.Plans.uploadByIncidentId(incident.id)">Create</a>)
   } else {
     <div class="markdown">
       @Html(util.Markdown.toHtml(plan.get.body))
     </div>
-    (<a href="@routes.Plans.uploadByIncidentId(incident.id)">Replace</a>)
+    <a href="@routes.Plans.uploadByIncidentId(incident.id)">Edit</a> |
+    <a href="@routes.Plans.postDeleteById(plan.get.id, incident.id)" class="delete" data-confirm="Are you sure to delete this plan?">Delete</a>
   }
 
 }

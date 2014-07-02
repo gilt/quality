@@ -60,7 +60,7 @@ object Plans extends Controller {
             form.validate match {
               case Nil => {
                 val updated = PlansDao.update(User.Default, i, s.get)
-                Created(Json.toJson(updated)).withHeaders(LOCATION -> routes.Plans.getById(updated.id).url)
+                Ok(Json.toJson(updated)).withHeaders(LOCATION -> routes.Plans.getById(updated.id).url)
               }
               case errors => {
                 Conflict(Json.toJson(errors))

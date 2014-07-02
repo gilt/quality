@@ -14,6 +14,14 @@ object Plans extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  def postDeleteById(id: Long, incidentId: Long) = Action.async { implicit request =>
+    for {
+      planResult <- Api.instance.Plans.deleteById(id)
+    } yield {
+      Redirect(routes.Incidents.show(incidentId)).flashing("success" -> s"Plan deleted")
+    }
+  }
+
   def uploadByIncidentId(incidentId: Long) = Action.async { implicit request =>
     for {
       incidentResult <- Api.instance.Incidents.get(id = Some(incidentId))
@@ -48,18 +56,43 @@ object Plans extends Controller {
         },
 
         planForm => {
-          Await.result(
-            Api.instance.Plans.post(
-              incidentId = incident.id,
-              body = planForm.body
-            ).map { r =>
-              Redirect(routes.Incidents.show(r.entity.id)).flashing("success" -> "Incident created")
-            }.recover {
-              case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
-                Ok(views.html.plans.upload(incident, boundForm, Some(errors.map(_.message).mkString("\n"))))
-              }
+          planResult.entity.headOption match {
+
+            case None => {
+              Await.result(
+                Api.instance.Plans.post(
+                  incidentId = incident.id,
+                  body = planForm.body
+                ).map { r =>
+                  Redirect(routes.Incidents.show(r.entity.id)).flashing("success" -> "Plan created")
+                }.recover {
+                  case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
+                    Ok(views.html.plans.upload(incident, boundForm, Some(errors.map(_.message).mkString("\n"))))
+                  }
+                }
+                , 1000.millis
+              )
             }
-          , 1000.millis)
+
+            case Some(plan: Plan) => {
+              Await.result(
+                Api.instance.Plans.putById(
+                  id = plan.id,
+                  incidentId = incident.id,
+                  body = planForm.body
+                ).map { r =>
+                  Redirect(routes.Incidents.show(r.entity.id)).flashing("success" -> "Plan updated")
+                }.recover {
+                  case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
+                    Ok(views.html.plans.upload(incident, boundForm, Some(errors.map(_.message).mkString("\n"))))
+                  }
+                }
+                , 1000.millis
+              )
+            }
+
+          }
+
         }
       )
     }
