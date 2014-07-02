@@ -3,6 +3,7 @@
 <table class="table table-hover table-condensed">
   <thead>
     <tr>
+      <th>#</th>
       <th>Severity</th>
       <th>Team</th>
       <th>Summary</th>
@@ -11,6 +12,7 @@
   <tbody>
     @incidents.map { incident =>
      <tr>
+       <td><a href="@routes.Incidents.show(incident.id)">@incident.id</a></td>
        <td><a href="@routes.Incidents.show(incident.id)">@incident.severity</a></td>
        <td><a href="@routes.Teams.show(incident.team.key)">@incident.team.key</a></td>
        <td><a href="@routes.Incidents.show(incident.id)">@incident.summary</a></td>
