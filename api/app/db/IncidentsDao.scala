@@ -62,6 +62,7 @@ object IncidentsDao {
            severity = {severity},
            summary = {summary},
            description = {description},
+           updated_at = now(),
            updated_by_guid = {user_guid}::uuid
      where id = {id}
   """

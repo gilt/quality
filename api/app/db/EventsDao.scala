@@ -24,13 +24,12 @@ object EventsDao {
              else 'updated'
            end as action
       from %s
-     where %s.deleted_at is null
      order by %s.updated_at desc
      limit %s
   """
 
   private def modelQuery(model: String, table: String, maxRecords: Integer): String = {
-    ModelQueryTemplate.format(model, table, table, table, table, table, table, table, maxRecords).trim
+    ModelQueryTemplate.format(model, table, table, table, table, table, table, maxRecords).trim
   }
 
   def findAll(

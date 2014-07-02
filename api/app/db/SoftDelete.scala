@@ -7,7 +7,7 @@ import play.api.Play.current
 private[db] object SoftDelete {
 
   private val SoftDeleteQuery = """
-    update %s set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where id = {id} and deleted_at is null
+    update %s set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now(), updated_at = now() where id = {id} and deleted_at is null
   """
 
   def delete(tableName: String, deletedBy: User, id: Long) {

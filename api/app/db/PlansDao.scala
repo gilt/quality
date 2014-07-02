@@ -49,6 +49,7 @@ object PlansDao {
     update plans
        set incident_id = {incident_id},
            body = {body},
+           updated_at = now(),
            updated_by_guid = {user_guid}::uuid
      where id = {id}
   """
