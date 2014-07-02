@@ -3,6 +3,83 @@ package quality.models {
     code: String,
     message: String
   )
+  case class Event(
+    model: Event.Model,
+    action: Event.Action,
+    timestamp: org.joda.time.DateTime,
+    url: scala.Option[String] = None
+  )
+  object Event {
+
+    sealed trait Model
+
+    object Model {
+
+      case object Incident extends Model { override def toString = "incident" }
+      case object Plan extends Model { override def toString = "plan" }
+
+      /**
+       * UNDEFINED captures values that are sent either in error or
+       * that were added by the server after this library was
+       * generated. We want to make it easy and obvious for users of
+       * this library to handle this case gracefully.
+       *
+       * We use all CAPS for the variable name to avoid collisions
+       * with the camel cased values above.
+       */
+      case class UNDEFINED(override val toString: String) extends Model
+
+      /**
+       * all returns a list of all the valid, known values. We use
+       * lower case to avoid collisions with the camel cased values
+       * above.
+       */
+      val all = Seq(Incident, Plan)
+
+      private[this]
+      val byName = all.map(x => x.toString -> x).toMap
+
+      def apply(value: String): Model = fromString(value).getOrElse(UNDEFINED(value))
+
+      def fromString(value: String): Option[Model] = byName.get(value)
+
+    }
+
+    sealed trait Action
+
+    object Action {
+
+      case object Created extends Action { override def toString = "created" }
+      case object Updated extends Action { override def toString = "updated" }
+      case object Deleted extends Action { override def toString = "deleted" }
+
+      /**
+       * UNDEFINED captures values that are sent either in error or
+       * that were added by the server after this library was
+       * generated. We want to make it easy and obvious for users of
+       * this library to handle this case gracefully.
+       *
+       * We use all CAPS for the variable name to avoid collisions
+       * with the camel cased values above.
+       */
+      case class UNDEFINED(override val toString: String) extends Action
+
+      /**
+       * all returns a list of all the valid, known values. We use
+       * lower case to avoid collisions with the camel cased values
+       * above.
+       */
+      val all = Seq(Created, Updated, Deleted)
+
+      private[this]
+      val byName = all.map(x => x.toString -> x).toMap
+
+      def apply(value: String): Action = fromString(value).getOrElse(UNDEFINED(value))
+
+      def fromString(value: String): Option[Action] = byName.get(value)
+
+    }
+  }
   case class Healthcheck(
     status: String
   )
@@ -85,6 +162,18 @@ package quality.models {
       }
     }
 
+    implicit val jsonReadsEvent_Model = __.read[String].map(Event.Model.apply)
+    
+    implicit val jsonWritesEvent_Model = new Writes[Event.Model] {
+      def writes(x: Event.Model) = JsString(x.toString)
+    }
+    
+    implicit val jsonReadsEvent_Action = __.read[String].map(Event.Action.apply)
+    
+    implicit val jsonWritesEvent_Action = new Writes[Event.Action] {
+      def writes(x: Event.Action) = JsString(x.toString)
+    }
+    
     implicit val jsonReadsIncident_Severity = __.read[String].map(Incident.Severity.apply)
     
     implicit val jsonWritesIncident_Severity = new Writes[Incident.Severity] {
@@ -105,6 +194,26 @@ package quality.models {
         import play.api.libs.functional.syntax._
         ((__ \ "code").write[String] and
          (__ \ "message").write[String])(unlift(Error.unapply))
+      }
+    
+    implicit def readsEvent: play.api.libs.json.Reads[Event] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "model").read[Event.Model] and
+         (__ \ "action").read[Event.Action] and
+         (__ \ "timestamp").read[org.joda.time.DateTime] and
+         (__ \ "url").readNullable[String])(Event.apply _)
+      }
+    
+    implicit def writesEvent: play.api.libs.json.Writes[Event] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "model").write[Event.Model] and
+         (__ \ "action").write[Event.Action] and
+         (__ \ "timestamp").write[org.joda.time.DateTime] and
+         (__ \ "url").write[scala.Option[String]])(unlift(Event.unapply))
       }
     
     implicit def readsHealthcheck: play.api.libs.json.Reads[Healthcheck] =
@@ -271,6 +380,54 @@ package quality {
       processResponse(logRequest("DELETE", requestHolder(path)).delete())
     }
 
+    object Events {
+      /**
+       * Search all events. Results are always paginated. Events are sorted in time order
+       * - the first record is the most recent event.
+       */
+      def get(
+        model: scala.Option[String] = None,
+        action: scala.Option[String] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Event]]] = {
+        val queryBuilder = List.newBuilder[(String, String)]
+        queryBuilder ++= model.map { x =>
+          "model" -> (
+            { x: String =>
+              x
+            }
+          )(x)
+        }
+        queryBuilder ++= action.map { x =>
+          "action" -> (
+            { x: String =>
+              x
+            }
+          )(x)
+        }
+        queryBuilder ++= limit.map { x =>
+          "limit" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= offset.map { x =>
+          "offset" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
+        
+        GET(s"/events", queryBuilder.result).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Event]], 200)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+    }
+    
     object Healthchecks {
       def get(
       
@@ -423,6 +580,7 @@ package quality {
       def get(
         id: scala.Option[Long] = None,
         incidentId: scala.Option[Long] = None,
+        teamKey: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Plan]]] = {
@@ -438,6 +596,13 @@ package quality {
           "incident_id" -> (
             { x: Long =>
               x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= teamKey.map { x =>
+          "team_key" -> (
+            { x: String =>
+              x
             }
           )(x)
         }
