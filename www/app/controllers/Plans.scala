@@ -64,7 +64,7 @@ object Plans extends Controller {
                   incidentId = incident.id,
                   body = planForm.body
                 ).map { r =>
-                  Redirect(routes.Incidents.show(r.entity.id)).flashing("success" -> "Plan created")
+                  Redirect(routes.Incidents.show(r.entity.incident.id)).flashing("success" -> "Plan created")
                 }.recover {
                   case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
                     Ok(views.html.plans.upload(incident, boundForm, Some(errors.map(_.message).mkString("\n"))))
@@ -81,7 +81,7 @@ object Plans extends Controller {
                   incidentId = incident.id,
                   body = planForm.body
                 ).map { r =>
-                  Redirect(routes.Incidents.show(r.entity.id)).flashing("success" -> "Plan updated")
+                  Redirect(routes.Incidents.show(r.entity.incident.id)).flashing("success" -> "Plan updated")
                 }.recover {
                   case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
                     Ok(views.html.plans.upload(incident, boundForm, Some(errors.map(_.message).mkString("\n"))))
