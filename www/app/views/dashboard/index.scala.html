@@ -1,5 +1,5 @@
 @(teams: lib.PaginatedCollection[quality.models.Team],
-  incidents: Seq[quality.models.Incident]
+  events: Seq[quality.models.Event]
 )(implicit flash: Flash)
 
 @main(title = "Gilt Quality", section = Some("dashboard")) {
@@ -31,7 +31,21 @@
     </ul>
   }
 
-  <h2>Latest Incidents</h2>
-  @views.html.incidents.incidentsTable(incidents)
+  <h2>Latest Events</h2>
+  <table class="table table-hover table-condensed">
+    <tbody>
+      @events.map { event =>
+        <tr>
+          <td>@event.timestamp</td>
+          <td>@event.action</td>
+          @{event.model match {
+            case quality.models.Event.Model.Incident => Html(s"<td><a href='${event.url.getOrElse("")}'>Incident #${event.data.modelId}: ${event.data.summary}</a></td>")
+            case quality.models.Event.Model.Plan => Html(s"<td><a href='${event.url.getOrElse("")}'>${event.data.summary}</a></td>")
+            case quality.models.Event.Model.UNDEFINED(name) => Html(s"<td>$name</td>")
+          }}
+       </tr>
+     }
+    </tbody>
+  </table>
 
 }

@@ -1,6 +1,6 @@
 package db
 
-import quality.models.Event
+import quality.models.{ Event, EventData }
 import anorm._
 import AnormHelper._
 import anorm.ParameterValue._
@@ -10,27 +10,36 @@ import play.api.libs.json._
 
 object EventsDao {
 
-  private val qualityUrl = current.configuration.getString("quality.url").getOrElse {
-    sys.error(s"configuration parameter[quality.url] is required")
-  }
-
-  private val ModelQueryTemplate = """
-    select '%s' as model,
-           %s.id as model_id,
-           %s.updated_at as timestamp,
+  private val IncidentsQuery = """
+    select 'incident' as model,
+           incidents.id as model_id,
+           incidents.updated_at as timestamp,
+           incidents.summary as summary,
            case
-             when deleted_at is not null then 'deleted'
-             when %s.created_at + interval '1 second' >= %s.updated_at then 'created'
+             when incidents.deleted_at is not null then 'deleted'
+             when incidents.created_at + interval '1 second' >= incidents.updated_at then 'created'
              else 'updated'
            end as action
-      from %s
-     order by %s.updated_at desc
+      from incidents
+     order by incidents.updated_at desc
      limit %s
   """
 
-  private def modelQuery(model: String, table: String, maxRecords: Integer): String = {
-    ModelQueryTemplate.format(model, table, table, table, table, table, table, maxRecords).trim
-  }
+  private val PlansQuery = """
+    select 'plan' as model,
+           plans.id as model_id,
+           plans.updated_at as timestamp,
+           'Plan for Incident #' || incidents.id || ': ' || incidents.summary as summary,
+           case
+             when plans.deleted_at is not null then 'deleted'
+             when plans.created_at + interval '1 second' >= plans.updated_at then 'created'
+             else 'updated'
+           end as action
+      from plans
+      join incidents on incidents.id = plans.incident_id
+     order by plans.updated_at desc
+     limit %s
+  """
 
   def findAll(
     limit: Int = 50,
@@ -41,20 +50,26 @@ object EventsDao {
 
     val sql = "select * from (\n" + 
       Seq(
-        "(" + modelQuery("incident", "incidents", max) + ")",
-        "(" + modelQuery("plan", "plans", max) + ")"
+        "(" + IncidentsQuery.format(max) + ")",
+        "(" + PlansQuery.format(max) + ")"
       ).mkString("\n UNION ALL \n") +
       s"\n) events order by events.timestamp desc limit ${limit} offset ${offset}"
 
     DB.withConnection { implicit c =>
       SQL(sql)().toList.map { row =>
         val model = Event.Model(row[String]("model"))
+        val modelId = row[Long]("model_id")
         val action = Event.Action(row[String]("action"))
+
         Event(
           model = model,
           action = action,
           timestamp = row[org.joda.time.DateTime]("timestamp"),
-          url = buildUrl(action, model, row[Long]("model_id"))
+          url = buildUrl(action, model, modelId),
+          data = EventData(
+            modelId = modelId,
+            summary = row[String]("summary")
+          )
         )
       }.toSeq
     }
@@ -65,8 +80,8 @@ object EventsDao {
     action match {
       case Event.Action.Created | Event.Action.Updated => {
         model match {
-          case Event.Model.Incident => Some(s"$qualityUrl/incidents/$id")
-          case Event.Model.Plan => Some(s"$qualityUrl/plans/$id")
+          case Event.Model.Incident => Some(s"/incidents/$id")
+          case Event.Model.Plan => Some(s"/plans/$id")
           case Event.Model.UNDEFINED(_) => None
         }
       }

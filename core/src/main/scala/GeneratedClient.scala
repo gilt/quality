@@ -7,7 +7,8 @@ package quality.models {
     model: Event.Model,
     action: Event.Action,
     timestamp: org.joda.time.DateTime,
-    url: scala.Option[String] = None
+    url: scala.Option[String] = None,
+    data: EventData
   )
   object Event {
 
@@ -80,6 +81,10 @@ package quality.models {
 
     }
   }
+  case class EventData(
+    modelId: Long,
+    summary: String
+  )
   case class Healthcheck(
     status: String
   )
@@ -203,7 +208,8 @@ package quality.models {
         ((__ \ "model").read[Event.Model] and
          (__ \ "action").read[Event.Action] and
          (__ \ "timestamp").read[org.joda.time.DateTime] and
-         (__ \ "url").readNullable[String])(Event.apply _)
+         (__ \ "url").readNullable[String] and
+         (__ \ "data").read[EventData])(Event.apply _)
       }
     
     implicit def writesEvent: play.api.libs.json.Writes[Event] =
@@ -213,7 +219,24 @@ package quality.models {
         ((__ \ "model").write[Event.Model] and
          (__ \ "action").write[Event.Action] and
          (__ \ "timestamp").write[org.joda.time.DateTime] and
-         (__ \ "url").write[scala.Option[String]])(unlift(Event.unapply))
+         (__ \ "url").write[scala.Option[String]] and
+         (__ \ "data").write[EventData])(unlift(Event.unapply))
+      }
+    
+    implicit def readsEventData: play.api.libs.json.Reads[EventData] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "model_id").read[Long] and
+         (__ \ "summary").read[String])(EventData.apply _)
+      }
+    
+    implicit def writesEventData: play.api.libs.json.Writes[EventData] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "model_id").write[Long] and
+         (__ \ "summary").write[String])(unlift(EventData.unapply))
       }
     
     implicit def readsHealthcheck: play.api.libs.json.Reads[Healthcheck] =

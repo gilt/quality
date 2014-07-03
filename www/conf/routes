@@ -10,6 +10,7 @@ POST    /incidents/postEdit                                       controllers.In
 POST    /incidents/delete/:id                                     controllers.Incidents.postDeleteById(id: Long)
 GET     /incidents/:id                                            controllers.Incidents.show(id: Long)
 
+GET     /plans/:id                                                controllers.Plans.getById(id: Long)
 GET     /plans/uploadByIncidentId/:incident_id                    controllers.Plans.uploadByIncidentId(incident_id: Long)
 POST    /plans/uploadByIncidentId/:incident_id                    controllers.Plans.postUploadByIncidentId(incident_id: Long)
 POST    /plans/deleteById/:id                                     controllers.Plans.postDeleteById(id: Long, incident_id: Long)
