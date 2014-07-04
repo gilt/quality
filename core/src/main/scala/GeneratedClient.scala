@@ -697,6 +697,27 @@ package quality {
       }
       
       /**
+       * Update the grade assigned to a plan.
+       */
+      def putGradeById(
+        id: Long,
+        grade: Int
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Plan]] = {
+        val payload = play.api.libs.json.Json.obj(
+          "grade" -> play.api.libs.json.Json.toJson(grade)
+        )
+        
+        PUT(s"/plans/${({x: Long =>
+          val s = x.toString
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(id)}/grade", payload).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[Plan], 200)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+      
+      /**
        * Get a single plan.
        */
       def getById(

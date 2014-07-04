@@ -106,6 +106,21 @@ object Plans extends Controller {
     }
   }
 
+  def postGrade(id: Long, grade: Int) = Action.async { implicit request =>
+    Api.instance.Plans.getById(id).map { response =>
+      val plan = response.entity
+      Await.result(
+        Api.instance.Plans.putGradeById(
+          id = plan.id,
+          grade = grade
+        ).map { r =>
+          Redirect(routes.Incidents.show(r.entity.incident.id)).flashing("success" -> "Plan updated")
+        }
+        , 1000.millis
+      )
+    }
+  }
+
   case class PlanForm(
     body: String
   )

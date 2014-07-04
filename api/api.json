@@ -257,6 +257,19 @@
                 },
 
 		{
+		    "method": "PUT",
+                    "description": "Update the grade assigned to a plan.",
+		    "path": "/:id/grade",
+                    "parameters": [
+                        { "name": "grade", "type": "integer" }
+                    ],
+                    "responses": {
+                        "200": { "type": "plan" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+		{
 		    "method": "GET",
                     "description": "Get a single plan.",
                     "path": "/:id",

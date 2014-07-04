@@ -35,14 +35,14 @@ object GradesDao {
     ({plan_id}, {score}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
-  def create(user: User, form: GradeForm): Grade = {
-    val id: Long = DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
-        'plan_id -> form.plan_id,
-        'score -> form.score,
-        'user_guid -> user.guid,
-        'user_guid -> user.guid
-      ).executeInsert().getOrElse(sys.error("Missing id"))
+  private val SoftDeleteByPlanIdQuery = """
+    update grades set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now(), updated_at = now() where plan_id = {plan_id} and deleted_at is null
+  """
+
+  def upsert(user: User, form: GradeForm): Grade = {
+    val id = DB.withTransaction { implicit c =>
+      SQL(SoftDeleteByPlanIdQuery).on('deleted_by_guid -> user.guid, 'plan_id -> form.plan_id).execute()
+      create(c, user, form)
     }
 
     findById(id).getOrElse {
@@ -50,8 +50,13 @@ object GradesDao {
     }
   }
 
-  def softDelete(deletedBy: User, plan: Grade) {
-    SoftDelete.delete("grades", deletedBy, plan.id)
+  private[db] def create(implicit c: java.sql.Connection, user: User, form: GradeForm): Long = {
+    SQL(InsertQuery).on(
+      'plan_id -> form.plan_id,
+      'score -> form.score,
+      'user_guid -> user.guid,
+      'user_guid -> user.guid
+    ).executeInsert().getOrElse(sys.error("Missing id"))
   }
 
   def findById(id: Long): Option[Grade] = {

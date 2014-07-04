@@ -31,6 +31,14 @@
     <p><em>No plan</em></p>
     (<a href="@routes.Plans.uploadByIncidentId(incident.id)">Create</a>)
   } else {
+    @if(plan.get.grade.isEmpty) {
+      Rate this plan:
+      <a href="@routes.Plans.postGrade(plan.get.id, lib.GradeImage.Good)" class="postForm">Good</a> |
+      <a href="@routes.Plans.postGrade(plan.get.id, lib.GradeImage.Bad)" class="postForm">Bad</a>
+    } else {
+      @Html(lib.GradeImage(plan.get.grade.get).imageTag)
+    }
+
     <div class="markdown">
       @Html(util.Markdown.toHtml(plan.get.body))
     </div>
