@@ -14,6 +14,14 @@ object Plans extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  def getById(id: Long) = Action.async { implicit request =>
+    for {
+      planResult <- Api.instance.Plans.getById(id)
+    } yield {
+      Redirect(routes.Incidents.show(planResult.entity.incident.id))
+    }
+  }
+
   def postDeleteById(id: Long, incidentId: Long) = Action.async { implicit request =>
     for {
       planResult <- Api.instance.Plans.deleteById(id)

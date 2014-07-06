@@ -1,4 +1,5 @@
 GET        /_internal_/healthcheck     controllers.Healthchecks.get()
+GET        /events                     controllers.Events.get(limit: Int ?= 25, offset: Int ?= 0)
 GET        /incidents                  controllers.Incidents.get(id: Option[Long], team_key: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 GET        /incidents/:id              controllers.Incidents.getById(id: Long)
 POST       /incidents                  controllers.Incidents.post()

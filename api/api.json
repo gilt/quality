@@ -11,6 +11,25 @@
 	    ]
 	},
 
+	"event_data": {
+            "description": "Generic, descriptive data about a specific event",
+            "fields": [
+                { "name": "model_id", "type": "long", "description": "The actual ID of the model instance that generated the event" },
+                { "name": "summary", "type": "string", "description": "Human readable description of the event" }
+	    ]
+	},
+
+	"event": {
+            "description": "Represents something that has happened - e.g. a team was created, an incident created, a plan updated, etc.",
+            "fields": [
+                { "name": "model", "type": "string", "description": "The name of the model that was the subject of the event", "values": ["incident", "plan"] },
+		{ "name": "action", "type": "string", "description": "The action that occurred to this model", "values": ["created", "updated", "deleted"] },
+		{ "name": "timestamp", "type": "date-time-iso8601", "description": "The timestamp on which this event occurred" },
+                { "name": "url", "type": "string", "description": "The location to fetch more information about this resource, if applicable. URL will be empty in the case of events that delete a model instance (as one example)", "required": false },
+                { "name": "data", "type": "event_data", "description": "Basic summary information about the object and the event. The intent is to use this data to quickly summarize the event - for detailed informations, callers should issue an HTTP GET to the URL" }
+            ]
+	},
+
         "team": {
             "description": "A team is the main actor in the system. Teams have a unique key and own incidents",
             "fields": [
@@ -58,6 +77,24 @@
                     "method": "GET",
                     "responses": {
                         "200": { "type": "[healthcheck]" }
+                    }
+                }
+	    ]
+	},
+
+	"event": {
+            "operations": [
+		{
+		    "method": "GET",
+		    "description": "Search all events. Results are always paginated. Events are sorted in time order - the first record is the most recent event.",
+                    "parameters": [
+                        { "name": "model", "type": "string", "description": "Find events on this model", "required": false },
+                        { "name": "action", "type": "string", "description": "Find events with this action", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[event]" }
                     }
                 }
 	    ]

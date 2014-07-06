@@ -22,7 +22,7 @@ object Util {
   def incidentForm() = {
     IncidentForm(
       team_key = "architecture",
-      severity = "low",
+      severity = Incident.Severity.Low.toString,
       summary = "Something happened",
       description = None
     )
