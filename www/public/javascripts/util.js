@@ -9,4 +9,12 @@ $(function(){
       }
     });
   });
+
+  $('a.postForm').each(function(i, el) {
+    el.addEventListener('click', function(event) {
+      event.preventDefault();
+      var href = this.getAttribute('href');
+      $('<form method="post" action="' + href + '"></form>').appendTo('body').submit();
+    });
+  });
 });

@@ -63,8 +63,8 @@ object Util {
     )
   }
 
-  def createGrade(form: Option[GradeForm] = None): Grade = {
-    GradesDao.create(user, form.getOrElse(gradeForm()))
+  def upsertGrade(form: Option[GradeForm] = None): Grade = {
+    GradesDao.upsert(user, form.getOrElse(gradeForm()))
   }
 
 }

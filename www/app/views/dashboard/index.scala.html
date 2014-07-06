@@ -14,7 +14,13 @@
       @teams.items.map { team =>
        <tr>
          <td>@team.key</td>
-         <td><img src="/assets/images/smiley.png" height="42" width="42" /> <img src="/assets/images/smiley.png" height="42" width="42" /> <img src="/assets/images/smiley.png" height="42" width="42" /> <img src="/assets/images/frowny.png" height="42" width="42" /></td>
+         <td>
+           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag)
+           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag)
+           @Html(lib.GradeImage(lib.GradeImage.Bad).imageTag)
+           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag)
+           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag)
+         </td>
        </tr>
      }
     </tbody>

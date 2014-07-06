@@ -5,7 +5,7 @@ import quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{ PlansDao, PlanForm, User }
+import db.{ GradeForm, GradesDao, PlansDao, PlanForm, User }
 
 object Plans extends Controller {
 
@@ -66,6 +66,27 @@ object Plans extends Controller {
               case errors => {
                 Conflict(Json.toJson(errors))
               }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  def putGradeById(id: Long) = Action(parse.json) { request =>
+    (request.body \ "grade").asOpt[Int] match {
+      case None => Conflict(Json.toJson(Seq(Error("100", "missing grade in json body"))))
+      case Some(grade: Int) => {
+        if (grade < 0 || grade > 100) {
+          Conflict(Json.toJson(Seq(Error("101", s"grade[$grade] must be >= 0 and <= 100"))))
+        } else {
+          PlansDao.findById(id) match {
+            case None => NotFound
+            case Some(plan: Plan) => {
+              val form = GradeForm(plan_id = plan.id, score = grade)
+              GradesDao.upsert(User.Default, form)
+              val updated = PlansDao.findById(id).get
+              Ok(Json.toJson(updated)).withHeaders(LOCATION -> routes.Plans.getById(updated.id).url)
             }
           }
         }

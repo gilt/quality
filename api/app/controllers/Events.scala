@@ -8,8 +8,9 @@ import play.api.libs.json._
 
 object Events extends Controller {
 
-  def get(limit: Int = 25, offset: Int = 0) = Action { request =>
+  def get(model: Option[String], action: Option[String], limit: Int = 25, offset: Int = 0) = Action { request =>
     val events = EventsDao.findAll(
+      model = model,
       limit = limit,
       offset = offset
     )
