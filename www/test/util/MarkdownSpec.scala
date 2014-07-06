@@ -7,8 +7,8 @@ import play.api.test.Helpers._
 class MarkdownSpec extends FunSpec with Matchers {
 
   it("converts to html") {
-    Markdown.toHtml("a") should be("a")
-    Markdown.toHtml("this is **bold** text") should be("this is <b>bold</b> text")
+    Markdown.toHtml("a").trim should be("<p>a</p>")
+    Markdown.toHtml("this is **bold** text").trim should be("<p>this is <strong>bold</strong> text</p>")
   }
 
 }
