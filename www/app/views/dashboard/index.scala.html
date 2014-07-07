@@ -47,6 +47,7 @@
           @{event.model match {
             case quality.models.Event.Model.Incident => Html(s"<td><a href='${event.url.getOrElse("")}'>Incident #${event.data.modelId}: ${event.data.summary}</a></td>")
             case quality.models.Event.Model.Plan => Html(s"<td><a href='${event.url.getOrElse("")}'>${event.data.summary}</a></td>")
+            case quality.models.Event.Model.Rating => Html(s"<td><a href='${event.url.getOrElse("")}'>${event.data.summary}</a></td>")
             case quality.models.Event.Model.UNDEFINED(name) => Html(s"<td>$name</td>")
           }}
        </tr>

@@ -22,7 +22,7 @@
 	"event": {
             "description": "Represents something that has happened - e.g. a team was created, an incident created, a plan updated, etc.",
             "fields": [
-                { "name": "model", "type": "string", "description": "The name of the model that was the subject of the event", "values": ["incident", "plan"] },
+                { "name": "model", "type": "string", "description": "The name of the model that was the subject of the event", "values": ["incident", "plan", "rating"] },
 		{ "name": "action", "type": "string", "description": "The action that occurred to this model", "values": ["created", "updated", "deleted"] },
 		{ "name": "timestamp", "type": "date-time-iso8601", "description": "The timestamp on which this event occurred" },
                 { "name": "url", "type": "string", "description": "The location to fetch more information about this resource, if applicable. URL will be empty in the case of events that delete a model instance (as one example)", "required": false },

@@ -24,6 +24,9 @@ class EventsDaoSpec extends FunSpec with Matchers {
 
       val plan = Util.createPlan()
       EventsDao.findAll(limit = 10).head.model should be(Event.Model.Plan)
+
+      val grade = Util.upsertGrade(Some(GradeForm(plan_id = plan.id, score = 100)))
+      EventsDao.findAll(limit = 10).head.model should be(Event.Model.Rating)
     }
   }
 

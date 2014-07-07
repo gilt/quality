@@ -18,6 +18,7 @@ package quality.models {
 
       case object Incident extends Model { override def toString = "incident" }
       case object Plan extends Model { override def toString = "plan" }
+      case object Rating extends Model { override def toString = "rating" }
 
       /**
        * UNDEFINED captures values that are sent either in error or
@@ -35,7 +36,7 @@ package quality.models {
        * lower case to avoid collisions with the camel cased values
        * above.
        */
-      val all = Seq(Incident, Plan)
+      val all = Seq(Incident, Plan, Rating)
 
       private[this]
       val byName = all.map(x => x.toString -> x).toMap

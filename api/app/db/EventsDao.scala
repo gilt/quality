@@ -41,6 +41,23 @@ object EventsDao {
      limit %s
   """
 
+  private val GradesQuery = """
+    select 'rating' as model,
+           plans.id as model_id,
+           grades.updated_at as timestamp,
+           'Rating for Incident #' || incidents.id || ': ' || incidents.summary as summary,
+           case
+             when grades.deleted_at is not null then 'deleted'
+             when grades.created_at + interval '1 second' >= grades.updated_at then 'created'
+             else 'updated'
+           end as action
+      from grades
+      join plans on plans.id = grades.plan_id
+      join incidents on incidents.id = plans.incident_id
+     order by grades.updated_at desc
+     limit %s
+  """
+
   def findAll(
     model: Option[String] = None,
     limit: Int = 50,
@@ -62,7 +79,8 @@ object EventsDao {
     val sql = "select * from (\n" + 
       Seq(
         "(" + IncidentsQuery.format(max) + ")",
-        "(" + PlansQuery.format(max) + ")"
+        "(" + PlansQuery.format(max) + ")",
+        "(" + GradesQuery.format(max) + ")"
       ).mkString("\n UNION ALL \n") +
       s"\n) events where $modelClause order by events.timestamp desc limit ${limit} offset ${offset}"
 
@@ -93,6 +111,7 @@ object EventsDao {
         model match {
           case Event.Model.Incident => Some(s"/incidents/$id")
           case Event.Model.Plan => Some(s"/plans/$id")
+          case Event.Model.Rating => Some(s"/plans/$id")
           case Event.Model.UNDEFINED(_) => None
         }
       }
