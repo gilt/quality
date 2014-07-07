@@ -28,7 +28,7 @@
            }
          }
        </td>
-       <td>@incident.team.key</td>
+       <td>@incident.team.map(_.key).getOrElse("")</td>
        <td>@incident.summary</td>
      </tr>
    }

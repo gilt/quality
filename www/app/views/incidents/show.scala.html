@@ -5,7 +5,13 @@
 @main(title = s"#${incident.id}: ${incident.summary}") {
 
   <ul>
-    <li>Team: <a href="@routes.Teams.show(incident.team.key)">@incident.team.key</a></li>
+    <li>Team: 
+        @if(incident.team.isEmpty) {
+          <em>None</em>
+        } else {
+          <a href="@routes.Teams.show(incident.team.get.key)">@incident.team.get.key</a>
+        }
+    </li>
     <li>Severity: @incident.severity</li>
     <li>Tags:
       @if(incident.tags.isEmpty) {

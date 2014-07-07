@@ -1,5 +1,6 @@
 package db
 
+import quality.models.Incident
 import org.scalatest.{ FunSpec, Matchers }
 import play.api.test._
 import play.api.test.Helpers._
@@ -12,7 +13,7 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
       val incident = Util.createIncident()
       val fetched = IncidentsDao.findById(incident.id).get
       fetched.id should be(incident.id)
-      fetched.team.key should be(incident.team.key)
+      fetched.team should be(incident.team)
       fetched.severity should be(incident.severity)
       fetched.description should be(incident.description)
     }
@@ -23,6 +24,20 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
       val tags = Seq("a", "b")
       val incident = Util.createIncident(Some(Util.incidentForm.copy(tags = Some(tags))))
       IncidentsDao.findById(incident.id).get.tags should be(tags)
+    }
+  }
+
+  it("create without a team") {
+    running(FakeApplication()) {
+      val form = IncidentForm(
+        team_key = None,
+        severity = Incident.Severity.Low.toString,
+        summary = "Something happened",
+        description = None
+      )
+
+      val incident = Util.createIncident(Some(form))
+      IncidentsDao.findById(incident.id).get.team should be(None)
     }
   }
 
@@ -62,8 +77,8 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
     running(FakeApplication()) {
       val teamKey = UUID.randomUUID.toString
 
-      val i1 = Util.createIncident(Some(Util.incidentForm.copy(team_key = teamKey)))
-      val i2 = Util.createIncident(Some(Util.incidentForm.copy(team_key = teamKey)))
+      val i1 = Util.createIncident(Some(Util.incidentForm.copy(team_key = Some(teamKey))))
+      val i2 = Util.createIncident(Some(Util.incidentForm.copy(team_key = Some(teamKey))))
       val other = Util.createIncident()
 
       IncidentsDao.findAll(teamKey = Some(teamKey)).map(_.id).sorted should be(Seq(i1.id, i2.id))
@@ -74,7 +89,7 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
   it("findAll includes plan if available") {
     running(FakeApplication()) {
       val teamKey = UUID.randomUUID.toString
-      val incident = Util.createIncident(Some(Util.incidentForm.copy(team_key = teamKey)))
+      val incident = Util.createIncident(Some(Util.incidentForm.copy(team_key = Some(teamKey))))
       val plan = Util.createPlan(Some(PlanForm(incident_id = incident.id, body = "Test", grade = Some(100))))
 
       val fetched = IncidentsDao.findAll(teamKey = Some(teamKey)).head

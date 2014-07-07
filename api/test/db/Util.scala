@@ -21,7 +21,7 @@ object Util {
 
   def incidentForm() = {
     IncidentForm(
-      team_key = "architecture",
+      team_key = Some("architecture"),
       severity = Incident.Severity.Low.toString,
       summary = "Something happened",
       description = None
@@ -30,7 +30,7 @@ object Util {
 
   def createIncident(form: Option[IncidentForm] = None): Incident = {
     val f = form.getOrElse(incidentForm())
-    Util.upsertTeam(f.team_key)
+    f.team_key.map { key => Util.upsertTeam(key) }
     IncidentsDao.create(user, f)
   }
 

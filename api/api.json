@@ -43,7 +43,7 @@
                 { "name": "id", "type": "long", "description": "Internal unique identifier for this incident." },
                 { "name": "summary", "type": "string", "description": "Summary of the incident." },
                 { "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
-                { "name": "team", "type": "team", "description": "Team responsible for resolution of this incident" },
+                { "name": "team", "type": "team", "description": "Team responsible for resolution of this incident", "required": false },
                 { "name": "severity", "type": "string", "values": ["low", "high"] },
                 { "name": "tags", "type": "[string]", "required": false, "description": "Optional list of tags to apply to this incident" },
                 { "name": "plan", "type": "plan", "required": false },
@@ -178,7 +178,7 @@
                     "method": "POST",
                     "description": "Create a new incident.",
                     "parameters": [
-			{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident" },
+			{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident", "required": false },
 			{ "name": "severity", "type": "string", "example": "low or high" },
 			{ "name": "summary", "type": "string", "description": "Summary of the incident." },
 			{ "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
@@ -195,7 +195,7 @@
 		    "path": "/:id",
                     "description": "Updates an incident.",
                     "parameters": [
-			{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident" },
+			{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident", "required": false },
 			{ "name": "severity", "type": "string", "example": "low or high" },
 			{ "name": "summary", "type": "string", "description": "Summary of the incident." },
 			{ "name": "description", "type": "string", "description": "Full description of the incident", "required": false },

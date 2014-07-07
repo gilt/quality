@@ -12,25 +12,23 @@ import play.api.libs.json._
 import org.joda.time.DateTime
 
 case class IncidentForm(
-  team_key: String,
+  team_key: Option[String],
   severity: String,
   summary: String,
   description: Option[String] = None,
   tags: Option[Seq[String]] = None
 ) {
 
-  private lazy val teamIdOption: Option[Long] = TeamsDao.lookupId(team_key)
+  lazy val teamId: Option[Long] = team_key.flatMap( key => TeamsDao.lookupId(key) )
 
-  def teamId(): Long = {
-    teamIdOption.getOrElse(sys.error(s"Team with key[$team_key] not found"))
-  }
-
+  // TODO: Return Seq[Error]
   def validate(): Option[String] = {
-    // TODO: Return Seq[Error]
-    if (teamIdOption.isEmpty) {
-      Some(s"Team with key[$team_key] not found")
-    } else {
-      None
+    team_key.flatMap { key =>
+      if (teamId.isEmpty) {
+        Some(s"Team with key[$team_key] not found")
+      } else {
+        None
+      }
     }
   }
 
@@ -55,7 +53,7 @@ object IncidentsDao {
            plans.created_at as plan_created_at,
            grades.score as grade
       from incidents
-      join teams on teams.deleted_at is null and teams.id = incidents.team_id
+      left join teams on teams.deleted_at is null and teams.id = incidents.team_id
       left join plans on plans.deleted_at is null and plans.incident_id = incidents.id
       left join grades on grades.deleted_at is null and grades.plan_id = plans.id
      where incidents.deleted_at is null
@@ -185,7 +183,7 @@ object IncidentsDao {
 
         Incident(
           id = incidentId,
-          team = Team(key = row[String]("team_key")),
+          team = row[Option[String]]("team_key").map { key => Team(key = key) },
           severity = Incident.Severity(row[String]("severity")),
           summary = row[String]("summary"),
           description = row[Option[String]]("description"),

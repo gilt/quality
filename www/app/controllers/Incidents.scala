@@ -69,7 +69,7 @@ object Incidents extends Controller {
       IncidentForm(
         summary = "",
         description = Some(util.ExampleIncident.description),
-        teamKey = teamKey.getOrElse(""),
+        teamKey = teamKey,
         severity = "",
         tags = ""
       )
@@ -110,7 +110,7 @@ object Incidents extends Controller {
         IncidentForm(
           summary = incident.summary,
           description = incident.description,
-          teamKey = incident.team.key,
+          teamKey = incident.team.map(_.key),
           severity = incident.severity.toString,
           tags = incident.tags.mkString(" ")
         )
@@ -163,7 +163,7 @@ object Incidents extends Controller {
   case class IncidentForm(
     summary: String,
     description: Option[String],
-    teamKey: String,
+    teamKey: Option[String],
     severity: String,
     tags: String
   )
@@ -172,7 +172,7 @@ object Incidents extends Controller {
     mapping(
       "summary" -> nonEmptyText,
       "description" -> optional(text),
-      "teamKey" -> nonEmptyText,
+      "teamKey" -> optional(text),
       "severity" -> nonEmptyText,
       "tags" -> text
     )(IncidentForm.apply)(IncidentForm.unapply)
