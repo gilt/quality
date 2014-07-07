@@ -4,6 +4,7 @@
   <thead>
     <tr>
       <th>#</th>
+      <th>Created</th>
       <th>Severity</th>
       <th>Plan</th>
       <th>Team</th>
@@ -14,6 +15,7 @@
     @incidents.map { incident =>
      <tr>
        <td><a href="@routes.Incidents.show(incident.id)">@incident.id</a></td>
+       <td>@incident.createdAt</td>
        <td>@incident.severity</td>
        <td>
          @if(incident.plan.isEmpty) {

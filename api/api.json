@@ -46,7 +46,8 @@
                 { "name": "team", "type": "team", "description": "Team responsible for resolution of this incident" },
                 { "name": "severity", "type": "string", "values": ["low", "high"] },
                 { "name": "tags", "type": "[string]", "required": false, "description": "Optional list of tags to apply to this incident" },
-                { "name": "plan", "type": "plan", "required": false }
+                { "name": "plan", "type": "plan", "required": false },
+                { "name": "created_at", "type": "date-time-iso8601" }
             ]
         },
 
@@ -56,7 +57,8 @@
                 { "name": "id", "type": "long", "description": "Internal unique identifier for this incident." },
                 { "name": "incident_id", "type": "long" },
                 { "name": "body", "type": "string", "description": "Full description of the incident" },
-                { "name": "grade", "type": "integer", "required": false, "minimum": 0, "maximum": 100, "description": "Grade given to this plan on a scale of 0 (bad) to 100 (good)" }
+                { "name": "grade", "type": "integer", "required": false, "minimum": 0, "maximum": 100, "description": "Grade given to this plan on a scale of 0 (bad) to 100 (good)" },
+                { "name": "created_at", "type": "date-time-iso8601" }
             ]
         },
 

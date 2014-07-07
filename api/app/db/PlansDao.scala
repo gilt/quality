@@ -3,6 +3,8 @@ package db
 import quality.models.{ Error, Plan }
 import anorm._
 import anorm.ParameterValue._
+import AnormHelper._
+import org.joda.time.DateTime
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -26,6 +28,7 @@ object PlansDao {
     select plans.id,
            plans.incident_id,
            plans.body,
+           plans.created_at,
            grades.score as grade_score
       from plans
       join incidents on incidents.deleted_at is null and incidents.id = plans.incident_id
@@ -114,7 +117,8 @@ object PlansDao {
           id = row[Long]("id"),
           incidentId = row[Long]("incident_id"),
           body = row[String]("body"),
-          grade = row[Option[Int]]("grade_score")
+          grade = row[Option[Int]]("grade_score"),
+          createdAt = row[DateTime]("created_at")
         )
       }.toSeq
     }

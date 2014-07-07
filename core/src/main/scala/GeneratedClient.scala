@@ -95,7 +95,8 @@ package quality.models {
     team: Team,
     severity: Incident.Severity,
     tags: scala.collection.Seq[String] = Nil,
-    plan: scala.Option[Plan] = None
+    plan: scala.Option[Plan] = None,
+    createdAt: org.joda.time.DateTime
   )
   object Incident {
 
@@ -137,7 +138,8 @@ package quality.models {
     id: Long,
     incidentId: Long,
     body: String,
-    grade: scala.Option[Int] = None
+    grade: scala.Option[Int] = None,
+    createdAt: org.joda.time.DateTime
   )
   case class Team(
     key: String
@@ -268,7 +270,8 @@ package quality.models {
          (__ \ "tags").readNullable[scala.collection.Seq[String]].map { x =>
           x.getOrElse(Nil)
         } and
-         (__ \ "plan").readNullable[Plan])(Incident.apply _)
+         (__ \ "plan").readNullable[Plan] and
+         (__ \ "created_at").read[org.joda.time.DateTime])(Incident.apply _)
       }
     
     implicit def writesIncident: play.api.libs.json.Writes[Incident] =
@@ -281,7 +284,8 @@ package quality.models {
          (__ \ "team").write[Team] and
          (__ \ "severity").write[Incident.Severity] and
          (__ \ "tags").write[scala.collection.Seq[String]] and
-         (__ \ "plan").write[scala.Option[Plan]])(unlift(Incident.unapply))
+         (__ \ "plan").write[scala.Option[Plan]] and
+         (__ \ "created_at").write[org.joda.time.DateTime])(unlift(Incident.unapply))
       }
     
     implicit def readsPlan: play.api.libs.json.Reads[Plan] =
@@ -291,7 +295,8 @@ package quality.models {
         ((__ \ "id").read[Long] and
          (__ \ "incident_id").read[Long] and
          (__ \ "body").read[String] and
-         (__ \ "grade").readNullable[Int])(Plan.apply _)
+         (__ \ "grade").readNullable[Int] and
+         (__ \ "created_at").read[org.joda.time.DateTime])(Plan.apply _)
       }
     
     implicit def writesPlan: play.api.libs.json.Writes[Plan] =
@@ -301,7 +306,8 @@ package quality.models {
         ((__ \ "id").write[Long] and
          (__ \ "incident_id").write[Long] and
          (__ \ "body").write[String] and
-         (__ \ "grade").write[scala.Option[Int]])(unlift(Plan.unapply))
+         (__ \ "grade").write[scala.Option[Int]] and
+         (__ \ "created_at").write[org.joda.time.DateTime])(unlift(Plan.unapply))
       }
     
     implicit def readsTeam: play.api.libs.json.Reads[Team] =

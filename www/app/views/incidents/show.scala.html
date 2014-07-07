@@ -14,6 +14,7 @@
         @Html(incident.tags.mkString("<ul><li>", "</li><li>", "</li></ul>"))
       }
     </li>
+    <li>Created: @incident.createdAt</li>
     <li><a href="@routes.Incidents.edit(incident.id)">Edit</a> |
         <a href="@routes.Incidents.postDeleteById(incident.id)" class="delete" data-confirm="Are you sure to delete this incident?">Delete</a>
     </li>
@@ -48,8 +49,11 @@
     <div class="markdown">
       @Html(util.Markdown.toHtml(plan.get.body))
     </div>
-    <a href="@routes.Plans.uploadByIncidentId(incident.id)">Edit</a> |
-    <a href="@routes.Plans.postDeleteById(plan.get.id, incident.id)" class="delete" data-confirm="Are you sure to delete this plan?">Delete</a>
+    <p><em>Created: @plan.get.createdAt</em></p>
+    <p>
+      <a href="@routes.Plans.uploadByIncidentId(incident.id)">Edit</a> |
+      <a href="@routes.Plans.postDeleteById(plan.get.id, incident.id)" class="delete" data-confirm="Are you sure to delete this plan?">Delete</a>
+    </p>
   }
 
 }

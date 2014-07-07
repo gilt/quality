@@ -1,14 +1,15 @@
 package db
 
-import quality.models.{ Error, Incident, Plan }
+import quality.models.{ Error, Incident, Plan, Team }
+import quality.models.json._
 
 import anorm._
 import anorm.ParameterValue._
+import AnormHelper._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import quality.models.Team
-import quality.models.json._
+import org.joda.time.DateTime
 
 case class IncidentForm(
   team_key: String,
@@ -43,9 +44,15 @@ object IncidentForm {
 object IncidentsDao {
 
   private val BaseQuery = """
-    select incidents.id, teams.key as team_key, incidents.severity, incidents.summary, incidents.description,
+    select incidents.id,
+           teams.key as team_key,
+           incidents.severity,
+           incidents.summary,
+           incidents.description,
+           incidents.created_at,
            plans.id as plan_id,
            plans.body as plan_body,
+           plans.created_at as plan_created_at,
            grades.score as grade
       from incidents
       join teams on teams.deleted_at is null and teams.id = incidents.team_id
@@ -171,7 +178,8 @@ object IncidentsDao {
             id = planId,
             incidentId = incidentId,
             body = row[String]("plan_body"),
-            grade = row[Option[Int]]("grade")
+            grade = row[Option[Int]]("grade"),
+            createdAt = row[DateTime]("plan_created_at")
           )
         }
 
@@ -182,7 +190,8 @@ object IncidentsDao {
           summary = row[String]("summary"),
           description = row[Option[String]]("description"),
           tags = Seq.empty,
-          plan = plan
+          plan = plan,
+          createdAt = row[DateTime]("created_at")
         )
       }.toSeq
     }
