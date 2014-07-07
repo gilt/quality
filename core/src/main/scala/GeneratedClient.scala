@@ -425,7 +425,34 @@ package quality {
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Event]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
-        
+        queryBuilder ++= model.map { x =>
+          "model" -> (
+            { x: String =>
+              x
+            }
+          )(x)
+        }
+        queryBuilder ++= action.map { x =>
+          "action" -> (
+            { x: String =>
+              x
+            }
+          )(x)
+        }
+        queryBuilder ++= limit.map { x =>
+          "limit" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= offset.map { x =>
+          "offset" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
         
         GET(s"/events", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Event]], 200)
@@ -461,7 +488,48 @@ package quality {
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Incident]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
-        
+        queryBuilder ++= id.map { x =>
+          "id" -> (
+            { x: Long =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= teamKey.map { x =>
+          "team_key" -> (
+            { x: String =>
+              x
+            }
+          )(x)
+        }
+        queryBuilder ++= hasPlan.map { x =>
+          "has_plan" -> (
+            { x: Boolean =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= hasGrade.map { x =>
+          "has_grade" -> (
+            { x: Boolean =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= limit.map { x =>
+          "limit" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= offset.map { x =>
+          "offset" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
         
         GET(s"/incidents", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Incident]], 200)
@@ -498,7 +566,11 @@ package quality {
         tags: scala.collection.Seq[String] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Incident]] = {
         val payload = play.api.libs.json.Json.obj(
-          
+          "team_key" -> play.api.libs.json.Json.toJson(teamKey),
+          "severity" -> play.api.libs.json.Json.toJson(severity),
+          "summary" -> play.api.libs.json.Json.toJson(summary),
+          "description" -> play.api.libs.json.Json.toJson(description),
+          "tags" -> play.api.libs.json.Json.toJson(tags)
         )
         
         POST(s"/incidents", payload).map {
@@ -520,7 +592,11 @@ package quality {
         tags: scala.collection.Seq[String] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Incident]] = {
         val payload = play.api.libs.json.Json.obj(
-          
+          "team_key" -> play.api.libs.json.Json.toJson(teamKey),
+          "severity" -> play.api.libs.json.Json.toJson(severity),
+          "summary" -> play.api.libs.json.Json.toJson(summary),
+          "description" -> play.api.libs.json.Json.toJson(description),
+          "tags" -> play.api.libs.json.Json.toJson(tags)
         )
         
         PUT(s"/incidents/${({x: Long =>
@@ -558,7 +634,41 @@ package quality {
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Plan]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
-        
+        queryBuilder ++= id.map { x =>
+          "id" -> (
+            { x: Long =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= incidentId.map { x =>
+          "incident_id" -> (
+            { x: Long =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= teamKey.map { x =>
+          "team_key" -> (
+            { x: String =>
+              x
+            }
+          )(x)
+        }
+        queryBuilder ++= limit.map { x =>
+          "limit" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= offset.map { x =>
+          "offset" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
         
         GET(s"/plans", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Plan]], 200)
@@ -575,7 +685,9 @@ package quality {
         grade: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Plan]] = {
         val payload = play.api.libs.json.Json.obj(
-          
+          "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
+          "body" -> play.api.libs.json.Json.toJson(body),
+          "grade" -> play.api.libs.json.Json.toJson(grade)
         )
         
         POST(s"/plans", payload).map {
@@ -595,7 +707,9 @@ package quality {
         grade: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Plan]] = {
         val payload = play.api.libs.json.Json.obj(
-          
+          "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
+          "body" -> play.api.libs.json.Json.toJson(body),
+          "grade" -> play.api.libs.json.Json.toJson(grade)
         )
         
         PUT(s"/plans/${({x: Long =>
@@ -616,7 +730,7 @@ package quality {
         grade: Int
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Plan]] = {
         val payload = play.api.libs.json.Json.obj(
-          
+          "grade" -> play.api.libs.json.Json.toJson(grade)
         )
         
         PUT(s"/plans/${({x: Long =>
@@ -673,7 +787,27 @@ package quality {
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Team]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
-        
+        queryBuilder ++= key.map { x =>
+          "key" -> (
+            { x: String =>
+              x
+            }
+          )(x)
+        }
+        queryBuilder ++= limit.map { x =>
+          "limit" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= offset.map { x =>
+          "offset" -> (
+            { x: Int =>
+              x.toString
+            }
+          )(x)
+        }
         
         GET(s"/teams", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Team]], 200)
@@ -706,7 +840,7 @@ package quality {
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Team]] = {
         val payload = play.api.libs.json.Json.obj(
-          
+          "key" -> play.api.libs.json.Json.toJson(key)
         )
         
         POST(s"/teams", payload).map {
