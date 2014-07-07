@@ -126,15 +126,31 @@ object IncidentsDao {
     incident.copy(tags = IncidentTagsDao.findAll(incidentId = Some(incident.id)).map(_.tag))
   }
 
-  def findAll(id: Option[Long] = None,
-              teamKey: Option[String] = None,
-              severity: Option[String] = None,
-              limit: Int = 50,
-              offset: Int = 0): Seq[Incident] = {
+  def findAll(
+    id: Option[Long] = None,
+    teamKey: Option[String] = None,
+    hasPlan: Option[Boolean] = None,
+    hasGrade: Option[Boolean] = None,
+    severity: Option[String] = None,
+    limit: Int = 50,
+    offset: Int = 0
+  ): Seq[Incident] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and incidents.id = {id}" },
       teamKey.map { v => "and incidents.team_id = (select id from teams where deleted_at is null and key = lower(trim({team_key})))" },
+      hasPlan.map { v =>
+        v match {
+          case true => "and plans.id is not null"
+          case false => "and plans.id is null"
+        }
+      },
+      hasGrade.map { v =>
+        v match {
+          case true => "and grades.id is not null"
+          case false => "and grades.id is null"
+        }
+      },
       severity.map { v => "and incidents.severity = {severity}" },
       Some("order by incidents.created_at desc, incidents.id desc"),
       Some(s"limit ${limit} offset ${offset}")

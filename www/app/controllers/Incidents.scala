@@ -15,15 +15,31 @@ object Incidents extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def index(teamKey: Option[String], page: Int = 0) = Action.async { implicit request =>
+  case class Filters(teamKey: Option[String], hasPlan: Option[String], hasGrade: Option[String]) {
+    val hasPlanBoolean = toBoolean(hasPlan)
+    val hasGradeBoolean = toBoolean(hasGrade)
+
+    private def toBoolean(value: Option[String]): Option[Boolean] = {
+      if (value.isEmpty || value.get.isEmpty) {
+        None
+      } else {
+        Some(value.get.toInt > 0)
+      }
+    }
+  }
+
+  def index(teamKey: Option[String], hasPlan: Option[String], hasGrade: Option[String], page: Int = 0) = Action.async { implicit request =>
+    val filters = Filters(teamKey, hasPlan = hasPlan, hasGrade = hasGrade)
     for {
       incidents <- Api.instance.Incidents.get(
         teamKey = teamKey,
+        hasPlan = filters.hasPlanBoolean,
+        hasGrade = filters.hasGradeBoolean,
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(page * Pagination.DefaultLimit)
       )
     } yield {
-      Ok(views.html.incidents.index(teamKey, PaginatedCollection(page, incidents.entity)))
+      Ok(views.html.incidents.index(filters, PaginatedCollection(page, incidents.entity)))
     }
   }
 

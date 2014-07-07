@@ -475,6 +475,8 @@ package quality {
       def get(
         id: scala.Option[Long] = None,
         teamKey: scala.Option[String] = None,
+        hasPlan: scala.Option[Boolean] = None,
+        hasGrade: scala.Option[Boolean] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Incident]]] = {
@@ -490,6 +492,20 @@ package quality {
           "team_key" -> (
             { x: String =>
               x
+            }
+          )(x)
+        }
+        queryBuilder ++= hasPlan.map { x =>
+          "has_plan" -> (
+            { x: Boolean =>
+              x.toString
+            }
+          )(x)
+        }
+        queryBuilder ++= hasGrade.map { x =>
+          "has_grade" -> (
+            { x: Boolean =>
+              x.toString
             }
           )(x)
         }

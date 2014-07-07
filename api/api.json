@@ -153,6 +153,8 @@
                     "parameters": [
                         { "name": "id", "type": "long", "description": "Find incident with this id. Exact match", "required": false },
                         { "name": "team_key", "type": "string", "description": "Find incidents for which this team is responsible. Exact match", "required": false },
+                        { "name": "has_plan", "type": "boolean", "description": "If true, find incidents with a plan. If false, find incidents w/out a plan", "required": false },
+                        { "name": "has_grade", "type": "boolean", "description": "If true, find incidents with a grade. If false, find incidents w/out a grade", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
