@@ -9,6 +9,25 @@
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Teams.create()">Add team</a>
   </div>
 
+  <h2>Latest Events</h2>
+  <table class="table table-hover table-condensed">
+    <tbody>
+      @events.map { event =>
+        <tr>
+          <td>@event.timestamp</td>
+          <td>@event.action</td>
+          @{event.model match {
+            case quality.models.Event.Model.Incident => Html(s"<td><a href='${event.url.getOrElse("")}'>Incident #${event.data.modelId}: ${event.data.summary}</a></td>")
+            case quality.models.Event.Model.Plan => Html(s"<td><a href='${event.url.getOrElse("")}'>${event.data.summary}</a></td>")
+            case quality.models.Event.Model.Rating => Html(s"<td><a href='${event.url.getOrElse("")}'>${event.data.summary}</a></td>")
+            case quality.models.Event.Model.UNDEFINED(name) => Html(s"<td>$name</td>")
+          }}
+       </tr>
+     }
+    </tbody>
+  </table>
+
+  <h2>Teams</h2>
   <table class="table table-hover table-condensed">
     <tbody>
       @teams.items.map { team =>
@@ -36,23 +55,5 @@
       }
     </ul>
   }
-
-  <h2>Latest Events</h2>
-  <table class="table table-hover table-condensed">
-    <tbody>
-      @events.map { event =>
-        <tr>
-          <td>@event.timestamp</td>
-          <td>@event.action</td>
-          @{event.model match {
-            case quality.models.Event.Model.Incident => Html(s"<td><a href='${event.url.getOrElse("")}'>Incident #${event.data.modelId}: ${event.data.summary}</a></td>")
-            case quality.models.Event.Model.Plan => Html(s"<td><a href='${event.url.getOrElse("")}'>${event.data.summary}</a></td>")
-            case quality.models.Event.Model.Rating => Html(s"<td><a href='${event.url.getOrElse("")}'>${event.data.summary}</a></td>")
-            case quality.models.Event.Model.UNDEFINED(name) => Html(s"<td>$name</td>")
-          }}
-       </tr>
-     }
-    </tbody>
-  </table>
 
 }

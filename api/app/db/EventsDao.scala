@@ -60,6 +60,7 @@ object EventsDao {
 
   def findAll(
     model: Option[String] = None,
+    numberHours: Option[Int] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Event] = {
@@ -76,13 +77,18 @@ object EventsDao {
       }
     }
 
+    val numberHoursClause = numberHours match {
+      case None => "true"
+      case Some(n: Int) => s"events.timestamp > now() - interval '$n hours'"
+    }
+
     val sql = "select * from (\n" + 
       Seq(
         "(" + IncidentsQuery.format(max) + ")",
         "(" + PlansQuery.format(max) + ")",
         "(" + GradesQuery.format(max) + ")"
       ).mkString("\n UNION ALL \n") +
-      s"\n) events where $modelClause order by events.timestamp desc limit ${limit} offset ${offset}"
+      s"\n) events where $modelClause and $numberHoursClause order by events.timestamp desc limit ${limit} offset ${offset}"
 
     DB.withConnection { implicit c =>
       SQL(sql)().toList.map { row =>

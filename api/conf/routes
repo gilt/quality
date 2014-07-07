@@ -1,4 +1,4 @@
-GET        /events                     controllers.Events.get(model: Option[String], action: Option[String], limit: Int ?= 25, offset: Int ?= 0)
+GET        /events                     controllers.Events.get(model: Option[String], action: Option[String], number_hours: Option[Int], limit: Int ?= 25, offset: Int ?= 0)
 GET        /_internal_/healthcheck     controllers.Healthchecks.get()
 GET        /incidents                  controllers.Incidents.get(id: Option[Long], team_key: Option[String], has_plan: Option[Boolean], has_grade: Option[Boolean], limit: Int ?= 25, offset: Int ?= 0)
 GET        /incidents/:id              controllers.Incidents.getById(id: Long)

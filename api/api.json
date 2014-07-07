@@ -93,6 +93,7 @@
                     "parameters": [
                         { "name": "model", "type": "string", "description": "Find events on this model", "required": false },
                         { "name": "action", "type": "string", "description": "Find events with this action", "required": false },
+                        { "name": "number_hours", "type": "integer", "description": "Filter to events created in the last n hours", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],

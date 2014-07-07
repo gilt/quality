@@ -421,6 +421,7 @@ package quality {
       def get(
         model: scala.Option[String] = None,
         action: scala.Option[String] = None,
+        numberHours: scala.Option[Int] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Event]]] = {
@@ -436,6 +437,13 @@ package quality {
           "action" -> (
             { x: String =>
               x
+            }
+          )(x)
+        }
+        queryBuilder ++= numberHours.map { x =>
+          "number_hours" -> (
+            { x: Int =>
+              x.toString
             }
           )(x)
         }
