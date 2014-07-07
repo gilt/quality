@@ -1,5 +1,5 @@
-@(key: Option[String],
- teams: lib.PaginatedCollection[quality.models.Team]
+@(filters: controllers.Teams.Filters,
+  teams: lib.PaginatedCollection[quality.models.Team]
 )(implicit flash: Flash)
 
 @main(title = "Teams", section = Some("teams")) {
@@ -8,25 +8,37 @@
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Teams.create">Add team</a>
   </div>
 
-  <table class="table table-hover table-condensed">
-    <tbody>
-      @teams.items.map { team =>
-       <tr>
-         <td><a href="@routes.Teams.show(team.key)">@team.key</a></td>
-       </tr>
-     }
-    </tbody>
-  </table>
+  <form role="form">
+    <div class="form-group">
+      <label for="key">Key</label>
+      <input type="text" name="key" class="form-control" id="teamKey" value="@filters.key.getOrElse("")">
+    </div>
+    <button type="submit" class="btn btn-default">Filter</button>
+  </form>
 
-  @if(teams.hasPrevious || teams.hasNext) {
-    <ul class="pager">
-      @if(teams.hasPrevious) {
-        <li><a href="@routes.Teams.index(key, teams.page - 1)">Previous</a></li>
-      }
-      @if(teams.hasNext) {
-        <li><a href="@routes.Teams.index(key, teams.page + 1)">Next</a></li>
-      }
-    </ul>
+  @if(teams.isEmpty) {
+    <em>No teams found</em>
+  } else {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @teams.items.map { team =>
+         <tr>
+           <td><a href="@routes.Teams.show(team.key)">@team.key</a></td>
+         </tr>
+       }
+      </tbody>
+    </table>
+
+   @if(teams.hasPrevious || teams.hasNext) {
+     <ul class="pager">
+       @if(teams.hasPrevious) {
+         <li><a href="@routes.Teams.index(filters.key, teams.page - 1)">Previous</a></li>
+       }
+       @if(teams.hasNext) {
+         <li><a href="@routes.Teams.index(filters.key, teams.page + 1)">Next</a></li>
+       }
+      </ul>
+    }
   }
 
 }

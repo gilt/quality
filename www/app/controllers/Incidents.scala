@@ -15,26 +15,20 @@ object Incidents extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  case class Filters(teamKey: Option[String], hasPlan: Option[String], hasGrade: Option[String]) {
-    val hasPlanBoolean = toBoolean(hasPlan)
-    val hasGradeBoolean = toBoolean(hasGrade)
-
-    private def toBoolean(value: Option[String]): Option[Boolean] = {
-      if (value.isEmpty || value.get.isEmpty) {
-        None
-      } else {
-        Some(value.get.toInt > 0)
-      }
-    }
-  }
+  case class Filters(teamKey: Option[String], hasPlan: Option[String], hasGrade: Option[String])
 
   def index(teamKey: Option[String], hasPlan: Option[String], hasGrade: Option[String], page: Int = 0) = Action.async { implicit request =>
-    val filters = Filters(teamKey, hasPlan = hasPlan, hasGrade = hasGrade)
+    val filters = Filters(
+      teamKey = lib.Filters.toOption(teamKey),
+      hasPlan = lib.Filters.toOption(hasPlan),
+      hasGrade = lib.Filters.toOption(hasGrade)
+    )
+
     for {
       incidents <- Api.instance.Incidents.get(
-        teamKey = teamKey,
-        hasPlan = filters.hasPlanBoolean,
-        hasGrade = filters.hasGradeBoolean,
+        teamKey = filters.teamKey,
+        hasPlan = filters.hasPlan.map(_.toInt > 0),
+        hasGrade = filters.hasGrade.map(_.toInt > 0),
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(page * Pagination.DefaultLimit)
       )

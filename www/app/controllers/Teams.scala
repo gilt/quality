@@ -16,15 +16,19 @@ object Teams extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  case class Filters(key: Option[String])
+
   def index(key: Option[String] = None, page: Int = 0) = Action.async { implicit request =>
+    val filters = Filters(key = lib.Filters.toOption(key))
+    println("FILTERS: " + filters)
     for {
       teams <- Api.instance.Teams.get(
-        key = key,
+        key = filters.key,
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(page * Pagination.DefaultLimit)
       )
     } yield {
-      Ok(views.html.teams.index(key, PaginatedCollection(page, teams.entity)))
+      Ok(views.html.teams.index(filters, PaginatedCollection(page, teams.entity)))
     }
   }
 
