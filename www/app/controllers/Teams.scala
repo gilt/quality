@@ -20,7 +20,6 @@ object Teams extends Controller {
 
   def index(key: Option[String] = None, page: Int = 0) = Action.async { implicit request =>
     val filters = Filters(key = lib.Filters.toOption(key))
-    println("FILTERS: " + filters)
     for {
       teams <- Api.instance.Teams.get(
         key = filters.key,

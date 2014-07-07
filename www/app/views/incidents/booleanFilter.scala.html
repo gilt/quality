@@ -1,0 +1,11 @@
+@(name: String,
+  label: String,
+  value: Option[String])
+
+<label for="@name">@label</label>
+
+<select name="@name">
+  <option value="">-- Select --</option>
+  <option value="0"@if(value == Some("0")) { selected }> No</option>
+  <option value="1"@if(value == Some("1")) { selected }> Yes</option>
+</select>

@@ -12,8 +12,8 @@
     <div class="form-group">
       <label for="key">Key</label>
       <input type="text" name="key" class="form-control" id="teamKey" value="@filters.key.getOrElse("")">
+      <button type="submit" class="btn btn-default">Filter</button>
     </div>
-    <button type="submit" class="btn btn-default">Filter</button>
   </form>
 
   @if(teams.isEmpty) {

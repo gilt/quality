@@ -76,7 +76,7 @@ object TeamsDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       key.map { v => "and teams.key = {key}" },
-      Some("order by teams.key desc"),
+      Some("order by teams.key"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

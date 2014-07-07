@@ -17,6 +17,9 @@ object Incidents extends Controller {
 
   case class Filters(teamKey: Option[String], hasPlan: Option[String], hasGrade: Option[String])
 
+  // Max number of teams we'll show in a drop down before switching to text input for team key
+  private val MaxTeams = 1000
+
   def index(teamKey: Option[String], hasPlan: Option[String], hasGrade: Option[String], page: Int = 0) = Action.async { implicit request =>
     val filters = Filters(
       teamKey = lib.Filters.toOption(teamKey),
@@ -32,8 +35,10 @@ object Incidents extends Controller {
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(page * Pagination.DefaultLimit)
       )
+      teamsResponse <- Api.instance.Teams.get(limit = Some(MaxTeams))
     } yield {
-      Ok(views.html.incidents.index(filters, PaginatedCollection(page, incidents.entity)))
+      val teams = if (teamsResponse.entity.size >= MaxTeams) { Seq.empty } else { teamsResponse.entity }
+      Ok(views.html.incidents.index(filters, PaginatedCollection(page, incidents.entity), teams))
     }
   }
 
