@@ -9,10 +9,11 @@ import db.{ IncidentsDao, IncidentForm, User }
 
 object Incidents extends Controller {
 
-  def get(id: Option[Long], team_key: Option[String], has_plan: Option[Boolean], has_grade: Option[Boolean], limit: Int = 25, offset: Int = 0) = Action { request =>
+  def get(id: Option[Long], team_key: Option[String], has_team: Option[Boolean], has_plan: Option[Boolean], has_grade: Option[Boolean], limit: Int = 25, offset: Int = 0) = Action { request =>
     val matches = IncidentsDao.findAll(
       id = id,
       teamKey = team_key,
+      hasTeam = has_team,
       hasPlan = has_plan,
       hasGrade = has_grade,
       limit = limit,

@@ -490,6 +490,7 @@ package quality {
       def get(
         id: scala.Option[Long] = None,
         teamKey: scala.Option[String] = None,
+        hasTeam: scala.Option[Boolean] = None,
         hasPlan: scala.Option[Boolean] = None,
         hasGrade: scala.Option[Boolean] = None,
         limit: scala.Option[Int] = None,
@@ -507,6 +508,13 @@ package quality {
           "team_key" -> (
             { x: String =>
               x
+            }
+          )(x)
+        }
+        queryBuilder ++= hasTeam.map { x =>
+          "has_team" -> (
+            { x: Boolean =>
+              x.toString
             }
           )(x)
         }

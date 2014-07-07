@@ -134,6 +134,7 @@ object IncidentsDao {
   def findAll(
     id: Option[Long] = None,
     teamKey: Option[String] = None,
+    hasTeam: Option[Boolean] = None,
     hasPlan: Option[Boolean] = None,
     hasGrade: Option[Boolean] = None,
     severity: Option[String] = None,
@@ -144,6 +145,12 @@ object IncidentsDao {
       Some(BaseQuery.trim),
       id.map { v => "and incidents.id = {id}" },
       teamKey.map { v => "and incidents.team_id = (select id from teams where deleted_at is null and key = lower(trim({team_key})))" },
+      hasTeam.map { v =>
+        v match {
+          case true => "and teams.id is not null"
+          case false => "and teams.id is null"
+        }
+      },
       hasPlan.map { v =>
         v match {
           case true => "and plans.id is not null"

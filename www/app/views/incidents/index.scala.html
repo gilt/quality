@@ -12,6 +12,7 @@
   <form role="form">
     <div class="form-group">
       @teamSelect(teams, filters.teamKey)
+      @booleanFilter("has_team", "Has team?", filters.hasTeam)
       @booleanFilter("has_plan", "Has plan?", filters.hasPlan)
       @booleanFilter("has_grade", "Has grade?", filters.hasGrade)
       <button type="submit" class="btn btn-default">Filter</button>
@@ -26,10 +27,10 @@
     @if(incidents.hasPrevious || incidents.hasNext) {
       <ul class="pager">
         @if(incidents.hasPrevious) {
-          <li><a href="@routes.Incidents.index(filters.teamKey, filters.hasPlan, filters.hasGrade, incidents.page - 1)">Previous</a></li>
+          <li><a href="@routes.Incidents.index(filters.teamKey, filters.hasTeam, filters.hasPlan, filters.hasGrade, incidents.page - 1)">Previous</a></li>
         }
         @if(incidents.hasNext) {
-          <li><a href="@routes.Incidents.index(filters.teamKey, filters.hasPlan, filters.hasGrade, incidents.page + 1)">Next</a></li>
+          <li><a href="@routes.Incidents.index(filters.teamKey, filters.hasTeam, filters.hasPlan, filters.hasGrade, incidents.page + 1)">Next</a></li>
         }
       </ul>
     }

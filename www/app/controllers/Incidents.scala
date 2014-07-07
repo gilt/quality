@@ -15,14 +15,15 @@ object Incidents extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  case class Filters(teamKey: Option[String], hasPlan: Option[String], hasGrade: Option[String])
+  case class Filters(teamKey: Option[String], hasTeam: Option[String], hasPlan: Option[String], hasGrade: Option[String])
 
   // Max number of teams we'll show in a drop down before switching to text input for team key
   private val MaxTeams = 1000
 
-  def index(teamKey: Option[String], hasPlan: Option[String], hasGrade: Option[String], page: Int = 0) = Action.async { implicit request =>
+  def index(teamKey: Option[String], hasTeam: Option[String], hasPlan: Option[String], hasGrade: Option[String], page: Int = 0) = Action.async { implicit request =>
     val filters = Filters(
       teamKey = lib.Filters.toOption(teamKey),
+      hasTeam = lib.Filters.toOption(hasTeam),
       hasPlan = lib.Filters.toOption(hasPlan),
       hasGrade = lib.Filters.toOption(hasGrade)
     )
@@ -30,6 +31,7 @@ object Incidents extends Controller {
     for {
       incidents <- Api.instance.Incidents.get(
         teamKey = filters.teamKey,
+        hasTeam = filters.hasTeam.map(_.toInt > 0),
         hasPlan = filters.hasPlan.map(_.toInt > 0),
         hasGrade = filters.hasGrade.map(_.toInt > 0),
         limit = Some(Pagination.DefaultLimit+1),
