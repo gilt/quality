@@ -94,7 +94,8 @@ package quality.models {
     description: scala.Option[String] = None,
     team: Team,
     severity: Incident.Severity,
-    tags: scala.collection.Seq[String] = Nil
+    tags: scala.collection.Seq[String] = Nil,
+    plan: scala.Option[Plan] = None
   )
   object Incident {
 
@@ -134,7 +135,7 @@ package quality.models {
   }
   case class Plan(
     id: Long,
-    incident: Incident,
+    incidentId: Long,
     body: String,
     grade: scala.Option[Int] = None
   )
@@ -266,7 +267,8 @@ package quality.models {
          (__ \ "severity").read[Incident.Severity] and
          (__ \ "tags").readNullable[scala.collection.Seq[String]].map { x =>
           x.getOrElse(Nil)
-        })(Incident.apply _)
+        } and
+         (__ \ "plan").readNullable[Plan])(Incident.apply _)
       }
     
     implicit def writesIncident: play.api.libs.json.Writes[Incident] =
@@ -278,7 +280,8 @@ package quality.models {
          (__ \ "description").write[scala.Option[String]] and
          (__ \ "team").write[Team] and
          (__ \ "severity").write[Incident.Severity] and
-         (__ \ "tags").write[scala.collection.Seq[String]])(unlift(Incident.unapply))
+         (__ \ "tags").write[scala.collection.Seq[String]] and
+         (__ \ "plan").write[scala.Option[Plan]])(unlift(Incident.unapply))
       }
     
     implicit def readsPlan: play.api.libs.json.Reads[Plan] =
@@ -286,7 +289,7 @@ package quality.models {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
         ((__ \ "id").read[Long] and
-         (__ \ "incident").read[Incident] and
+         (__ \ "incident_id").read[Long] and
          (__ \ "body").read[String] and
          (__ \ "grade").readNullable[Int])(Plan.apply _)
       }
@@ -296,7 +299,7 @@ package quality.models {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
         ((__ \ "id").write[Long] and
-         (__ \ "incident").write[Incident] and
+         (__ \ "incident_id").write[Long] and
          (__ \ "body").write[String] and
          (__ \ "grade").write[scala.Option[Int]])(unlift(Plan.unapply))
       }

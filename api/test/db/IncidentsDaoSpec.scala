@@ -71,4 +71,16 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
     }
   }
 
+  it("findAll includes plan if available") {
+    running(FakeApplication()) {
+      val teamKey = UUID.randomUUID.toString
+      val incident = Util.createIncident(Some(Util.incidentForm.copy(team_key = teamKey)))
+      val plan = Util.createPlan(Some(PlanForm(incident_id = incident.id, body = "Test", grade = Some(100))))
+
+      val fetched = IncidentsDao.findAll(teamKey = Some(teamKey)).head
+      fetched.id should be(incident.id)
+      fetched.plan should be(Some(plan))
+    }
+  }
+
 }

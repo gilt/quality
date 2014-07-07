@@ -53,7 +53,13 @@ object Util {
   }
 
   def createPlan(form: Option[PlanForm] = None): Plan = {
-    PlansDao.create(user, form.getOrElse(planForm()))
+    val plan = PlansDao.create(user, form.getOrElse(planForm()))
+    form.map(_.grade).foreach { grade =>
+      grade.foreach { score =>
+        upsertGrade(Some(GradeForm(plan_id = plan.id, score = score)))
+      }
+    }
+    PlansDao.findById(plan.id).get
   }
 
   def gradeForm(plan: Option[Plan] = None): GradeForm = {

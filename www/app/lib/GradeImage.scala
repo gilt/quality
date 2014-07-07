@@ -2,9 +2,9 @@ package lib
 
 case class GradeImage(score: Int) {
 
-  def imageTag: String = {
+  def imageTag(size: Int = 25): String = {
     val filename = if (score <= 50) { "frowny.png" } else { "smiley.png" }
-    s"""<img src="/assets/images/$filename" height="42" width="42" />"""
+    s"""<img src="/assets/images/$filename" height="$size" width="$size" />"""
   }
 
 }

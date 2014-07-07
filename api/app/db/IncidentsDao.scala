@@ -1,6 +1,6 @@
 package db
 
-import quality.models.{ Error, Incident }
+import quality.models.{ Error, Incident, Plan }
 
 import anorm._
 import anorm.ParameterValue._
@@ -43,9 +43,14 @@ object IncidentForm {
 object IncidentsDao {
 
   private val BaseQuery = """
-    select incidents.id, teams.key as team_key, incidents.severity, incidents.summary, incidents.description
+    select incidents.id, teams.key as team_key, incidents.severity, incidents.summary, incidents.description,
+           plans.id as plan_id,
+           plans.body as plan_body,
+           grades.score as grade
       from incidents
-      join teams on teams.id = incidents.team_id
+      join teams on teams.deleted_at is null and teams.id = incidents.team_id
+      left join plans on plans.deleted_at is null and plans.incident_id = incidents.id
+      left join grades on grades.deleted_at is null and grades.plan_id = plans.id
      where incidents.deleted_at is null
   """
 
@@ -143,13 +148,25 @@ object IncidentsDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
+        val incidentId = row[Long]("id")
+
+        val plan = row[Option[Long]]("plan_id").map { planId =>
+          Plan(
+            id = planId,
+            incidentId = incidentId,
+            body = row[String]("plan_body"),
+            grade = row[Option[Int]]("grade")
+          )
+        }
+
         Incident(
-          id = row[Long]("id"),
+          id = incidentId,
           team = Team(key = row[String]("team_key")),
           severity = Incident.Severity(row[String]("severity")),
           summary = row[String]("summary"),
           description = row[Option[String]]("description"),
-          tags = Seq.empty
+          tags = Seq.empty,
+          plan = plan
         )
       }.toSeq
     }

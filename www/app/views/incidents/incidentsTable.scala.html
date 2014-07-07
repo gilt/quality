@@ -5,6 +5,7 @@
     <tr>
       <th>#</th>
       <th>Severity</th>
+      <th>Plan</th>
       <th>Team</th>
       <th>Summary</th>
     </tr>
@@ -13,9 +14,20 @@
     @incidents.map { incident =>
      <tr>
        <td><a href="@routes.Incidents.show(incident.id)">@incident.id</a></td>
-       <td><a href="@routes.Incidents.show(incident.id)">@incident.severity</a></td>
-       <td><a href="@routes.Teams.show(incident.team.key)">@incident.team.key</a></td>
-       <td><a href="@routes.Incidents.show(incident.id)">@incident.summary</a></td>
+       <td>@incident.severity</td>
+       <td>
+         @if(incident.plan.isEmpty) {
+           - 
+         } else {
+           @if(incident.plan.get.grade.isEmpty) {
+             Uploaded
+           } else {
+             @Html(lib.GradeImage(incident.plan.get.grade.get).imageTag())
+           }
+         }
+       </td>
+       <td>@incident.team.key</td>
+       <td>@incident.summary</td>
      </tr>
    }
   </tbody>

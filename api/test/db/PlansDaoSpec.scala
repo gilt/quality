@@ -13,7 +13,6 @@ class PlansDaoSpec extends FunSpec with Matchers {
       val plan = Util.createPlan()
       val fetched = PlansDao.findById(plan.id).get
       fetched.id should be(plan.id)
-      fetched.incident.id should be(plan.incident.id)
       fetched.body should be(plan.body)
     }
   }
@@ -36,7 +35,7 @@ class PlansDaoSpec extends FunSpec with Matchers {
       val plan = Util.createPlan(Some(PlanForm(incident_id = incident.id, body = "test")))
       val other = Util.createPlan()
 
-      PlansDao.findAll(teamKey = Some(teamKey)).map(_.incident.team.key).distinct should be(Seq(teamKey))
+      PlansDao.findAll(teamKey = Some(teamKey)).map(_.id).distinct should be(Seq(plan.id))
       val results = PlansDao.findAll(teamKey = Some("wrong-name")).map(_.id)
       results.contains(other.id) should be(false)
     }

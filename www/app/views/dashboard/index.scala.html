@@ -13,13 +13,13 @@
     <tbody>
       @teams.items.map { team =>
        <tr>
-         <td>@team.key</td>
+         <td><a href="@routes.Teams.show(team.key)">@team.key</a></td>
          <td>
-           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag)
-           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag)
-           @Html(lib.GradeImage(lib.GradeImage.Bad).imageTag)
-           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag)
-           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag)
+           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag())
+           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag())
+           @Html(lib.GradeImage(lib.GradeImage.Bad).imageTag())
+           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag())
+           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag())
          </td>
        </tr>
      }

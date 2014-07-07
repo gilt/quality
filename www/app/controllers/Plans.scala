@@ -18,7 +18,7 @@ object Plans extends Controller {
     for {
       planResult <- Api.instance.Plans.getById(id)
     } yield {
-      Redirect(routes.Incidents.show(planResult.entity.incident.id))
+      Redirect(routes.Incidents.show(planResult.entity.incidentId))
     }
   }
 
@@ -72,7 +72,7 @@ object Plans extends Controller {
                   incidentId = incident.id,
                   body = planForm.body
                 ).map { r =>
-                  Redirect(routes.Incidents.show(r.entity.incident.id)).flashing("success" -> "Plan created")
+                  Redirect(routes.Incidents.show(r.entity.incidentId)).flashing("success" -> "Plan created")
                 }.recover {
                   case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
                     Ok(views.html.plans.upload(incident, boundForm, Some(errors.map(_.message).mkString("\n"))))
@@ -89,7 +89,7 @@ object Plans extends Controller {
                   incidentId = incident.id,
                   body = planForm.body
                 ).map { r =>
-                  Redirect(routes.Incidents.show(r.entity.incident.id)).flashing("success" -> "Plan updated")
+                  Redirect(routes.Incidents.show(r.entity.incidentId)).flashing("success" -> "Plan updated")
                 }.recover {
                   case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
                     Ok(views.html.plans.upload(incident, boundForm, Some(errors.map(_.message).mkString("\n"))))
@@ -114,7 +114,7 @@ object Plans extends Controller {
           id = plan.id,
           grade = grade
         ).map { r =>
-          Redirect(routes.Incidents.show(r.entity.incident.id)).flashing("success" -> "Plan updated")
+          Redirect(routes.Incidents.show(r.entity.incidentId)).flashing("success" -> "Plan updated")
         }
         , 1000.millis
       )

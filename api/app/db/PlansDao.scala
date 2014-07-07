@@ -1,13 +1,13 @@
 package db
 
-import quality.models.{ Error, Incident, Plan, Team }
+import quality.models.{ Error, Plan }
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class PlanForm(incident_id: Long, body: String, grade: Option[Long] = None) {
+case class PlanForm(incident_id: Long, body: String, grade: Option[Int] = None) {
 
   // TODO
   def validate(): Seq[Error] = {
@@ -26,11 +26,7 @@ object PlansDao {
     select plans.id,
            plans.incident_id,
            plans.body,
-           grades.score as grade_score,
-           incidents.summary as incident_summary,
-           incidents.description as incident_description,
-           incidents.severity as incident_severity,
-           teams.key as team_key
+           grades.score as grade_score
       from plans
       join incidents on incidents.deleted_at is null and incidents.id = plans.incident_id
       join teams on teams.deleted_at is null and teams.id = incidents.team_id
@@ -116,18 +112,9 @@ object PlansDao {
       SQL(sql).on(bind: _*)().toList.map { row =>
         Plan(
           id = row[Long]("id"),
+          incidentId = row[Long]("incident_id"),
           body = row[String]("body"),
-          grade = row[Option[Int]]("grade_score"),
-          incident = Incident(
-            id = row[Long]("incident_id"),
-            summary = row[String]("incident_summary"),
-            description = row[Option[String]]("incident_description"),
-            team = Team(
-              key = row[String]("team_key")
-            ),
-            severity = Incident.Severity(row[String]("incident_severity")),
-            tags = Nil
-          )
+          grade = row[Option[Int]]("grade_score")
         )
       }.toSeq
     }
