@@ -32,11 +32,19 @@ object Teams extends Controller {
   def post() = Action(parse.json) { request =>
     request.body.validate[TeamForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Error("100", "invalid json: " + e.toString)))
+        Conflict(Json.toJson(Seq(Error("100", "invalid json: " + e.toString))))
       }
       case s: JsSuccess[TeamForm] => {
-        val team = TeamsDao.create(user, s.get)
-        Created(Json.toJson(team)).withHeaders(LOCATION -> routes.Teams.getByKey(team.key).url)
+        val form = s.get
+        TeamsDao.findByKey(form.key) match {
+          case None => {
+            val team = TeamsDao.create(user, form)
+            Created(Json.toJson(team)).withHeaders(LOCATION -> routes.Teams.getByKey(team.key).url)
+          }
+          case Some(t: Team) => {
+            Conflict(Json.toJson(Seq(Error("team_key_exists", "A team with this key already exists"))))
+          }
+        }
       }
     }
   }
