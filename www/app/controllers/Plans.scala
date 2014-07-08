@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import quality.models.{ Error, Plan }
+import quality.models.{ Error, Incident, Plan }
 
 import play.api._
 import play.api.mvc._
@@ -16,9 +16,16 @@ object Plans extends Controller {
 
   def getById(id: Long) = Action.async { implicit request =>
     for {
-      planResult <- Api.instance.Plans.getById(id)
+      plan <- Api.instance.Plans.getById(id)
     } yield {
-      Redirect(routes.Incidents.show(planResult.entity.incidentId))
+      plan match {
+        case None => {
+          Redirect(routes.Incidents.index()).flashing("warning" -> "Plan not found")
+        }
+        case Some(plan: Plan) => {
+          Redirect(routes.Incidents.show(plan.incidentId))
+        }
+      }
     }
   }
 
@@ -32,14 +39,15 @@ object Plans extends Controller {
 
   def uploadByIncidentId(incidentId: Long) = Action.async { implicit request =>
     for {
-      incidentResult <- Api.instance.Incidents.get(id = Some(incidentId))
-      planResult <- Api.instance.Plans.get(incidentId = Some(incidentId))
+      incidentOption <- Api.instance.Incidents.getById(incidentId)
+      plansResult <- Api.instance.Plans.get(incidentId = Some(incidentId))
     } yield {
-      incidentResult.entity.headOption match {
+      incidentOption match {
         case None => Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $incidentId not found")
-        case Some(incident) => {
+        case Some(incident: Incident) => {
+          val plan = plansResult.headOption
           val form = planForm.fill(
-            PlanForm(body = planResult.entity.headOption.map(_.body).getOrElse(""))
+            PlanForm(body = plan.map(_.body).getOrElse(""))
           )
           Ok(views.html.plans.upload(incident, form))
         }
@@ -49,75 +57,80 @@ object Plans extends Controller {
 
   def postUploadByIncidentId(incidentId: Long) = Action.async { implicit request =>
     for {
-      incidentResult <- Api.instance.Incidents.get(id = Some(incidentId))
-      planResult <- Api.instance.Plans.get(incidentId = Some(incidentId))
+      incidentOption <- Api.instance.Incidents.getById(incidentId)
+      plans <- Api.instance.Plans.get(incidentId = Some(incidentId))
     } yield {
-      val incident = incidentResult.entity.headOption.getOrElse {
-        sys.error("Invalid incident")
-      }
+      incidentOption match {
+        case None => Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $incidentId not found")
+        case Some(incident: Incident) => {
+          val boundForm = planForm.bindFromRequest
+          boundForm.fold (
 
-      val boundForm = planForm.bindFromRequest
-      boundForm.fold (
+            formWithErrors => {
+              Ok(views.html.plans.upload(incident, formWithErrors))
+            },
 
-        formWithErrors => {
-          Ok(views.html.plans.upload(incident, formWithErrors))
-        },
+            planForm => {
+              plans.headOption match {
 
-        planForm => {
-          planResult.entity.headOption match {
-
-            case None => {
-              Await.result(
-                Api.instance.Plans.post(
-                  incidentId = incident.id,
-                  body = planForm.body
-                ).map { r =>
-                  Redirect(routes.Incidents.show(r.entity.incidentId)).flashing("success" -> "Plan created")
-                }.recover {
-                  case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
-                    Ok(views.html.plans.upload(incident, boundForm, Some(errors.map(_.message).mkString("\n"))))
-                  }
+                case None => {
+                  Await.result(
+                    Api.instance.Plans.post(
+                      incidentId = incident.id,
+                      body = planForm.body
+                    ).map { plan =>
+                      Redirect(routes.Incidents.show(plan.incidentId)).flashing("success" -> "Plan created")
+                    }.recover {
+                      case response: quality.ErrorResponse => {
+                        Ok(views.html.plans.upload(incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
+                      }
+                    }
+                    , 1000.millis
+                  )
                 }
-                , 1000.millis
-              )
-            }
 
-            case Some(plan: Plan) => {
-              Await.result(
-                Api.instance.Plans.putById(
-                  id = plan.id,
-                  incidentId = incident.id,
-                  body = planForm.body
-                ).map { r =>
-                  Redirect(routes.Incidents.show(r.entity.incidentId)).flashing("success" -> "Plan updated")
-                }.recover {
-                  case quality.FailedResponse(errors: Seq[quality.models.Error], 409) => {
-                    Ok(views.html.plans.upload(incident, boundForm, Some(errors.map(_.message).mkString("\n"))))
-                  }
+                case Some(plan: Plan) => {
+                  Await.result(
+                    Api.instance.Plans.putById(
+                      id = plan.id,
+                      incidentId = incident.id,
+                      body = planForm.body
+                    ).map { plan =>
+                      Redirect(routes.Incidents.show(plan.incidentId)).flashing("success" -> "Plan updated")
+                    }.recover {
+                      case response: quality.ErrorResponse => {
+                        Ok(views.html.plans.upload(incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
+                      }
+                    }
+                      , 1000.millis
+                  )
                 }
-                , 1000.millis
-              )
+
+              }
             }
-
-          }
-
+          )
         }
-      )
+      }
     }
   }
 
   def postGrade(id: Long, grade: Int) = Action.async { implicit request =>
-    Api.instance.Plans.getById(id).map { response =>
-      val plan = response.entity
-      Await.result(
-        Api.instance.Plans.putGradeById(
-          id = plan.id,
-          grade = grade
-        ).map { r =>
-          Redirect(routes.Incidents.show(r.entity.incidentId)).flashing("success" -> "Plan updated")
+    for {
+      planOption <- Api.instance.Plans.getById(id)
+    } yield {
+      planOption match {
+        case None => {
+          Redirect(routes.Incidents.index()).flashing("warning" -> "Plan not found")
         }
-        , 1000.millis
-      )
+        case Some(plan: Plan) => {
+          Await.result(
+            Api.instance.Plans.putGradeById(plan.id, grade).map { plan =>
+              Redirect(routes.Incidents.show(plan.incidentId)).flashing("success" -> "Plan updated")
+            }
+              , 1000.millis
+          )
+        }
+      }
     }
   }
 

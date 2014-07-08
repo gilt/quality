@@ -27,16 +27,17 @@ object Teams extends Controller {
         offset = Some(page * Pagination.DefaultLimit)
       )
     } yield {
-      Ok(views.html.teams.index(filters, PaginatedCollection(page, teams.entity)))
+      Ok(views.html.teams.index(filters, PaginatedCollection(page, teams)))
     }
   }
 
   def show(key: String) = Action.async { implicit request =>
-    Api.instance.Teams.getByKey(key).map { r =>
-      Ok(views.html.teams.show(r.entity))
-    }.recover {
-      case quality.FailedResponse(_, 404) => {
+    Api.instance.Teams.getByKey(key).map {
+      case None => {
         Redirect(routes.Teams.index()).flashing("warning" -> s"Team $key not found")
+      }
+      case Some(team: Team) => {
+        Ok(views.html.teams.show(team))
       }
     }
   }
@@ -45,28 +46,20 @@ object Teams extends Controller {
     Ok(views.html.teams.create(teamForm))
   }
 
-  def postCreate() = Action { implicit request =>
+  def postCreate() = Action.async { implicit request =>
     val boundForm = teamForm.bindFromRequest
     boundForm.fold (
 
-      formWithErrors => {
+      formWithErrors => Future {
         Ok(views.html.teams.create(formWithErrors))
       },
 
       teamForm => {
-        Await.result(Api.instance.Teams.get(
-          key = Some(teamForm.key),
-          limit = Some(1)
-        ), 1000.millis).entity.headOption match {
-          case Some(t) => {
-            Ok(views.html.teams.create(boundForm, Some("Team with this key already exists")))
-          }
-          case None => {
-            val team = Await.result(Api.instance.Teams.post(
-              key = teamForm.key
-            ), 1000.millis).entity
-
-            Redirect(routes.Teams.show(team.key)).flashing("success" -> "Team created")
+        Api.instance.Teams.post(teamForm.key).map { team =>
+          Redirect(routes.Teams.show(team.key)).flashing("success" -> "Team created")
+        }.recover {
+          case response: quality.ErrorResponse => {
+            Ok(views.html.teams.create(boundForm, Some(response.errors.map(_.message).mkString(", "))))
           }
         }
       }
