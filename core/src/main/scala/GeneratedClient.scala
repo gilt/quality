@@ -151,7 +151,8 @@ package quality.models {
     averageGrade: scala.Option[Int] = None,
     totalOpenIncidents: Long,
     totalIncidents: Long,
-    totalPlans: Long
+    totalPlans: Long,
+    plans: scala.collection.Seq[Plan] = Nil
   )
 }
 
@@ -344,7 +345,10 @@ package quality.models {
          (__ \ "average_grade").readNullable[Int] and
          (__ \ "total_open_incidents").read[Long] and
          (__ \ "total_incidents").read[Long] and
-         (__ \ "total_plans").read[Long])(TeamStatistic.apply _)
+         (__ \ "total_plans").read[Long] and
+         (__ \ "plans").readNullable[scala.collection.Seq[Plan]].map { x =>
+          x.getOrElse(Nil)
+        })(TeamStatistic.apply _)
       }
     
     implicit def writesTeamStatistic: play.api.libs.json.Writes[TeamStatistic] =
@@ -356,7 +360,8 @@ package quality.models {
          (__ \ "average_grade").write[scala.Option[Int]] and
          (__ \ "total_open_incidents").write[Long] and
          (__ \ "total_incidents").write[Long] and
-         (__ \ "total_plans").write[Long])(unlift(TeamStatistic.unapply))
+         (__ \ "total_plans").write[Long] and
+         (__ \ "plans").write[scala.collection.Seq[Plan]])(unlift(TeamStatistic.unapply))
       }
   }
 }

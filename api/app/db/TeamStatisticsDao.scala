@@ -66,7 +66,8 @@ object TeamStatisticsDao {
           averageGrade = row[Option[BigDecimal]]("average_grade").map{v => v.toInt},
           totalIncidents = row[Long]("total_incidents"),
           totalOpenIncidents = row[Long]("total_open_incidents"),
-          totalPlans = row[Long]("total_plans")
+          totalPlans = row[Long]("total_plans"),
+          plans = PlansDao.findAll(teamKey = Some(row[String]("team_key")))
         )
       }.toSeq
     }

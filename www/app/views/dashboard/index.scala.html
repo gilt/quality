@@ -39,11 +39,9 @@
           Total Open Incidents: @teamStatistic.totalOpenIncidents<br />
         </td>
         <td>
-          @Html(lib.GradeImage(Some(lib.GradeImage.Good)).imageTag())
-          @Html(lib.GradeImage(Some(lib.GradeImage.Good)).imageTag())
-          @Html(lib.GradeImage(Some(lib.GradeImage.Bad)).imageTag())
-          @Html(lib.GradeImage(Some(lib.GradeImage.Good)).imageTag())
-          @Html(lib.GradeImage(Some(lib.GradeImage.Good)).imageTag())
+          @teamStatistic.plans.map { plan =>
+            @Html(lib.GradeImage(plan.grade).imageTag())
+          }
         </td>
        </tr>
      }

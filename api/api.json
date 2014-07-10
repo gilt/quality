@@ -45,7 +45,8 @@
                 {"name": "average_grade", "type": "integer", "description": "Average grade for graded plans given time span requested.", "required": false},
                 {"name": "total_open_incidents", "type": "long", "description": "Number of incidents without a plan for this team."},
                 {"name": "total_incidents", "type": "long", "description": "Number of incidents reported in the time span requested."},
-                {"name": "total_plans", "type": "long", "description": "Number of plans attached to reported incidents in the time span requested."}
+                {"name": "total_plans", "type": "long", "description": "Number of plans attached to reported incidents in the time span requested."},
+                {"name": "plans", "type": "[plan]", "description": "Last plans to display grades for.", "required": false}
             ]
         },
 
