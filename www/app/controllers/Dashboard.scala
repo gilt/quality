@@ -13,14 +13,11 @@ object Dashboard extends Controller {
 
   def index(page: Int = 0) = Action.async { implicit request =>
     for {
-      teams <- Api.instance.Teams.get(
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(page * Pagination.DefaultLimit)
-      )
+      teamStatisics <- Api.instance.TeamStatistics.get(seconds=Some(564800))
       events <- Api.instance.Events.get(numberHours = Some(24), limit = Some(10))
     } yield {
       Ok(views.html.dashboard.index(
-        PaginatedCollection(page, teams.entity),
+        teamStatisics.entity,
         events.entity
       ))
     }

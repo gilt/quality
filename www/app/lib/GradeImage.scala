@@ -1,10 +1,15 @@
 package lib
 
-case class GradeImage(score: Int) {
+case class GradeImage(score: Option[Int]) {
 
   def imageTag(size: Int = 25): String = {
-    val filename = if (score <= 50) { "frowny.png" } else { "smiley.png" }
-    s"""<img src="/assets/images/$filename" height="$size" width="$size" />"""
+  	score match {
+      case None => s" - "
+      case Some(v: Int) => {
+      	val filename = if (v <= 50) { "frowny.png" } else { "smiley.png" }
+    	s"""<img src="/assets/images/$filename" height="$size" width="$size" />"""
+      }
+    }
   }
 
 }

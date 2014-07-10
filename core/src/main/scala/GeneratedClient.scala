@@ -145,6 +145,14 @@ package quality.models {
   case class Team(
     key: String
   )
+  case class TeamStatistic(
+    team: Team,
+    totalGrades: Long,
+    averageGrade: scala.Option[Int] = None,
+    totalOpenIncidents: Long,
+    totalIncidents: Long,
+    totalPlans: Long
+  )
 }
 
 package quality.models {
@@ -325,6 +333,30 @@ package quality.models {
         def writes(x: Team) = play.api.libs.json.Json.obj(
           "key" -> play.api.libs.json.Json.toJson(x.key)
         )
+      }
+    
+    implicit def readsTeamStatistic: play.api.libs.json.Reads[TeamStatistic] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "team").read[Team] and
+         (__ \ "total_grades").read[Long] and
+         (__ \ "average_grade").readNullable[Int] and
+         (__ \ "total_open_incidents").read[Long] and
+         (__ \ "total_incidents").read[Long] and
+         (__ \ "total_plans").read[Long])(TeamStatistic.apply _)
+      }
+    
+    implicit def writesTeamStatistic: play.api.libs.json.Writes[TeamStatistic] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "team").write[Team] and
+         (__ \ "total_grades").write[Long] and
+         (__ \ "average_grade").write[scala.Option[Int]] and
+         (__ \ "total_open_incidents").write[Long] and
+         (__ \ "total_incidents").write[Long] and
+         (__ \ "total_plans").write[Long])(unlift(TeamStatistic.unapply))
       }
   }
 }
@@ -788,6 +820,37 @@ package quality {
           java.net.URLEncoder.encode(s, "UTF-8")
         })(id)}").map {
           case r if r.status == 204 => new ResponseImpl((), 204)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+    }
+    
+    object TeamStatistics {
+      /**
+       * Retrieve team statistics for all or one team.
+       */
+      def get(
+        teamKey: scala.Option[String] = None,
+        seconds: scala.Option[Long] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[TeamStatistic]]] = {
+        val queryBuilder = List.newBuilder[(String, String)]
+        queryBuilder ++= teamKey.map { x =>
+          "team_key" -> (
+            { x: String =>
+              x
+            }
+          )(x)
+        }
+        queryBuilder ++= seconds.map { x =>
+          "seconds" -> (
+            { x: Long =>
+              x.toString
+            }
+          )(x)
+        }
+        
+        GET(s"/team_statistics", queryBuilder.result).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[TeamStatistic]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }

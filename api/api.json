@@ -37,6 +37,18 @@
             ]
         },
 
+        "team_statistic": {
+            "description": "Statistics on each team's quality metrics, number of issues",
+            "fields": [
+                {"name": "team", "type": "team", "description": "Team for statistics. Blank returns all."},
+                {"name": "total_grades", "type": "long", "description": "Number of graded plans given time span requested."},
+                {"name": "average_grade", "type": "integer", "description": "Average grade for graded plans given time span requested.", "required": false},
+                {"name": "total_open_incidents", "type": "long", "description": "Number of incidents without a plan for this team."},
+                {"name": "total_incidents", "type": "long", "description": "Number of incidents reported in the time span requested."},
+                {"name": "total_plans", "type": "long", "description": "Number of plans attached to reported incidents in the time span requested."}
+            ]
+        },
+
         "incident": {
             "description": "A bug or error that affected public or internal users in a negative way",
             "fields": [
@@ -146,6 +158,23 @@
 		}
 	    ]
 	},
+
+    "team_statistic":{
+        "operations": [
+            {   
+                "method": "GET",
+                "description": "Retrieve team statistics for all or one team.",
+                "parameters": [
+                    { "name": "team_key", "type": "string", "description": "Find stats for this team. Leave blank to retrieve all teams", "required": false},
+                    { "name": "seconds", "type": "long", "description": "Number of seconds in the past to retrieve requested statistics. Blank returns all time.", "required": false}
+                ],
+                "responses": {
+                    "200": {"type": "[team_statistic]"}
+                }
+            }
+        ]
+
+    },
 
         "incident": {
 

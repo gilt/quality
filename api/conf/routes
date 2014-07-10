@@ -15,3 +15,4 @@ GET        /teams                      controllers.Teams.get(key: Option[String]
 GET        /teams/:key                 controllers.Teams.getByKey(key: String)
 POST       /teams                      controllers.Teams.post()
 DELETE     /teams/:key                 controllers.Teams.deleteByKey(key: String)
+GET 	   /team_statistics			   controllers.TeamStatistics.get(team_key: Option[String], seconds: Option[Long])
