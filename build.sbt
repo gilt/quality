@@ -5,6 +5,11 @@ scalaVersion in ThisBuild := "2.11.1"
 lazy val core = project
   .in(file("core"))
   .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.apache.commons" % "commons-email" % "1.3.3"
+    )
+  )
 
 lazy val api = project
   .in(file("api"))
