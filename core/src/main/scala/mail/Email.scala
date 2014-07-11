@@ -1,4 +1,4 @@
-package mail
+package core.mail
 
 import org.apache.commons.mail.{ DefaultAuthenticator, Email, HtmlEmail }
 

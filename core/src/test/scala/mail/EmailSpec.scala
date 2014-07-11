@@ -1,4 +1,4 @@
-package mail
+package core.mail
 
 import org.scalatest.{ FunSpec, Matchers }
 import org.apache.commons.mail.Email

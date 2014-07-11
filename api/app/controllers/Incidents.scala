@@ -20,6 +20,9 @@ object Incidents extends Controller {
       offset = offset
     )
 
+    println("Sending email")
+    lib.Email.sendHtml(to = core.mail.Person("michael@gilt.com"), subject="test", body = "hello")
+
     Ok(Json.toJson(matches.toSeq))
   }
 
