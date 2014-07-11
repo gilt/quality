@@ -9,7 +9,7 @@ import play.api.libs.json._
 
 case class StatisticForm(
   team_key: String,
-  seconds: Long
+  num_days: Int
 )
 
 object StatisticForm {
@@ -42,18 +42,24 @@ object StatisticsDao {
   }
 
   def findAll(key: Option[String] = None,
-              seconds: Option[Long] = None): Seq[Statistic] = {
+              numDays: Option[Int] = None): Seq[Statistic] = {
+
+    val numberDays: Option[Int] = numDays match {
+      case None => Some(7)
+      case Some(v: Int) => Some(v)
+    }
+    
     val sql = Seq(
       Some(BaseQuery.trim),
       key.map { v => "and teams.key = {key}" },
-      seconds.map { v => "and all_incidents.created_at >= current_timestamp - ({seconds} * interval '1 second')"}, //current_timestamp - '{seconds} second' doesn't work with anorm NamedParameter. The ' is treated as a scala symbol
+      Some("and all_incidents.created_at >= current_timestamp - ({numDays} * interval '1 day')"), //current_timestamp - '{seconds} second' doesn't work with anorm NamedParameter. The ' is treated as a scala symbol
       Some(GroupByStatement.trim),
       Some("order by teams.key desc")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
       key.map { v => NamedParameter("key", toParameterValue(v.trim.toLowerCase)) },
-      seconds.map { v => NamedParameter("seconds", toParameterValue(v))}
+      numberDays.map { v => NamedParameter("numDays", toParameterValue(numberDays))}
     ).flatten
 
     DB.withConnection { implicit c =>

@@ -167,7 +167,7 @@
                 "description": "Retrieve team statistics for all or one team.",
                 "parameters": [
                     { "name": "team_key", "type": "string", "description": "Find stats for this team. Leave blank to retrieve all teams", "required": false},
-                    { "name": "seconds", "type": "long", "description": "Number of seconds in the past to retrieve requested statistics. Blank returns all time.", "required": false}
+                    { "name": "num_days", "type": "integer", "description": "Number of days in the past to retrieve requested statistics. Default is 1 week.", "required": false}
                 ],
                 "responses": {
                     "200": {"type": "[statistic]"}

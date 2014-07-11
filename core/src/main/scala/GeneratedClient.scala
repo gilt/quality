@@ -836,7 +836,7 @@ package quality {
        */
       def get(
         teamKey: scala.Option[String] = None,
-        seconds: scala.Option[Long] = None
+        numDays: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Statistic]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= teamKey.map { x =>
@@ -846,9 +846,9 @@ package quality {
             }
           )(x)
         }
-        queryBuilder ++= seconds.map { x =>
-          "seconds" -> (
-            { x: Long =>
+        queryBuilder ++= numDays.map { x =>
+          "num_days" -> (
+            { x: Int =>
               x.toString
             }
           )(x)

@@ -13,7 +13,7 @@ object Dashboard extends Controller {
 
   def index(page: Int = 0) = Action.async { implicit request =>
     for {
-      statisics <- Api.instance.Statistics.get(seconds=Some(564800))
+      statisics <- Api.instance.Statistics.get()
       events <- Api.instance.Events.get(numberHours = Some(24), limit = Some(10))
     } yield {
       Ok(views.html.dashboard.index(

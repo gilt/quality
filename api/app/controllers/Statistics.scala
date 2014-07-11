@@ -9,10 +9,10 @@ import db.{ StatisticsDao, StatisticForm, User }
 
 object Statistics extends Controller {
 
-  def get(team_key: Option[String], seconds: Option[Long]) = Action { Request =>
+  def get(team_key: Option[String], num_days: Option[Int]) = Action { Request =>
     val matches = StatisticsDao.findAll(
         key = team_key,
-        seconds = seconds
+        numDays = num_days
       )
 
     Ok(Json.toJson(matches.toSeq))
