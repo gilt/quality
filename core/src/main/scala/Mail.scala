@@ -21,7 +21,7 @@ case class Emailer(config: Configuration) {
     to: Person,
     subject: String,
     body: String
-  ): Email = {
+  ): String = {
     val email = new HtmlEmail()
     email.setHostName(config.host)
     email.setSmtpPort(config.port)
@@ -38,12 +38,13 @@ case class Emailer(config: Configuration) {
     email.setHtmlMsg(s"<html>$body</html>")
 
     deliver(email)
-    email
   }
 
-  def deliver(email: Email) {
+  /**
+    * @returns the message id of the underlying MimeMessage
+    */
+  def deliver(email: Email): String = {
     email.send()
   }
-
 
 }

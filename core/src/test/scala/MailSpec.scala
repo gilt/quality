@@ -14,21 +14,19 @@ class MailSpec extends FunSpec with Matchers {
 
   val emailer = new Emailer(config) {
 
-    override def deliver(email: Email) {
-      println("Mocked delivery of email: " + email)
+    override def deliver(email: Email): String = {
+      "email-1"
     }
 
   }
 
   it("sends email") {
-    val email = emailer.sendHtml(
+    val messageId = emailer.sendHtml(
       to = Person("michael@gilt.com", Some("Mike Bryzek")),
       subject = "test",
       body = "<b>Hello!</b>"
     )
-
-    email.getToAddresses.get(0).toString should be("Mike Bryzek <michael@gilt.com>")
-    email.getSubject should be("test")
+    messageId should be("email-1")
   }
 
 
