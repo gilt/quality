@@ -108,7 +108,7 @@ object PlansDao {
     val bind = Seq(
       id.map { v => NamedParameter("id", toParameterValue(v)) },
       incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
-      teamKey.map {v => NamedParameter("team_key", v)}
+      teamKey.map {v => NamedParameter("team_key", toParameterValue(v))}
     ).flatten
 
     DB.withConnection { implicit c =>

@@ -1,4 +1,4 @@
-@(teams: lib.PaginatedCollection[quality.models.Team],
+@(Statistics: Seq[quality.models.Statistic],
   events: Seq[quality.models.Event]
 )(implicit flash: Flash)
 
@@ -30,30 +30,21 @@
   <h2>Teams</h2>
   <table class="table table-hover table-condensed">
     <tbody>
-      @teams.items.map { team =>
+      @Statistics.map { statistic =>
        <tr>
-         <td><a href="@routes.Teams.show(team.key)">@team.key</a></td>
-         <td>
-           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag())
-           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag())
-           @Html(lib.GradeImage(lib.GradeImage.Bad).imageTag())
-           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag())
-           @Html(lib.GradeImage(lib.GradeImage.Good).imageTag())
-         </td>
+        <td>
+          <a href="@routes.Teams.show(statistic.team.key)">@statistic.team.key</a><br />
+          Average Grade: @Html(lib.GradeImage(statistic.averageGrade).imageTag())<br />
+          Total Incidents: @statistic.totalIncidents<br />
+          Total Open Incidents: @statistic.totalOpenIncidents<br />
+        </td>
+        <td>
+          @statistic.plans.map { plan =>
+            @Html(lib.GradeImage(plan.grade).imageTag())
+          }
+        </td>
        </tr>
      }
     </tbody>
   </table>
-
-  @if(teams.hasPrevious || teams.hasNext) {
-    <ul class="pager">
-      @if(teams.hasPrevious) {
-        <li><a href="@routes.Dashboard.index(teams.page - 1)">Previous</a></li>
-      }
-      @if(teams.hasNext) {
-        <li><a href="@routes.Dashboard.index(teams.page + 1)">Next</a></li>
-      }
-    </ul>
-  }
-
 }
