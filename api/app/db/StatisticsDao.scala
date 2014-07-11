@@ -33,33 +33,22 @@ object StatisticsDao {
       where teams.deleted_at is null
   """
 
-  private val GroupByStatement = """
-      group by teams.id, teams.key
-  """
-
-  def findByTeamKey(key: String): Option[Statistic] = {
-    findAll(key = Some(key.trim.toLowerCase)).headOption
-  }
-
-  def findAll(key: Option[String] = None,
-              numDays: Option[Int] = None): Seq[Statistic] = {
-
-    val numberDays: Option[Int] = numDays match {
-      case None => Some(7)
-      case Some(v: Int) => Some(v)
-    }
+  def findAll(
+    numberHours: Int,
+    teamKey: Option[String] = None
+  ): Seq[Statistic] = {
     
     val sql = Seq(
       Some(BaseQuery.trim),
-      key.map { v => "and teams.key = {key}" },
-      Some("and all_incidents.created_at >= current_timestamp - ({numDays} * interval '1 day')"), //current_timestamp - '{seconds} second' doesn't work with anorm NamedParameter. The ' is treated as a scala symbol
-      Some(GroupByStatement.trim),
+      teamKey.map { v => "and teams.key = lower(trim({team_key}))" },
+      Some("and all_incidents.created_at >= current_timestamp - ({number_hours} * interval '1 hour')"),
+      Some("group by teams.id, teams.key"),
       Some("order by teams.key desc")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      key.map { v => NamedParameter("key", toParameterValue(v.trim.toLowerCase)) },
-      numberDays.map { v => NamedParameter("numDays", toParameterValue(numberDays))}
+      teamKey.map { v => NamedParameter("team_key", toParameterValue(v)) },
+      Some(NamedParameter("number_hours", toParameterValue(numberHours)))
     ).flatten
 
     DB.withConnection { implicit c =>

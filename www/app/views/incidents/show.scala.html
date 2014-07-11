@@ -20,7 +20,7 @@
         @Html(incident.tags.mkString("<ul><li>", "</li><li>", "</li></ul>"))
       }
     </li>
-    <li>Created: @incident.createdAt</li>
+    <li>Created: @org.joda.time.format.DateTimeFormat.longDateTime.print(incident.createdAt)</li>
     <li><a href="@routes.Incidents.edit(incident.id)">Edit</a> |
         <a href="@routes.Incidents.postDeleteById(incident.id)" class="delete" data-confirm="Are you sure to delete this incident?">Delete</a>
     </li>
@@ -43,7 +43,7 @@
       <a href="@routes.Plans.postGrade(plan.get.id, lib.GradeImage.Good)" class="postForm">Good</a> |
       <a href="@routes.Plans.postGrade(plan.get.id, lib.GradeImage.Bad)" class="postForm">Bad</a>
     } else {
-      @Html(lib.GradeImage(Some(plan.get.grade.get)).imageTag())
+      @Html(lib.GradeImage(plan.get.grade.get).imageTag())
       (<a href="#" onClick="$('#changeGrade').show()">change</a>)
       <div id="changeGrade" style="display: none">
         Rate this plan:
@@ -55,7 +55,7 @@
     <div class="markdown">
       @Html(util.Markdown.toHtml(plan.get.body))
     </div>
-    <p><em>Created: @plan.get.createdAt</em></p>
+    <p><em>Created: @org.joda.time.format.DateTimeFormat.longDateTime.print(plan.get.createdAt)</em></p>
     <p>
       <a href="@routes.Plans.uploadByIncidentId(incident.id)">Edit</a> |
       <a href="@routes.Plans.postDeleteById(plan.get.id, incident.id)" class="delete" data-confirm="Are you sure to delete this plan?">Delete</a>
