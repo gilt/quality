@@ -37,7 +37,6 @@ object Email {
   }
 
   private def localDelivery(dir: Path, to: Person, subject: String, body: String): String = {
-    println("local delviery to: " + to)
     Files.createDirectories(dir)
     val target = Paths.get(dir.toString, UUID.randomUUID.toString + ".html")
     val name = to.name match {
@@ -52,7 +51,7 @@ $body
 """.getBytes(StandardCharsets.UTF_8)
     Files.write(target, bytes)
 
-    println("t: " + target)
+    println(s"email delivered locally to $target")
     s"local-delivery-to-$target"
   }
 
