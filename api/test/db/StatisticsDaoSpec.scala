@@ -17,7 +17,7 @@ class StatisticsDaoSpec extends FunSpec with Matchers {
       val grade = Util.upsertGrade(Some(GradeForm(plan_id = Util.createPlan(Some(PlanForm(incident_id = incident.id, body = "test"))).id, score = 100)))
       val other = Util.createPlan()
 
-      val statistic = StatisticsDao.findByTeamKey(teamKey).get
+      val statistic = StatisticsDao.findAll(numberHours = 24, teamKey = Some(teamKey)).head
       statistic.team should be(Team(teamKey))
       statistic.totalGrades should be(1)
       statistic.averageGrade should be(Some(100))
