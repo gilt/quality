@@ -1,22 +1,22 @@
 package db
 
-import quality.models.{TeamStatistic, Team}
+import quality.models.{Statistic, Team}
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class TeamStatisticForm(
+case class StatisticForm(
   team_key: String,
   seconds: Long
 )
 
-object TeamStatisticForm {
+object StatisticForm {
   implicit val readsTeamStatisticForm = Json.reads[TeamForm]
 }
 
-object TeamStatisticsDao {
+object StatisticsDao {
 
   private val BaseQuery = """
       select teams.id, 
@@ -37,12 +37,12 @@ object TeamStatisticsDao {
       group by teams.id, teams.key
   """
 
-  def findByTeamKey(key: String): Option[TeamStatistic] = {
+  def findByTeamKey(key: String): Option[Statistic] = {
     findAll(key = Some(key.trim.toLowerCase)).headOption
   }
 
   def findAll(key: Option[String] = None,
-              seconds: Option[Long] = None): Seq[TeamStatistic] = {
+              seconds: Option[Long] = None): Seq[Statistic] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       key.map { v => "and teams.key = {key}" },
@@ -58,7 +58,7 @@ object TeamStatisticsDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        TeamStatistic(
+        Statistic(
           team = Team(
             key = row[String]("team_key")  
           ),

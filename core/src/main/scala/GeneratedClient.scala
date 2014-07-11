@@ -142,10 +142,7 @@ package quality.models {
     grade: scala.Option[Int] = None,
     createdAt: org.joda.time.DateTime
   )
-  case class Team(
-    key: String
-  )
-  case class TeamStatistic(
+  case class Statistic(
     team: Team,
     totalGrades: Long,
     averageGrade: scala.Option[Int] = None,
@@ -153,6 +150,9 @@ package quality.models {
     totalIncidents: Long,
     totalPlans: Long,
     plans: scala.collection.Seq[Plan] = Nil
+  )
+  case class Team(
+    key: String
   )
 }
 
@@ -320,6 +320,34 @@ package quality.models {
          (__ \ "created_at").write[org.joda.time.DateTime])(unlift(Plan.unapply))
       }
     
+    implicit def readsStatistic: play.api.libs.json.Reads[Statistic] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "team").read[Team] and
+         (__ \ "total_grades").read[Long] and
+         (__ \ "average_grade").readNullable[Int] and
+         (__ \ "total_open_incidents").read[Long] and
+         (__ \ "total_incidents").read[Long] and
+         (__ \ "total_plans").read[Long] and
+         (__ \ "plans").readNullable[scala.collection.Seq[Plan]].map { x =>
+          x.getOrElse(Nil)
+        })(Statistic.apply _)
+      }
+    
+    implicit def writesStatistic: play.api.libs.json.Writes[Statistic] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "team").write[Team] and
+         (__ \ "total_grades").write[Long] and
+         (__ \ "average_grade").write[scala.Option[Int]] and
+         (__ \ "total_open_incidents").write[Long] and
+         (__ \ "total_incidents").write[Long] and
+         (__ \ "total_plans").write[Long] and
+         (__ \ "plans").write[scala.collection.Seq[Plan]])(unlift(Statistic.unapply))
+      }
+    
     implicit def readsTeam: play.api.libs.json.Reads[Team] =
       {
         import play.api.libs.json._
@@ -334,34 +362,6 @@ package quality.models {
         def writes(x: Team) = play.api.libs.json.Json.obj(
           "key" -> play.api.libs.json.Json.toJson(x.key)
         )
-      }
-    
-    implicit def readsTeamStatistic: play.api.libs.json.Reads[TeamStatistic] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "team").read[Team] and
-         (__ \ "total_grades").read[Long] and
-         (__ \ "average_grade").readNullable[Int] and
-         (__ \ "total_open_incidents").read[Long] and
-         (__ \ "total_incidents").read[Long] and
-         (__ \ "total_plans").read[Long] and
-         (__ \ "plans").readNullable[scala.collection.Seq[Plan]].map { x =>
-          x.getOrElse(Nil)
-        })(TeamStatistic.apply _)
-      }
-    
-    implicit def writesTeamStatistic: play.api.libs.json.Writes[TeamStatistic] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "team").write[Team] and
-         (__ \ "total_grades").write[Long] and
-         (__ \ "average_grade").write[scala.Option[Int]] and
-         (__ \ "total_open_incidents").write[Long] and
-         (__ \ "total_incidents").write[Long] and
-         (__ \ "total_plans").write[Long] and
-         (__ \ "plans").write[scala.collection.Seq[Plan]])(unlift(TeamStatistic.unapply))
       }
   }
 }
@@ -830,14 +830,14 @@ package quality {
       }
     }
     
-    object TeamStatistics {
+    object Statistics {
       /**
        * Retrieve team statistics for all or one team.
        */
       def get(
         teamKey: scala.Option[String] = None,
         seconds: scala.Option[Long] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[TeamStatistic]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Statistic]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= teamKey.map { x =>
           "team_key" -> (
@@ -854,8 +854,8 @@ package quality {
           )(x)
         }
         
-        GET(s"/team_statistics", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[TeamStatistic]], 200)
+        GET(s"/statistics", queryBuilder.result).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Statistic]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }

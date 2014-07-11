@@ -37,7 +37,7 @@
             ]
         },
 
-        "team_statistic": {
+        "statistic": {
             "description": "Statistics on each team's quality metrics, number of issues",
             "fields": [
                 {"name": "team", "type": "team", "description": "Team for statistics. Blank returns all."},
@@ -160,7 +160,7 @@
 	    ]
 	},
 
-    "team_statistic":{
+    "statistic":{
         "operations": [
             {   
                 "method": "GET",
@@ -170,7 +170,7 @@
                     { "name": "seconds", "type": "long", "description": "Number of seconds in the past to retrieve requested statistics. Blank returns all time.", "required": false}
                 ],
                 "responses": {
-                    "200": {"type": "[team_statistic]"}
+                    "200": {"type": "[statistic]"}
                 }
             }
         ]

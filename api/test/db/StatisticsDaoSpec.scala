@@ -1,12 +1,12 @@
 package db
 
-import quality.models.{Incident, Plan, Team, TeamStatistic}
+import quality.models.{Incident, Plan, Team, Statistic}
 import org.scalatest.{ FunSpec, Matchers }
 import play.api.test._
 import play.api.test.Helpers._
 import java.util.UUID
 
-class TeamStatisticsDaoSpec extends FunSpec with Matchers {
+class StatisticsDaoSpec extends FunSpec with Matchers {
 
   it("should find by existing team key") {
     running(FakeApplication()) {
@@ -17,7 +17,7 @@ class TeamStatisticsDaoSpec extends FunSpec with Matchers {
       val grade = Util.upsertGrade(Some(GradeForm(plan_id = Util.createPlan(Some(PlanForm(incident_id = incident.id, body = "test"))).id, score = 100)))
       val other = Util.createPlan()
 
-      val statistic = TeamStatisticsDao.findByTeamKey(teamKey).get
+      val statistic = StatisticsDao.findByTeamKey(teamKey).get
       statistic.team should be(Team(teamKey))
       statistic.totalGrades should be(1)
       statistic.averageGrade should be(Some(100))
