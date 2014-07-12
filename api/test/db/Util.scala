@@ -9,7 +9,7 @@ object Util {
 
   def teamForm() = {
     TeamForm(
-      key = "architecture"
+      key = "test-team"
     )
   }
 
@@ -21,7 +21,7 @@ object Util {
 
   def incidentForm() = {
     IncidentForm(
-      team_key = Some("architecture"),
+      team_key = Some("test-team"),
       severity = Incident.Severity.Low.toString,
       summary = "Something happened",
       description = None
