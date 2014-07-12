@@ -1,5 +1,6 @@
 package controllers
 
+import db.TeamsDao
 import quality.models.Healthcheck
 import quality.models.json._
 import play.api._
@@ -8,10 +9,14 @@ import play.api.libs.json._
 
 object Healthchecks extends Controller {
 
-  private val Healthy = Healthcheck("health")
+  private val Healthy = Json.toJson(Healthcheck("healthy"))
 
+  /**
+   *  Verifies we can communicate with the database
+   */
   def get() = Action { request =>
-    Ok(Json.toJson(Healthy))
+    TeamsDao.findAll(limit = 1)
+    Ok(Healthy)
   }
 
 }

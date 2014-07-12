@@ -1,4 +1,4 @@
-GET     /_internal_/healthcheck                                   controllers.Internal.healthcheck
+GET     /_internal_/healthcheck                                   controllers.Healthchecks.index()
 
 GET     /                                                         controllers.Dashboard.index(page: Int ?= 0)
 
