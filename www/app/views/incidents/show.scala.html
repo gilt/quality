@@ -26,11 +26,11 @@
     </li>
   </ul>
 
-  <div class="markdown">
-    @incident.description.map { desc =>
+  @incident.description.map { desc =>
+    <div class="markdown">
       @Html(util.Markdown.toHtml(desc))
-    }
-  </div>
+    </div>
+  }
 
   <p><h2>Prevention Plan</h2></p>
 

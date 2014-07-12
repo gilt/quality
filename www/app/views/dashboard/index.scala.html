@@ -9,7 +9,7 @@
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Teams.create()">Add team</a>
   </div>
 
-  <h2>Latest Events</h2>
+  <h3>Latest Events</h3>
   @if(events.isEmpty) {
      <em>No new events in last 24 hours</em>
   } else {
@@ -17,13 +17,18 @@
       <tbody>
         @events.map { event =>
           <tr>
-            <td>@org.joda.time.format.DateTimeFormat.longDateTime.print(event.timestamp)
+            <td>
+            @if(!event.url.isEmpty) {
+              <a href="@event.url.getOrElse("")">
+            }
+            @org.joda.time.format.DateTimeFormat.longDateTime.print(event.timestamp)
             @{event.model match {
-              case quality.models.Event.Model.Incident => Html(s"<a href='${event.url.getOrElse("")}'>${event.action} Incident #${event.data.modelId}: ${event.data.summary}</a>")
-              case quality.models.Event.Model.Plan => Html(s"<a href='${event.url.getOrElse("")}'>${event.action} ${event.data.summary}</a>")
-              case quality.models.Event.Model.Rating => Html(s"<a href='${event.url.getOrElse("")}'>${event.action} ${event.data.summary}</a>")
+              case quality.models.Event.Model.Incident => Html(s"${event.action} Incident #${event.data.modelId}: ${event.data.summary}")
+              case quality.models.Event.Model.Plan => Html(s"${event.action} ${event.data.summary}")
+              case quality.models.Event.Model.Rating => Html(s"${event.action} ${event.data.summary}")
               case quality.models.Event.Model.UNDEFINED(name) => s"$name"
             }}
+            @if(!event.url.isEmpty) {</a>}
             </td>
          </tr>
        }
@@ -31,7 +36,7 @@
     </table>
   }
 
-  <h2>Team Summary over Past Week</h2>
+  <h3>Team Summary over Past Week</h3>
   <table class="table table-hover table-condensed">
     <tbody>
       @statistics.map { statistic =>
