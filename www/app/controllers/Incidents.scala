@@ -3,9 +3,7 @@ package controllers
 import client.Api
 import quality.models.Incident
 import lib.{ Pagination, PaginatedCollection }
-import java.util.UUID
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration._
+import scala.concurrent.Future
 
 import play.api._
 import play.api.mvc._
@@ -127,8 +125,8 @@ object Incidents extends Controller {
   }
 
   def postEdit(id: Long) = Action.async { implicit request =>
-    Api.instance.incidents.getById(id).map {
-      case None => {
+    Api.instance.incidents.getById(id).flatMap {
+      case None => Future {
         Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $id not found")
       }
 
@@ -136,28 +134,25 @@ object Incidents extends Controller {
         val boundForm = incidentForm.bindFromRequest
         boundForm.fold (
 
-          formWithErrors => {
+          formWithErrors => Future {
             Ok(views.html.incidents.edit(incident, formWithErrors))
           },
 
           incidentForm => {
-            Await.result(
-              Api.instance.incidents.putById(
-                id = incident.id,
-                summary = incidentForm.summary,
-                description = incidentForm.description,
-                teamKey = incidentForm.teamKey,
-                severity = incidentForm.severity,
-                tags = incidentForm.tags.split(" +").map(_.trim).filter(t => !t.isEmpty)
-              ).map { r =>
-                Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident updated")
-              }.recover {
-                case r: quality.error.ErrorsResponse => {
-                  Ok(views.html.incidents.create(boundForm, Some(r.errors.map(_.message).mkString("\n"))))
-                }
-              },
-              1000.millis
-            )
+            Api.instance.incidents.putById(
+              id = incident.id,
+              summary = incidentForm.summary,
+              description = incidentForm.description,
+              teamKey = incidentForm.teamKey,
+              severity = incidentForm.severity,
+              tags = incidentForm.tags.split(" +").map(_.trim).filter(t => !t.isEmpty)
+            ).map { r =>
+              Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident updated")
+            }.recover {
+              case r: quality.error.ErrorsResponse => {
+                Ok(views.html.incidents.create(boundForm, Some(r.errors.map(_.message).mkString("\n"))))
+              }
+            }
           }
         )
       }
