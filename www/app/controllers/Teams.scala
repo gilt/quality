@@ -21,7 +21,7 @@ object Teams extends Controller {
   def index(key: Option[String] = None, page: Int = 0) = Action.async { implicit request =>
     val filters = Filters(key = lib.Filters.toOption(key))
     for {
-      teams <- Api.instance.Teams.get(
+      teams <- Api.instance.teams.get(
         key = filters.key,
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(page * Pagination.DefaultLimit)
@@ -32,7 +32,7 @@ object Teams extends Controller {
   }
 
   def show(key: String) = Action.async { implicit request =>
-    Api.instance.Teams.getByKey(key).map {
+    Api.instance.teams.getByKey(key).map {
       case None => {
         Redirect(routes.Teams.index()).flashing("warning" -> s"Team $key not found")
       }
@@ -55,10 +55,10 @@ object Teams extends Controller {
       },
 
       teamForm => {
-        Api.instance.Teams.post(teamForm.key).map { team =>
+        Api.instance.teams.post(teamForm.key).map { team =>
           Redirect(routes.Teams.show(team.key)).flashing("success" -> "Team created")
         }.recover {
-          case response: quality.ErrorResponse => {
+          case response: quality.error.ErrorsResponse => {
             Ok(views.html.teams.create(boundForm, Some(response.errors.map(_.message).mkString(", "))))
           }
         }

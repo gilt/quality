@@ -18,10 +18,15 @@ object Dashboard extends Controller {
     for {
       statisics <- Api.instance.Statistics.get(numberHours = Some(OneWeekInHours))
       events <- Api.instance.Events.get(numberHours = Some(OneDayInHours), limit = Some(10))
+      teams <- Api.instance.teams.get(
+        limit = Some(Pagination.DefaultLimit+1),
+        offset = Some(page * Pagination.DefaultLimit)
+      )
     } yield {
       Ok(views.html.dashboard.index(
         statisics.entity,
-        events.entity
+        events.entity,
+        PaginatedCollection(page, teams)
       ))
     }
   }

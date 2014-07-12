@@ -16,7 +16,7 @@ object Plans extends Controller {
 
   def getById(id: Long) = Action.async { implicit request =>
     for {
-      plan <- Api.instance.Plans.getById(id)
+      plan <- Api.instance.plans.getById(id)
     } yield {
       plan match {
         case None => {
@@ -31,7 +31,7 @@ object Plans extends Controller {
 
   def postDeleteById(id: Long, incidentId: Long) = Action.async { implicit request =>
     for {
-      planResult <- Api.instance.Plans.deleteById(id)
+      planResult <- Api.instance.plans.deleteById(id)
     } yield {
       Redirect(routes.Incidents.show(incidentId)).flashing("success" -> s"Plan deleted")
     }
@@ -39,8 +39,8 @@ object Plans extends Controller {
 
   def uploadByIncidentId(incidentId: Long) = Action.async { implicit request =>
     for {
-      incidentOption <- Api.instance.Incidents.getById(incidentId)
-      plansResult <- Api.instance.Plans.get(incidentId = Some(incidentId))
+      incidentOption <- Api.instance.incidents.getById(incidentId)
+      plansResult <- Api.instance.plans.get(incidentId = Some(incidentId))
     } yield {
       incidentOption match {
         case None => Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $incidentId not found")
@@ -57,8 +57,8 @@ object Plans extends Controller {
 
   def postUploadByIncidentId(incidentId: Long) = Action.async { implicit request =>
     for {
-      incidentOption <- Api.instance.Incidents.getById(incidentId)
-      plans <- Api.instance.Plans.get(incidentId = Some(incidentId))
+      incidentOption <- Api.instance.incidents.getById(incidentId)
+      plans <- Api.instance.plans.get(incidentId = Some(incidentId))
     } yield {
       incidentOption match {
         case None => Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $incidentId not found")
@@ -75,13 +75,13 @@ object Plans extends Controller {
 
                 case None => {
                   Await.result(
-                    Api.instance.Plans.post(
+                    Api.instance.plans.post(
                       incidentId = incident.id,
                       body = planForm.body
                     ).map { plan =>
                       Redirect(routes.Incidents.show(plan.incidentId)).flashing("success" -> "Plan created")
                     }.recover {
-                      case response: quality.ErrorResponse => {
+                      case response: quality.error.ErrorsResponse => {
                         Ok(views.html.plans.upload(incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
                       }
                     }
@@ -91,14 +91,14 @@ object Plans extends Controller {
 
                 case Some(plan: Plan) => {
                   Await.result(
-                    Api.instance.Plans.putById(
+                    Api.instance.plans.putById(
                       id = plan.id,
                       incidentId = incident.id,
                       body = planForm.body
                     ).map { plan =>
                       Redirect(routes.Incidents.show(plan.incidentId)).flashing("success" -> "Plan updated")
                     }.recover {
-                      case response: quality.ErrorResponse => {
+                      case response: quality.error.ErrorsResponse => {
                         Ok(views.html.plans.upload(incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
                       }
                     }
@@ -116,7 +116,7 @@ object Plans extends Controller {
 
   def postGrade(id: Long, grade: Int) = Action.async { implicit request =>
     for {
-      planOption <- Api.instance.Plans.getById(id)
+      planOption <- Api.instance.plans.getById(id)
     } yield {
       planOption match {
         case None => {
@@ -124,7 +124,7 @@ object Plans extends Controller {
         }
         case Some(plan: Plan) => {
           Await.result(
-            Api.instance.Plans.putGradeById(plan.id, grade).map { plan =>
+            Api.instance.plans.putGradeById(plan.id, grade).map { plan =>
               Redirect(routes.Incidents.show(plan.incidentId)).flashing("success" -> "Plan updated")
             }
               , 1000.millis

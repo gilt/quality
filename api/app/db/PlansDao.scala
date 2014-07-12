@@ -1,7 +1,6 @@
 package db
 
-import quality.Error
-import quality.models.Plan
+import quality.models.{ Error, Plan }
 import anorm._
 import anorm.ParameterValue._
 import AnormHelper._

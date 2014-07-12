@@ -1,8 +1,6 @@
 package controllers
 
-import quality.Error
-import quality.Error._
-import quality.models.Team
+import quality.models.{ Error, Team }
 import quality.models.json._
 
 import play.api.mvc._

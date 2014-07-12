@@ -30,7 +30,7 @@ object Incidents extends Controller {
     )
 
     for {
-      incidents <- Api.instance.Incidents.get(
+      incidents <- Api.instance.incidents.get(
         teamKey = filters.teamKey,
         hasTeam = filters.hasTeam.map(_.toInt > 0),
         hasPlan = filters.hasPlan.map(_.toInt > 0),
@@ -38,7 +38,7 @@ object Incidents extends Controller {
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(page * Pagination.DefaultLimit)
       )
-      teams <- Api.instance.Teams.get(limit = Some(MaxTeams))
+      teams <- Api.instance.teams.get(limit = Some(MaxTeams))
     } yield {
       val teamsOrEmpty = if (teams.size >= MaxTeams) { Seq.empty } else { teams }
       Ok(views.html.incidents.index(filters, PaginatedCollection(page, incidents), teamsOrEmpty))
@@ -47,7 +47,7 @@ object Incidents extends Controller {
 
   def show(id: Long) = Action.async { implicit request =>
     for {
-      incidents <- Api.instance.Incidents.get(id = Some(id))
+      incidents <- Api.instance.incidents.get(id = Some(id))
       plans <- Api.instance.Plans.get(incidentId = Some(id))
     } yield {
       incidents.headOption match {
@@ -61,7 +61,7 @@ object Incidents extends Controller {
 
   def postDeleteById(id: Long) = Action.async { implicit request =>
     for {
-      result <- Api.instance.Incidents.deleteById(id)
+      result <- Api.instance.incidents.deleteById(id)
     } yield {
       Redirect(routes.Incidents.index()).flashing("success" -> s"Incident $id deleted")
     }
@@ -89,7 +89,7 @@ object Incidents extends Controller {
       },
 
       incidentForm => {
-        Api.instance.Incidents.post(
+        Api.instance.incidents.post(
           summary = incidentForm.summary,
           description = incidentForm.description,
           teamKey = incidentForm.teamKey,
@@ -98,7 +98,7 @@ object Incidents extends Controller {
         ).map { incident =>
             Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident created")
         }.recover {
-          case response: quality.ErrorResponse => {
+          case response: quality.error.ErrorsResponse => {
             Ok(views.html.incidents.create(boundForm, Some(response.errors.map(_.message).mkString("\n"))))
           }
         }
@@ -108,7 +108,7 @@ object Incidents extends Controller {
 
   def edit(id: Long) = Action.async { implicit request =>
     for {
-      response <- Api.instance.Incidents.getById(id)
+      response <- Api.instance.incidents.getById(id)
     } yield {
       response match {
         case None => {
@@ -132,7 +132,7 @@ object Incidents extends Controller {
 
   def postEdit(id: Long) = Action.async { implicit request =>
     for {
-      response <- Api.instance.Incidents.getById(id)
+      response <- Api.instance.incidents.getById(id)
     } yield {
       response match {
         case None => {
@@ -149,7 +149,7 @@ object Incidents extends Controller {
 
             incidentForm => {
               Await.result(
-                Api.instance.Incidents.putById(
+                Api.instance.incidents.putById(
                   id = incident.id,
                   summary = incidentForm.summary,
                   description = incidentForm.description,
@@ -159,8 +159,8 @@ object Incidents extends Controller {
                 ).map { r =>
                   Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident updated")
                 }.recover {
-                  case response: quality.ErrorResponse => {
-                    Ok(views.html.incidents.create(boundForm, Some(response.errors.map(_.message).mkString("\n"))))
+                  case r: quality.error.ErrorsResponse => {
+                    Ok(views.html.incidents.create(boundForm, Some(r.errors.map(_.message).mkString("\n"))))
                   }
                 },
                 1000.millis
