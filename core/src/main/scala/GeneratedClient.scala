@@ -830,7 +830,9 @@ package quality {
       /**
        * Create a new team.
        */
-      def post()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team]
+      def post(
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team]
       
       def deleteByKey(
         key: String
@@ -865,8 +867,14 @@ package quality {
         }
       }
       
-      override def post()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team] = {
-        POST(s"/teams").map {
+      override def post(
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team] = {
+        val payload = play.api.libs.json.Json.obj(
+          "key" -> play.api.libs.json.Json.toJson(key)
+        )
+        
+        POST(s"/teams", payload).map {
           case r if r.status == 201 => r.json.as[quality.models.Team]
           case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
           case r => throw new FailedResponse(r)
