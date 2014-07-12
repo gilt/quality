@@ -421,19 +421,19 @@ package quality {
       req
     }
 
-    private def POST(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    private def POST(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       _logRequest("POST", _requestHolder(path)).post(data)
     }
 
-    private def GET(path: String, q: Seq[(String, String)])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    private def GET(path: String, q: Seq[(String, String)] = Seq.empty)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
     }
 
-    private def PUT(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    private def PUT(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       _logRequest("PUT", _requestHolder(path)).put(data)
     }
 
-    private def PATCH(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    private def PATCH(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       _logRequest("PATCH", _requestHolder(path)).patch(data)
     }
 
@@ -463,44 +463,15 @@ package quality {
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Event]] = {
-        val queryBuilder = List.newBuilder[(String, String)]
-        queryBuilder ++= model.map { x =>
-          "model" -> (
-            { x: String =>
-              x
-            }
-          )(x)
-        }
-        queryBuilder ++= action.map { x =>
-          "action" -> (
-            { x: String =>
-              x
-            }
-          )(x)
-        }
-        queryBuilder ++= numberHours.map { x =>
-          "number_hours" -> (
-            { x: Int =>
-              x.toString
-            }
-          )(x)
-        }
-        queryBuilder ++= limit.map { x =>
-          "limit" -> (
-            { x: Int =>
-              x.toString
-            }
-          )(x)
-        }
-        queryBuilder ++= offset.map { x =>
-          "offset" -> (
-            { x: Int =>
-              x.toString
-            }
-          )(x)
-        }
+        val query = Seq(
+          model.map("model" -> _),
+          action.map("action" -> _),
+          numberHours.map("number_hours" -> _.toString),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
         
-        GET(s"/events", queryBuilder.result).map {
+        GET(s"/events", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Event]]
           case r => throw new FailedResponse(r)
         }
@@ -508,19 +479,12 @@ package quality {
     }
   
     trait Healthchecks {
-      def get(
-      
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Healthcheck]]
+      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Healthcheck]]
     }
   
     object Healthchecks extends Healthchecks {
-      override def get(
-      
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Healthcheck]] = {
-        val queryBuilder = List.newBuilder[(String, String)]
-        
-        
-        GET(s"/_internal_/healthcheck", queryBuilder.result).map {
+      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Healthcheck]] = {
+        GET(s"/_internal_/healthcheck").map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Healthcheck]]
           case r => throw new FailedResponse(r)
         }
@@ -586,58 +550,17 @@ package quality {
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Incident]] = {
-        val queryBuilder = List.newBuilder[(String, String)]
-        queryBuilder ++= id.map { x =>
-          "id" -> (
-            { x: Long =>
-              x.toString
-            }
-          )(x)
-        }
-        queryBuilder ++= teamKey.map { x =>
-          "team_key" -> (
-            { x: String =>
-              x
-            }
-          )(x)
-        }
-        queryBuilder ++= hasTeam.map { x =>
-          "has_team" -> (
-            { x: Boolean =>
-              x.toString
-            }
-          )(x)
-        }
-        queryBuilder ++= hasPlan.map { x =>
-          "has_plan" -> (
-            { x: Boolean =>
-              x.toString
-            }
-          )(x)
-        }
-        queryBuilder ++= hasGrade.map { x =>
-          "has_grade" -> (
-            { x: Boolean =>
-              x.toString
-            }
-          )(x)
-        }
-        queryBuilder ++= limit.map { x =>
-          "limit" -> (
-            { x: Int =>
-              x.toString
-            }
-          )(x)
-        }
-        queryBuilder ++= offset.map { x =>
-          "offset" -> (
-            { x: Int =>
-              x.toString
-            }
-          )(x)
-        }
+        val query = Seq(
+          id.map("id" -> _.toString),
+          teamKey.map("team_key" -> _),
+          hasTeam.map("has_team" -> _.toString),
+          hasPlan.map("has_plan" -> _.toString),
+          hasGrade.map("has_grade" -> _.toString),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
         
-        GET(s"/incidents", queryBuilder.result).map {
+        GET(s"/incidents", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Incident]]
           case r => throw new FailedResponse(r)
         }
@@ -646,13 +569,7 @@ package quality {
       override def getById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[quality.models.Incident]] = {
-        val queryBuilder = List.newBuilder[(String, String)]
-        
-        
-        GET(s"/incidents/${({x: Long =>
-          val s = x.toString
-          java.net.URLEncoder.encode(s, "UTF-8")
-        })(id)}", queryBuilder.result).map {
+        GET(s"/incidents/${id}").map {
           case r if r.status == 200 => Some(r.json.as[quality.models.Incident])
           case r if r.status == 404 => None
           case r => throw new FailedResponse(r)
@@ -697,10 +614,7 @@ package quality {
           "tags" -> play.api.libs.json.Json.toJson(tags)
         )
         
-        PUT(s"/incidents/${({x: Long =>
-          val s = x.toString
-          java.net.URLEncoder.encode(s, "UTF-8")
-        })(id)}", payload).map {
+        PUT(s"/incidents/${id}", payload).map {
           case r if r.status == 201 => r.json.as[quality.models.Incident]
           case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
           case r => throw new FailedResponse(r)
@@ -710,10 +624,7 @@ package quality {
       override def deleteById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]] = {
-        DELETE(s"/incidents/${({x: Long =>
-          val s = x.toString
-          java.net.URLEncoder.encode(s, "UTF-8")
-        })(id)}").map {
+        DELETE(s"/incidents/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedResponse(r)
@@ -783,44 +694,15 @@ package quality {
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Plan]] = {
-        val queryBuilder = List.newBuilder[(String, String)]
-        queryBuilder ++= id.map { x =>
-          "id" -> (
-            { x: Long =>
-              x.toString
-            }
-          )(x)
-        }
-        queryBuilder ++= incidentId.map { x =>
-          "incident_id" -> (
-            { x: Long =>
-              x.toString
-            }
-          )(x)
-        }
-        queryBuilder ++= teamKey.map { x =>
-          "team_key" -> (
-            { x: String =>
-              x
-            }
-          )(x)
-        }
-        queryBuilder ++= limit.map { x =>
-          "limit" -> (
-            { x: Int =>
-              x.toString
-            }
-          )(x)
-        }
-        queryBuilder ++= offset.map { x =>
-          "offset" -> (
-            { x: Int =>
-              x.toString
-            }
-          )(x)
-        }
+        val query = Seq(
+          id.map("id" -> _.toString),
+          incidentId.map("incident_id" -> _.toString),
+          teamKey.map("team_key" -> _),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
         
-        GET(s"/plans", queryBuilder.result).map {
+        GET(s"/plans", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Plan]]
           case r => throw new FailedResponse(r)
         }
@@ -856,10 +738,7 @@ package quality {
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
         
-        PUT(s"/plans/${({x: Long =>
-          val s = x.toString
-          java.net.URLEncoder.encode(s, "UTF-8")
-        })(id)}", payload).map {
+        PUT(s"/plans/${id}", payload).map {
           case r if r.status == 200 => r.json.as[quality.models.Plan]
           case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
           case r => throw new FailedResponse(r)
@@ -874,10 +753,7 @@ package quality {
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
         
-        PUT(s"/plans/${({x: Long =>
-          val s = x.toString
-          java.net.URLEncoder.encode(s, "UTF-8")
-        })(id)}/grade", payload).map {
+        PUT(s"/plans/${id}/grade", payload).map {
           case r if r.status == 200 => r.json.as[quality.models.Plan]
           case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
           case r => throw new FailedResponse(r)
@@ -887,13 +763,7 @@ package quality {
       override def getById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[quality.models.Plan]] = {
-        val queryBuilder = List.newBuilder[(String, String)]
-        
-        
-        GET(s"/plans/${({x: Long =>
-          val s = x.toString
-          java.net.URLEncoder.encode(s, "UTF-8")
-        })(id)}", queryBuilder.result).map {
+        GET(s"/plans/${id}").map {
           case r if r.status == 200 => Some(r.json.as[quality.models.Plan])
           case r if r.status == 404 => None
           case r => throw new FailedResponse(r)
@@ -903,10 +773,7 @@ package quality {
       override def deleteById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]] = {
-        DELETE(s"/plans/${({x: Long =>
-          val s = x.toString
-          java.net.URLEncoder.encode(s, "UTF-8")
-        })(id)}").map {
+        DELETE(s"/plans/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedResponse(r)
@@ -985,30 +852,13 @@ package quality {
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Team]] = {
-        val queryBuilder = List.newBuilder[(String, String)]
-        queryBuilder ++= key.map { x =>
-          "key" -> (
-            { x: String =>
-              x
-            }
-          )(x)
-        }
-        queryBuilder ++= limit.map { x =>
-          "limit" -> (
-            { x: Int =>
-              x.toString
-            }
-          )(x)
-        }
-        queryBuilder ++= offset.map { x =>
-          "offset" -> (
-            { x: Int =>
-              x.toString
-            }
-          )(x)
-        }
+        val query = Seq(
+          key.map("key" -> _),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
         
-        GET(s"/teams", queryBuilder.result).map {
+        GET(s"/teams", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Team]]
           case r => throw new FailedResponse(r)
         }
@@ -1017,13 +867,7 @@ package quality {
       override def getByKey(
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[quality.models.Team]] = {
-        val queryBuilder = List.newBuilder[(String, String)]
-        
-        
-        GET(s"/teams/${({x: String =>
-          val s = x
-          java.net.URLEncoder.encode(s, "UTF-8")
-        })(key)}", queryBuilder.result).map {
+        GET(s"/teams/${java.net.URLEncoder.encode(key, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[quality.models.Team])
           case r if r.status == 404 => None
           case r => throw new FailedResponse(r)
@@ -1047,10 +891,7 @@ package quality {
       override def deleteByKey(
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]] = {
-        DELETE(s"/teams/${({x: String =>
-          val s = x
-          java.net.URLEncoder.encode(s, "UTF-8")
-        })(key)}").map {
+        DELETE(s"/teams/${java.net.URLEncoder.encode(key, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedResponse(r)
