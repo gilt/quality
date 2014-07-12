@@ -398,6 +398,8 @@ package quality {
     
     def plans = Plans
     
+    def statistics = Statistics
+    
     def teams = Teams
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
@@ -780,44 +782,35 @@ package quality {
         }
       }
     }
-<<<<<<< HEAD
-    
-    object Statistics {
+  
+    trait Statistics {
       /**
        * Retrieve team statistics for all or one team.
        */
       def get(
         teamKey: scala.Option[String] = None,
         numberHours: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Statistic]]] = {
-        val queryBuilder = List.newBuilder[(String, String)]
-        queryBuilder ++= teamKey.map { x =>
-          "team_key" -> (
-            { x: String =>
-              x
-            }
-          )(x)
-        }
-        queryBuilder ++= numberHours.map { x =>
-          "number_hours" -> (
-            { x: Int =>
-              x.toString
-            }
-          )(x)
-        }
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Statistic]]
+    }
+  
+    object Statistics extends Statistics {
+      override def get(
+        teamKey: scala.Option[String] = None,
+        numberHours: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Statistic]] = {
+        val query = Seq(
+          teamKey.map("team_key" -> _),
+          numberHours.map("number_hours" -> _.toString)
+        ).flatten
         
-        GET(s"/statistics", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Statistic]], 200)
-          case r => throw new FailedResponse(r.body, r.status)
+        GET(s"/statistics", query).map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Statistic]]
+          case r => throw new FailedResponse(r)
         }
       }
     }
-    
-    object Teams {
-=======
   
     trait Teams {
->>>>>>> WIP on simpler client API
       /**
        * Search all teams. Results are always paginated.
        */
@@ -837,9 +830,7 @@ package quality {
       /**
        * Create a new team.
        */
-      def post(
-        key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team]
+      def post()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team]
       
       def deleteByKey(
         key: String
@@ -874,14 +865,8 @@ package quality {
         }
       }
       
-      override def post(
-        key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team] = {
-        val payload = play.api.libs.json.Json.obj(
-          "key" -> play.api.libs.json.Json.toJson(key)
-        )
-        
-        POST(s"/teams", payload).map {
+      override def post()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team] = {
+        POST(s"/teams").map {
           case r if r.status == 201 => r.json.as[quality.models.Team]
           case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
           case r => throw new FailedResponse(r)
