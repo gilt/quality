@@ -32,12 +32,17 @@ object Teams extends Controller {
   }
 
   def show(key: String) = Action.async { implicit request =>
-    Api.instance.teams.getByKey(key).map {
-      case None => {
-        Redirect(routes.Teams.index()).flashing("warning" -> s"Team $key not found")
-      }
-      case Some(team: Team) => {
-        Ok(views.html.teams.show(team))
+    for {
+      team <- Api.instance.teams.getByKey(key)
+      stats <- Api.instance.Statistics.get(teamKey = Some(key), numberHours = Some(Dashboard.OneWeekInHours * 12))
+    } yield {
+      team match {
+        case None => {
+          Redirect(routes.Teams.index()).flashing("warning" -> s"Team $key not found")
+        }
+        case Some(team: Team) => {
+          Ok(views.html.teams.show(team, stats.headOption))
+        }
       }
     }
   }

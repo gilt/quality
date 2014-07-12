@@ -11,8 +11,8 @@ object Dashboard extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private val OneDayInHours = 24
-  private val OneWeekInHours = OneDayInHours * 7
+  val OneDayInHours = 24
+  val OneWeekInHours = OneDayInHours * 7
 
   def index(page: Int = 0) = Action.async { implicit request =>
     for {

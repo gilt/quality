@@ -1,4 +1,5 @@
-@(team: quality.models.Team)(implicit flash: Flash)
+@(team: quality.models.Team,
+  stats: Option[quality.models.Statistic])(implicit flash: Flash)
 
 @main(title = s"Team ${team.key}") {
 
@@ -6,9 +7,11 @@
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(teamKey = Some(team.key))">Create Incident</a>
   </div>
 
-  <ul>
-    <li>Key: @team.key</li>
-    <li><a href="@routes.Incidents.index(team_key = Some(team.key))">Incidents</a></li>
-  </ul>
+  <p><b>Statistics over past 12 weeks</b></p>
+  @stats.map { stat =>
+    <li>Average Grade: @Html(lib.GradeImage.imageTag(stat.averageGrade))</li>
+    <li>Total Incidents: <a href="@routes.Incidents.index(team_key = Some(team.key))">@stat.totalIncidents</a></li>
+    <li>Total Open Incidents: <a href="@routes.Incidents.index(team_key = Some(team.key), has_plan = Some("0"))">@stat.totalOpenIncidents</a></li>
+  }
 
 }
