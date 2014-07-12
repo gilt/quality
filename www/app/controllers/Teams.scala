@@ -72,6 +72,14 @@ object Teams extends Controller {
     )
   }
 
+  def postDeleteByKey(key: String) = Action.async { implicit request =>
+    for {
+      result <- Api.instance.teams.deleteByKey(key)
+    } yield {
+      Redirect(routes.Teams.index()).flashing("success" -> s"Team $key deleted")
+    }
+  }
+
   case class TeamForm(
     key: String
   )

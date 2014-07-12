@@ -7,6 +7,10 @@
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(teamKey = Some(team.key))">Create Incident</a>
   </div>
 
+  <ul>
+    <li><a href="@routes.Teams.postDeleteByKey(team.key)" class="delete" data-confirm="Are you sure to delete this team?">Delete</a></li>
+  </ul>
+
   <p><b>Statistics over past 12 weeks</b></p>
   @stats.map { stat =>
     <li>Average Grade: @Html(lib.GradeImage.imageTag(stat.averageGrade))</li>
