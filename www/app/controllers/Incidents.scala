@@ -47,13 +47,13 @@ object Incidents extends Controller {
 
   def show(id: Long) = Action.async { implicit request =>
     for {
-      incidents <- Api.instance.incidents.get(id = Some(id))
+      incident <- Api.instance.incidents.getById(id)
       plans <- Api.instance.Plans.get(incidentId = Some(id))
     } yield {
-      incidents.headOption match {
+      incident match {
         case None => Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $id not found")
-        case Some(incident) => {
-          Ok(views.html.incidents.show(incident, plans.headOption))
+        case Some(i) => {
+          Ok(views.html.incidents.show(i, plans.headOption))
         }
       }
     }
@@ -96,7 +96,7 @@ object Incidents extends Controller {
           severity = incidentForm.severity,
           tags = incidentForm.tags.split(" +").map(_.trim).filter(t => !t.isEmpty)
         ).map { incident =>
-            Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident created")
+          Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident created")
         }.recover {
           case response: quality.error.ErrorsResponse => {
             Ok(views.html.incidents.create(boundForm, Some(response.errors.map(_.message).mkString("\n"))))
@@ -107,67 +107,59 @@ object Incidents extends Controller {
   }
 
   def edit(id: Long) = Action.async { implicit request =>
-    for {
-      response <- Api.instance.incidents.getById(id)
-    } yield {
-      response match {
-        case None => {
-          Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $id not found")
-        }
-        case Some(incident: Incident) => {
-          val form = incidentForm.fill(
-            IncidentForm(
-              summary = incident.summary,
-              description = incident.description,
-              teamKey = incident.team.map(_.key),
-              severity = incident.severity.toString,
-              tags = incident.tags.mkString(" ")
-            )
+    Api.instance.incidents.getById(id).map {
+      case None => {
+        Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $id not found")
+      }
+      case Some(incident: Incident) => {
+        val form = incidentForm.fill(
+          IncidentForm(
+            summary = incident.summary,
+            description = incident.description,
+            teamKey = incident.team.map(_.key),
+            severity = incident.severity.toString,
+            tags = incident.tags.mkString(" ")
           )
-          Ok(views.html.incidents.edit(incident, form))
-        }
+        )
+        Ok(views.html.incidents.edit(incident, form))
       }
     }
   }
 
   def postEdit(id: Long) = Action.async { implicit request =>
-    for {
-      response <- Api.instance.incidents.getById(id)
-    } yield {
-      response match {
-        case None => {
-          Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $id not found")
-        }
+    Api.instance.incidents.getById(id).map {
+      case None => {
+        Redirect(routes.Incidents.index()).flashing("warning" -> s"Incident $id not found")
+      }
 
-        case Some(incident: Incident) => {
-          val boundForm = incidentForm.bindFromRequest
-          boundForm.fold (
+      case Some(incident: Incident) => {
+        val boundForm = incidentForm.bindFromRequest
+        boundForm.fold (
 
-            formWithErrors => {
-              Ok(views.html.incidents.edit(incident, formWithErrors))
-            },
+          formWithErrors => {
+            Ok(views.html.incidents.edit(incident, formWithErrors))
+          },
 
-            incidentForm => {
-              Await.result(
-                Api.instance.incidents.putById(
-                  id = incident.id,
-                  summary = incidentForm.summary,
-                  description = incidentForm.description,
-                  teamKey = incidentForm.teamKey,
-                  severity = incidentForm.severity,
-                  tags = incidentForm.tags.split(" +").map(_.trim).filter(t => !t.isEmpty)
-                ).map { r =>
-                  Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident updated")
-                }.recover {
-                  case r: quality.error.ErrorsResponse => {
-                    Ok(views.html.incidents.create(boundForm, Some(r.errors.map(_.message).mkString("\n"))))
-                  }
-                },
-                1000.millis
-              )
-            }
-          )
-        }
+          incidentForm => {
+            Await.result(
+              Api.instance.incidents.putById(
+                id = incident.id,
+                summary = incidentForm.summary,
+                description = incidentForm.description,
+                teamKey = incidentForm.teamKey,
+                severity = incidentForm.severity,
+                tags = incidentForm.tags.split(" +").map(_.trim).filter(t => !t.isEmpty)
+              ).map { r =>
+                Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident updated")
+              }.recover {
+                case r: quality.error.ErrorsResponse => {
+                  Ok(views.html.incidents.create(boundForm, Some(r.errors.map(_.message).mkString("\n"))))
+                }
+              },
+              1000.millis
+            )
+          }
+        )
       }
     }
   }

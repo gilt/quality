@@ -1,7 +1,6 @@
 package controllers
 
 import client.Api
-import lib.{ Pagination, PaginatedCollection }
 
 import play.api._
 import play.api.mvc._
@@ -16,13 +15,10 @@ object Dashboard extends Controller {
 
   def index(page: Int = 0) = Action.async { implicit request =>
     for {
-      statisics <- Api.instance.Statistics.get(numberHours = Some(OneWeekInHours))
+      stats <- Api.instance.Statistics.get(numberHours = Some(OneWeekInHours))
       events <- Api.instance.Events.get(numberHours = Some(OneDayInHours), limit = Some(10))
     } yield {
-      Ok(views.html.dashboard.index(
-        statisics,
-        events
-      ))
+      Ok(views.html.dashboard.index(stats, events))
     }
   }
 
