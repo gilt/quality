@@ -1,6 +1,8 @@
 package controllers
 
-import quality.models.{ Error, Incident }
+import quality.Error
+import quality.Error._
+import quality.models.{ Incident, Plan }
 import quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._

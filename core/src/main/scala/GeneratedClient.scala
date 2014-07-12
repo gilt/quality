@@ -1,8 +1,5 @@
 package quality.models {
-  case class Error(
-    code: String,
-    message: String
-  )
+  case class Error(code: String, message: String)
   case class Event(
     model: Event.Model,
     action: Event.Action,
@@ -197,22 +194,6 @@ package quality.models {
     implicit val jsonWritesIncident_Severity = new Writes[Incident.Severity] {
       def writes(x: Incident.Severity) = JsString(x.toString)
     }
-
-    implicit def readsError: play.api.libs.json.Reads[Error] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "code").read[String] and
-         (__ \ "message").read[String])(Error.apply _)
-      }
-    
-    implicit def writesError: play.api.libs.json.Writes[Error] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "code").write[String] and
-         (__ \ "message").write[String])(unlift(Error.unapply))
-      }
     
     implicit def readsEvent: play.api.libs.json.Reads[Event] =
       {
@@ -370,9 +351,30 @@ package quality {
 
   case class FailedResponse(response: play.api.libs.ws.Response) extends Exception
 
+  case class Error (
+    code: String,
+    message: String
+  )
+
+  object Error {
+    implicit def readsError: play.api.libs.json.Reads[Error] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "code").read[String] and
+        (__ \ "message").read[String])(Error.apply _)
+    }
+    
+    implicit def writesError: play.api.libs.json.Writes[Error] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "code").write[String] and
+        (__ \ "message").write[String])(unlift(Error.unapply))
+    }
+  }
+
   case class ErrorResponse(response: play.api.libs.ws.Response) extends Exception {
-    import quality.models.json._
-    val errors: Seq[quality.models.Error] = response.json.as[scala.collection.Seq[quality.models.Error]]
+
+    val errors: Seq[Error] = response.json.as[scala.collection.Seq[Error]]
   }
 
   class Client(apiUrl: String, apiToken: Option[String] = None) {
@@ -388,25 +390,21 @@ package quality {
 
       val url = apiUrl + path
       val holder = play.api.libs.ws.WS.url(url)
-      apiToken match {
-        case None => holder
-        case Some(token: String) => {
-          holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
-        }
+      apiToken.fold(holder) { token =>
+        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
       }
     }
 
     def logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
-      val q = req.queryString.flatMap { case (name, values) =>
-        values.map(name -> _).map { case (name, value) =>
-          s"$name=$value"
-        }
-      }.mkString("&")
-      val url = s"${req.url}?$q"
-      apiToken.map { _ =>
+      def queryComponents = for {
+        (name, values) <- req.queryString
+        value <- values
+      } yield name -> value
+
+      def url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
+
+      apiToken.fold( logger.info(s"curl -X $method $url") ) { _ =>
         logger.info(s"curl -X $method -u '[REDACTED]:' $url")
-      }.getOrElse {
-        logger.info(s"curl -X $method $url")
       }
       req
     }
@@ -580,6 +578,7 @@ package quality {
         val queryBuilder = List.newBuilder[(String, String)]
         
         
+
         GET(s"/incidents/${({x: Long =>
           val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
@@ -589,16 +588,20 @@ package quality {
           case r => throw new FailedResponse(r)
         }
       }
-      
-      /**
-       * Create a new incident.
-       */
-      def post(
+
+      case class PostBody(
         teamKey: scala.Option[String] = None,
         severity: String,
         summary: String,
         description: scala.Option[String] = None,
         tags: scala.collection.Seq[String] = Nil
+      )
+      
+      /**
+       * Create a new incident.
+       */
+      def post(
+        body: PostBody
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Incident] = {
         val payload = play.api.libs.json.Json.obj(
           "team_key" -> play.api.libs.json.Json.toJson(teamKey),
@@ -639,19 +642,20 @@ package quality {
           java.net.URLEncoder.encode(s, "UTF-8")
         })(id)}", payload).map {
           case r if r.status == 201 => r.json.as[Incident]
-          case r if r.status == 409 => throw new ErrorResponse(r)
-          case r => throw new FailedResponse(r)
+          case r if r.status == 409 => throw new ResponseFailed[Seq[Error]](r, r.json.as[Seq[Error]])
+          case r => throw new ErrorResponse(r)
         }
       }
       
       def deleteById(
         id: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]] = {
         DELETE(s"/incidents/${({x: Long =>
           val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(id)}").map {
-          case r if r.status == 204 => Unit
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
           case r => throw new FailedResponse(r)
         }
       }

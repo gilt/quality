@@ -144,9 +144,7 @@
                 {
                     "method": "POST",
                     "description": "Create a new team.",
-                    "parameters": [
-			{ "name": "key", "type": "string" }
-		    ],
+		    "body": "team_form",
                     "responses": {
                         "201": { "type": "team" },
                         "409": { "type": "[error]" }
