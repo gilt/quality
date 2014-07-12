@@ -32,7 +32,7 @@ object PlansDao {
            grades.score as grade_score
       from plans
       join incidents on incidents.deleted_at is null and incidents.id = plans.incident_id
-      join teams on teams.deleted_at is null and teams.id = incidents.team_id
+      left join teams on teams.deleted_at is null and teams.id = incidents.team_id
       left join grades on grades.deleted_at is null and grades.plan_id = plans.id
      where plans.deleted_at is null
   """
