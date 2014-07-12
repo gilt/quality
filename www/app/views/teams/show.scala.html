@@ -1,5 +1,7 @@
 @(team: quality.models.Team,
-  stats: Option[quality.models.Statistic])(implicit flash: Flash)
+  stats: Option[quality.models.Statistic],
+  incidents: lib.PaginatedCollection[quality.models.Incident]
+)(implicit flash: Flash)
 
 @main(title = s"Team ${team.key}") {
 
@@ -11,11 +13,31 @@
     <li><a href="@routes.Teams.postDeleteByKey(team.key)" class="delete" data-confirm="Are you sure to delete this team?">Delete</a></li>
   </ul>
 
-  <p><b>Statistics over past 12 weeks</b></p>
-  @stats.map { stat =>
-    <li>Average Grade: @Html(lib.GradeImage.imageTag(stat.averageGrade))</li>
-    <li>Total Incidents: <a href="@routes.Incidents.index(team_key = Some(team.key))">@stat.totalIncidents</a></li>
-    <li>Total Open Incidents: <a href="@routes.Incidents.index(team_key = Some(team.key), has_plan = Some("0"))">@stat.totalOpenIncidents</a></li>
+  <h3>Statistics over past 12 weeks</h3>
+  @if(stats.isEmpty) {
+    <em>None</em>
+  } else {
+    <li>Average Grade: @Html(lib.GradeImage.imageTag(stats.get.averageGrade))</li>
+    <li>Total Incidents: <a href="@routes.Incidents.index(team_key = Some(team.key))">@stats.get.totalIncidents</a></li>
+    <li>Total Open Incidents: <a href="@routes.Incidents.index(team_key = Some(team.key), has_plan = Some("0"))">@stats.get.totalOpenIncidents</a></li>
+  }
+
+  <h3>Incidents</h3>
+  @if(incidents.isEmpty) {
+    <em>No incidents found</em>
+  } else {
+    @views.html.incidents.incidentsTable(incidents.items, false)
+  
+    @if(incidents.hasPrevious || incidents.hasNext) {
+      <ul class="pager">
+        @if(incidents.hasPrevious) {
+          <li><a href="@routes.Teams.show(team.key, incidents.page - 1)">Previous</a></li>
+        }
+        @if(incidents.hasNext) {
+          <li><a href="@routes.Teams.show(team.key, incidents.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
   }
 
 }

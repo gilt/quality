@@ -19,7 +19,7 @@ POST    /plans/grade/:id                                          controllers.Pl
 GET     /teams/                                                   controllers.Teams.index(key: Option[String] ?= None, page: Int ?= 0)
 GET     /teams/create                                             controllers.Teams.create()
 POST    /teams/postCreate                                         controllers.Teams.postCreate()
-GET     /teams/:key                                               controllers.Teams.show(key: String)
+GET     /teams/:key                                               controllers.Teams.show(key: String, incidentsPage: Int ?= 0)
 POST    /teams/delete/:key                                        controllers.Teams.postDeleteByKey(key: String)
 
 # Map static resources from the /public folder to the /assets URL path

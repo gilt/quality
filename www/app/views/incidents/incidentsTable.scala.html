@@ -1,4 +1,5 @@
-@(incidents: Seq[quality.models.Incident])
+@(incidents: Seq[quality.models.Incident],
+  showTeam: Boolean = true)
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -7,7 +8,7 @@
       <th>Created</th>
       <th>Severity</th>
       <th>Plan</th>
-      <th>Team</th>
+      @if(showTeam) { <th>Team</th> }
       <th>Summary</th>
     </tr>
   </thead>
@@ -15,7 +16,7 @@
     @incidents.map { incident =>
      <tr>
        <td><a href="@routes.Incidents.show(incident.id)">@incident.id</a></td>
-       <td>@incident.createdAt</td>
+       <td>@org.joda.time.format.DateTimeFormat.shortDate.print(incident.createdAt)</td>
        <td>@incident.severity</td>
        <td>
          @if(incident.plan.isEmpty) {
@@ -28,7 +29,7 @@
            }
          }
        </td>
-       <td>@incident.team.map(_.key).getOrElse("")</td>
+       @if(showTeam) { <td>@incident.team.map(_.key).getOrElse("")</td> }
        <td>@incident.summary</td>
      </tr>
    }
