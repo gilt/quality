@@ -368,13 +368,13 @@ package quality.models {
 
 package quality {
 
-  case class FailedResponse(response: play.api.libs.ws.Response) extends Exception
+  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception
 
   package error {
   
     import quality.models.json._
   
-    case class ErrorsResponse(response: play.api.libs.ws.Response) extends Exception {
+    case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception {
     
       lazy val errors = response.json.as[scala.collection.Seq[quality.models.Error]]
     
