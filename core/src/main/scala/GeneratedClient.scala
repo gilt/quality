@@ -161,18 +161,18 @@ package quality.models {
     import play.api.libs.json._
     import play.api.libs.functional.syntax._
 
-    implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
+    private implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
-    implicit val jsonWritesUUID = new Writes[java.util.UUID] {
+    private implicit val jsonWritesUUID = new Writes[java.util.UUID] {
       def writes(x: java.util.UUID) = JsString(x.toString)
     }
 
-    implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
+    private implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
       import org.joda.time.format.ISODateTimeFormat.dateTimeParser
       dateTimeParser.parseDateTime(str)
     }
 
-    implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
+    private implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
       def writes(x: org.joda.time.DateTime) = {
         import org.joda.time.format.ISODateTimeFormat.dateTime
         val str = dateTime.print(x)
@@ -180,25 +180,25 @@ package quality.models {
       }
     }
 
-    implicit val jsonReadsEvent_Model = __.read[String].map(Event.Model.apply)
+    implicit val jsonReadsQualityEvent_Model = __.read[String].map(Event.Model.apply)
     
-    implicit val jsonWritesEvent_Model = new Writes[Event.Model] {
+    implicit val jsonWritesQualityEvent_Model = new Writes[Event.Model] {
       def writes(x: Event.Model) = JsString(x.toString)
     }
     
-    implicit val jsonReadsEvent_Action = __.read[String].map(Event.Action.apply)
+    implicit val jsonReadsQualityEvent_Action = __.read[String].map(Event.Action.apply)
     
-    implicit val jsonWritesEvent_Action = new Writes[Event.Action] {
+    implicit val jsonWritesQualityEvent_Action = new Writes[Event.Action] {
       def writes(x: Event.Action) = JsString(x.toString)
     }
     
-    implicit val jsonReadsIncident_Severity = __.read[String].map(Incident.Severity.apply)
+    implicit val jsonReadsQualityIncident_Severity = __.read[String].map(Incident.Severity.apply)
     
-    implicit val jsonWritesIncident_Severity = new Writes[Incident.Severity] {
+    implicit val jsonWritesQualityIncident_Severity = new Writes[Incident.Severity] {
       def writes(x: Incident.Severity) = JsString(x.toString)
     }
 
-    implicit def readsError: play.api.libs.json.Reads[Error] =
+    implicit def jsonReadsQualityError: play.api.libs.json.Reads[Error] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -206,7 +206,7 @@ package quality.models {
          (__ \ "message").read[String])(Error.apply _)
       }
     
-    implicit def writesError: play.api.libs.json.Writes[Error] =
+    implicit def jsonWritesQualityError: play.api.libs.json.Writes[Error] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -214,7 +214,7 @@ package quality.models {
          (__ \ "message").write[String])(unlift(Error.unapply))
       }
     
-    implicit def readsEvent: play.api.libs.json.Reads[Event] =
+    implicit def jsonReadsQualityEvent: play.api.libs.json.Reads[Event] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -225,7 +225,7 @@ package quality.models {
          (__ \ "data").read[EventData])(Event.apply _)
       }
     
-    implicit def writesEvent: play.api.libs.json.Writes[Event] =
+    implicit def jsonWritesQualityEvent: play.api.libs.json.Writes[Event] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -236,7 +236,7 @@ package quality.models {
          (__ \ "data").write[EventData])(unlift(Event.unapply))
       }
     
-    implicit def readsEventData: play.api.libs.json.Reads[EventData] =
+    implicit def jsonReadsQualityEventData: play.api.libs.json.Reads[EventData] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -244,7 +244,7 @@ package quality.models {
          (__ \ "summary").read[String])(EventData.apply _)
       }
     
-    implicit def writesEventData: play.api.libs.json.Writes[EventData] =
+    implicit def jsonWritesQualityEventData: play.api.libs.json.Writes[EventData] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -252,7 +252,7 @@ package quality.models {
          (__ \ "summary").write[String])(unlift(EventData.unapply))
       }
     
-    implicit def readsHealthcheck: play.api.libs.json.Reads[Healthcheck] =
+    implicit def jsonReadsQualityHealthcheck: play.api.libs.json.Reads[Healthcheck] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -261,14 +261,14 @@ package quality.models {
         }
       }
     
-    implicit def writesHealthcheck: play.api.libs.json.Writes[Healthcheck] =
+    implicit def jsonWritesQualityHealthcheck: play.api.libs.json.Writes[Healthcheck] =
       new play.api.libs.json.Writes[Healthcheck] {
         def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
           "status" -> play.api.libs.json.Json.toJson(x.status)
         )
       }
     
-    implicit def readsIncident: play.api.libs.json.Reads[Incident] =
+    implicit def jsonReadsQualityIncident: play.api.libs.json.Reads[Incident] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -284,7 +284,7 @@ package quality.models {
          (__ \ "created_at").read[org.joda.time.DateTime])(Incident.apply _)
       }
     
-    implicit def writesIncident: play.api.libs.json.Writes[Incident] =
+    implicit def jsonWritesQualityIncident: play.api.libs.json.Writes[Incident] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -298,7 +298,7 @@ package quality.models {
          (__ \ "created_at").write[org.joda.time.DateTime])(unlift(Incident.unapply))
       }
     
-    implicit def readsPlan: play.api.libs.json.Reads[Plan] =
+    implicit def jsonReadsQualityPlan: play.api.libs.json.Reads[Plan] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -309,7 +309,7 @@ package quality.models {
          (__ \ "created_at").read[org.joda.time.DateTime])(Plan.apply _)
       }
     
-    implicit def writesPlan: play.api.libs.json.Writes[Plan] =
+    implicit def jsonWritesQualityPlan: play.api.libs.json.Writes[Plan] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -320,7 +320,7 @@ package quality.models {
          (__ \ "created_at").write[org.joda.time.DateTime])(unlift(Plan.unapply))
       }
     
-    implicit def readsStatistic: play.api.libs.json.Reads[Statistic] =
+    implicit def jsonReadsQualityStatistic: play.api.libs.json.Reads[Statistic] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -335,7 +335,7 @@ package quality.models {
         })(Statistic.apply _)
       }
     
-    implicit def writesStatistic: play.api.libs.json.Writes[Statistic] =
+    implicit def jsonWritesQualityStatistic: play.api.libs.json.Writes[Statistic] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -348,7 +348,7 @@ package quality.models {
          (__ \ "plans").write[scala.collection.Seq[Plan]])(unlift(Statistic.unapply))
       }
     
-    implicit def readsTeam: play.api.libs.json.Reads[Team] =
+    implicit def jsonReadsQualityTeam: play.api.libs.json.Reads[Team] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -357,7 +357,7 @@ package quality.models {
         }
       }
     
-    implicit def writesTeam: play.api.libs.json.Writes[Team] =
+    implicit def jsonWritesQualityTeam: play.api.libs.json.Writes[Team] =
       new play.api.libs.json.Writes[Team] {
         def writes(x: Team) = play.api.libs.json.Json.obj(
           "key" -> play.api.libs.json.Json.toJson(x.key)
@@ -367,20 +367,34 @@ package quality.models {
 }
 
 package quality {
+  object helpers {
+    import org.joda.time.DateTime
+    import org.joda.time.format.ISODateTimeFormat
+    import play.api.mvc.QueryStringBindable
 
-  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception
+    import scala.util.{ Failure, Success, Try }
 
-  package error {
-  
-    import quality.models.json._
-  
-    case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception {
-    
-      lazy val errors = response.json.as[scala.collection.Seq[quality.models.Error]]
-    
+    private[helpers] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
+    private[helpers] val dateTimeISOFormatter = ISODateTimeFormat.dateTime()
+
+    private[helpers] def parseDateTimeISO(s: String): Either[String, DateTime] = {
+      Try(dateTimeISOParser.parseDateTime(s)) match {
+        case Success(dt) => Right(dt)
+        case Failure(f) => Left("Could not parse DateTime: " + f.getMessage)
+      }
+    }
+
+    implicit object DateTimeISOQueryStringBinder extends QueryStringBindable[DateTime] {
+      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, DateTime]] = {
+        for {
+          values <- params.get(key)
+          s <- values.headOption
+        } yield parseDateTimeISO(s)
+      }
+
+      override def unbind(key: String, time: DateTime): String = key + "=" + dateTimeISOFormatter.print(time)
     }
   }
-
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import quality.models._
@@ -390,58 +404,17 @@ package quality {
 
     logger.info(s"Initializing quality.client for url $apiUrl")
 
-    def events = Events
+    def events: Events = Events
     
-    def healthchecks = Healthchecks
+    def healthchecks: Healthchecks = Healthchecks
     
-    def incidents = Incidents
+    def incidents: Incidents = Incidents
     
-    def plans = Plans
+    def plans: Plans = Plans
     
-    def statistics = Statistics
+    def statistics: Statistics = Statistics
     
-    def teams = Teams
-
-    def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
-      import play.api.Play.current
-
-      val holder = play.api.libs.ws.WS.url(apiUrl + path)
-      apiToken.fold(holder) { token =>
-        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
-      }
-    }
-
-    def _logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
-      val queryComponents = for {
-        (name, values) <- req.queryString
-        value <- values
-      } yield name -> value
-      val url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
-      apiToken.fold(logger.info(s"curl -X $method $url")) { _ =>
-        logger.info(s"curl -X $method -u '[REDACTED]:' $url")
-      }
-      req
-    }
-
-    private def POST(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("POST", _requestHolder(path)).post(data)
-    }
-
-    private def GET(path: String, q: Seq[(String, String)] = Seq.empty)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
-    }
-
-    private def PUT(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("PUT", _requestHolder(path)).put(data)
-    }
-
-    private def PATCH(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("PATCH", _requestHolder(path)).patch(data)
-    }
-
-    private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("DELETE", _requestHolder(path)).delete()
-    }
+    def teams: Teams = Teams
 
     trait Events {
       /**
@@ -891,5 +864,80 @@ package quality {
         }
       }
     }
+
+    def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
+      import play.api.Play.current
+
+      val holder = play.api.libs.ws.WS.url(apiUrl + path)
+      apiToken.fold(holder) { token =>
+        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
+      }
+    }
+
+    def _logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
+      val queryComponents = for {
+        (name, values) <- req.queryString
+        value <- values
+      } yield name -> value
+      val url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
+      apiToken.fold(logger.info(s"curl -X $method $url")) { _ =>
+        logger.info(s"curl -X $method -u '[REDACTED]:' $url")
+      }
+      req
+    }
+
+    private def POST(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("POST", _requestHolder(path).withQueryString(q:_*)).post(data)
+    }
+
+    private def GET(
+      path: String,
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
+    }
+
+    private def PUT(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("PUT", _requestHolder(path).withQueryString(q:_*)).put(data)
+    }
+
+    private def PATCH(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(data)
+    }
+
+    private def DELETE(
+      path: String,
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("DELETE", _requestHolder(path).withQueryString(q:_*)).delete()
+    }
+
   }
+
+  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception
+
+  package error {
+  
+    import quality.models.json._
+  
+    case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception {
+    
+      lazy val errors = response.json.as[scala.collection.Seq[quality.models.Error]]
+    
+    }
+  }
+
+
 }
