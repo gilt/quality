@@ -92,7 +92,7 @@
                 {
                     "method": "GET",
                     "responses": {
-                        "200": { "type": "[healthcheck]" }
+                        "200": { "type": "healthcheck" }
                     }
                 }
 	    ]
