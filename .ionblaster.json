@@ -1,12 +1,12 @@
 [
   {
     "service": "api",
-    "s3": "s3://gilt-architecture-metadata/ionblaster/quality/config.json",
-    "profile": "architecture"
+    "s3": "s3://gilt-architecture-metadata/ionblaster/quality.json",
+    "profile": "gilt-architecture"
   },
   {
     "service": "www",
-    "s3": "s3://gilt-architecture-metadata/ionblaster/quality/config.json",
-    "profile": "architecture"
+    "s3": "s3://gilt-architecture-metadata/ionblaster/quality.json",
+    "profile": "gilt-architecture"
   }
 ]
