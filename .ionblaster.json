@@ -8,7 +8,6 @@
   {
     "service": "www",
     "s3": "s3://metadata-gilt-architecture/ionblaster/quality.json",
-    "profile": "gilt-architecture",
-    "load_balancer_scheme": "internal"
+    "profile": "gilt-architecture"
   }
 ]
