@@ -865,7 +865,7 @@ package quality {
       }
     }
 
-    private val UserAgent = "www.apidoc.me:0.4.64 gilt/quality:0.0.1-dev"
+    private val UserAgent = "www.apidoc.me:0.4.64 gilt/quality:0.4.10-SNAPSHOT"
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
