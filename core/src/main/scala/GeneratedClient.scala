@@ -181,19 +181,19 @@ package quality.models {
     }
 
     implicit val jsonReadsQualityEvent_Model = __.read[String].map(Event.Model.apply)
-    
+
     implicit val jsonWritesQualityEvent_Model = new Writes[Event.Model] {
       def writes(x: Event.Model) = JsString(x.toString)
     }
-    
+
     implicit val jsonReadsQualityEvent_Action = __.read[String].map(Event.Action.apply)
-    
+
     implicit val jsonWritesQualityEvent_Action = new Writes[Event.Action] {
       def writes(x: Event.Action) = JsString(x.toString)
     }
-    
+
     implicit val jsonReadsQualityIncident_Severity = __.read[String].map(Incident.Severity.apply)
-    
+
     implicit val jsonWritesQualityIncident_Severity = new Writes[Incident.Severity] {
       def writes(x: Incident.Severity) = JsString(x.toString)
     }
@@ -206,7 +206,7 @@ package quality.models {
         (__ \ "message").read[String]
       )(Error.apply _)
     }
-    
+
     implicit def jsonWritesQualityError: play.api.libs.json.Writes[Error] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -215,7 +215,7 @@ package quality.models {
         (__ \ "message").write[String]
       )(unlift(Error.unapply _))
     }
-    
+
     implicit def jsonReadsQualityEvent: play.api.libs.json.Reads[Event] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -227,7 +227,7 @@ package quality.models {
         (__ \ "data").read[EventData]
       )(Event.apply _)
     }
-    
+
     implicit def jsonWritesQualityEvent: play.api.libs.json.Writes[Event] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -239,7 +239,7 @@ package quality.models {
         (__ \ "data").write[EventData]
       )(unlift(Event.unapply _))
     }
-    
+
     implicit def jsonReadsQualityEventData: play.api.libs.json.Reads[EventData] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -248,7 +248,7 @@ package quality.models {
         (__ \ "summary").read[String]
       )(EventData.apply _)
     }
-    
+
     implicit def jsonWritesQualityEventData: play.api.libs.json.Writes[EventData] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -257,19 +257,19 @@ package quality.models {
         (__ \ "summary").write[String]
       )(unlift(EventData.unapply _))
     }
-    
+
     implicit def jsonReadsQualityHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
       (__ \ "status").read[String].map { x => new Healthcheck(status = x) }
     }
-    
+
     implicit def jsonWritesQualityHealthcheck: play.api.libs.json.Writes[Healthcheck] = new play.api.libs.json.Writes[Healthcheck] {
       def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
         "status" -> play.api.libs.json.Json.toJson(x.status)
       )
     }
-    
+
     implicit def jsonReadsQualityIncident: play.api.libs.json.Reads[Incident] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -284,7 +284,7 @@ package quality.models {
         (__ \ "created_at").read[org.joda.time.DateTime]
       )(Incident.apply _)
     }
-    
+
     implicit def jsonWritesQualityIncident: play.api.libs.json.Writes[Incident] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -299,7 +299,7 @@ package quality.models {
         (__ \ "created_at").write[org.joda.time.DateTime]
       )(unlift(Incident.unapply _))
     }
-    
+
     implicit def jsonReadsQualityPlan: play.api.libs.json.Reads[Plan] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -311,7 +311,7 @@ package quality.models {
         (__ \ "created_at").read[org.joda.time.DateTime]
       )(Plan.apply _)
     }
-    
+
     implicit def jsonWritesQualityPlan: play.api.libs.json.Writes[Plan] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -323,7 +323,7 @@ package quality.models {
         (__ \ "created_at").write[org.joda.time.DateTime]
       )(unlift(Plan.unapply _))
     }
-    
+
     implicit def jsonReadsQualityStatistic: play.api.libs.json.Reads[Statistic] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -337,7 +337,7 @@ package quality.models {
         (__ \ "plans").readNullable[scala.collection.Seq[Plan]].map(_.getOrElse(Nil))
       )(Statistic.apply _)
     }
-    
+
     implicit def jsonWritesQualityStatistic: play.api.libs.json.Writes[Statistic] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -351,13 +351,13 @@ package quality.models {
         (__ \ "plans").write[scala.collection.Seq[Plan]]
       )(unlift(Statistic.unapply _))
     }
-    
+
     implicit def jsonReadsQualityTeam: play.api.libs.json.Reads[Team] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
       (__ \ "key").read[String].map { x => new Team(key = x) }
     }
-    
+
     implicit def jsonWritesQualityTeam: play.api.libs.json.Writes[Team] = new play.api.libs.json.Writes[Team] {
       def writes(x: Team) = play.api.libs.json.Json.obj(
         "key" -> play.api.libs.json.Json.toJson(x.key)
@@ -405,15 +405,15 @@ package quality {
     logger.info(s"Initializing quality.client for url $apiUrl")
 
     def events: Events = Events
-    
+
     def healthchecks: Healthchecks = Healthchecks
-    
+
     def incidents: Incidents = Incidents
-    
+
     def plans: Plans = Plans
-    
+
     def statistics: Statistics = Statistics
-    
+
     def teams: Teams = Teams
 
     trait Events {
@@ -429,7 +429,7 @@ package quality {
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Event]]
     }
-  
+
     object Events extends Events {
       override def get(
         model: scala.Option[String] = None,
@@ -445,27 +445,27 @@ package quality {
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
-        
+
         GET(s"/events", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Event]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
-  
+
     trait Healthchecks {
       def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Healthcheck]]
     }
-  
+
     object Healthchecks extends Healthchecks {
       override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Healthcheck]] = {
         GET(s"/_internal_/healthcheck").map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Healthcheck]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
-  
+
     trait Incidents {
       /**
        * Search all incidents. Results are always paginated.
@@ -479,14 +479,14 @@ package quality {
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Incident]]
-      
+
       /**
        * Returns information about the incident with this specific id.
        */
       def getById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Incident]]
-      
+
       /**
        * Create a new incident.
        */
@@ -497,7 +497,7 @@ package quality {
         description: scala.Option[String] = None,
         tags: scala.collection.Seq[String] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Incident]
-      
+
       /**
        * Updates an incident.
        */
@@ -509,12 +509,12 @@ package quality {
         description: scala.Option[String] = None,
         tags: scala.collection.Seq[String] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Incident]
-      
+
       def deleteById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
-  
+
     object Incidents extends Incidents {
       override def get(
         id: scala.Option[Long] = None,
@@ -534,23 +534,23 @@ package quality {
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
-        
+
         GET(s"/incidents", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Incident]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def getById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Incident]] = {
         GET(s"/incidents/${id}").map {
           case r if r.status == 200 => Some(r.json.as[quality.models.Incident])
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def post(
         teamKey: scala.Option[String] = None,
         severity: String,
@@ -565,14 +565,14 @@ package quality {
           "description" -> play.api.libs.json.Json.toJson(description),
           "tags" -> play.api.libs.json.Json.toJson(tags)
         )
-        
+
         POST(s"/incidents", payload).map {
           case r if r.status == 201 => r.json.as[quality.models.Incident]
           case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def putById(
         id: Long,
         teamKey: scala.Option[String] = None,
@@ -588,25 +588,25 @@ package quality {
           "description" -> play.api.libs.json.Json.toJson(description),
           "tags" -> play.api.libs.json.Json.toJson(tags)
         )
-        
+
         PUT(s"/incidents/${id}", payload).map {
           case r if r.status == 201 => r.json.as[quality.models.Incident]
           case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def deleteById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         DELETE(s"/incidents/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
-  
+
     trait Plans {
       /**
        * Search all plans. Results are always paginated.
@@ -618,7 +618,7 @@ package quality {
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Plan]]
-      
+
       /**
        * Create a plan.
        */
@@ -627,7 +627,7 @@ package quality {
         body: String,
         grade: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Plan]
-      
+
       /**
        * Update a plan.
        */
@@ -637,7 +637,7 @@ package quality {
         body: String,
         grade: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Plan]
-      
+
       /**
        * Update the grade assigned to a plan.
        */
@@ -645,14 +645,14 @@ package quality {
         id: Long,
         grade: Int
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Plan]
-      
+
       /**
        * Get a single plan.
        */
       def getById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Plan]]
-      
+
       /**
        * Delete a plan.
        */
@@ -660,7 +660,7 @@ package quality {
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
-  
+
     object Plans extends Plans {
       override def get(
         id: scala.Option[Long] = None,
@@ -676,13 +676,13 @@ package quality {
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
-        
+
         GET(s"/plans", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Plan]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def post(
         incidentId: Long,
         body: String,
@@ -693,14 +693,14 @@ package quality {
           "body" -> play.api.libs.json.Json.toJson(body),
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
-        
+
         POST(s"/plans", payload).map {
           case r if r.status == 201 => r.json.as[quality.models.Plan]
           case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def putById(
         id: Long,
         incidentId: Long,
@@ -712,14 +712,14 @@ package quality {
           "body" -> play.api.libs.json.Json.toJson(body),
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
-        
+
         PUT(s"/plans/${id}", payload).map {
           case r if r.status == 200 => r.json.as[quality.models.Plan]
           case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def putGradeById(
         id: Long,
         grade: Int
@@ -727,35 +727,35 @@ package quality {
         val payload = play.api.libs.json.Json.obj(
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
-        
+
         PUT(s"/plans/${id}/grade", payload).map {
           case r if r.status == 200 => r.json.as[quality.models.Plan]
           case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def getById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Plan]] = {
         GET(s"/plans/${id}").map {
           case r if r.status == 200 => Some(r.json.as[quality.models.Plan])
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def deleteById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         DELETE(s"/plans/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
-  
+
     trait Statistics {
       /**
        * Retrieve team statistics for all or one team.
@@ -765,7 +765,7 @@ package quality {
         numberHours: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Statistic]]
     }
-  
+
     object Statistics extends Statistics {
       override def get(
         teamKey: scala.Option[String] = None,
@@ -775,14 +775,14 @@ package quality {
           teamKey.map("team_key" -> _),
           numberHours.map("number_hours" -> _.toString)
         ).flatten
-        
+
         GET(s"/statistics", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Statistic]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
-  
+
     trait Teams {
       /**
        * Search all teams. Results are always paginated.
@@ -792,26 +792,26 @@ package quality {
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Team]]
-      
+
       /**
        * Returns information about the team with this specific key.
        */
       def getByKey(
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Team]]
-      
+
       /**
        * Create a new team.
        */
       def post(
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team]
-      
+
       def deleteByKey(
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
-  
+
     object Teams extends Teams {
       override def get(
         key: scala.Option[String] = None,
@@ -823,49 +823,49 @@ package quality {
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
-        
+
         GET(s"/teams", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Team]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def getByKey(
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Team]] = {
-        GET(s"/teams/${java.net.URLEncoder.encode(key, "UTF-8")}").map {
+        GET(s"/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[quality.models.Team])
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def post(
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team] = {
         val payload = play.api.libs.json.Json.obj(
           "key" -> play.api.libs.json.Json.toJson(key)
         )
-        
+
         POST(s"/teams", payload).map {
           case r if r.status == 201 => r.json.as[quality.models.Team]
           case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
-      
+
       override def deleteByKey(
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
-        DELETE(s"/teams/${java.net.URLEncoder.encode(key, "UTF-8")}").map {
+        DELETE(s"/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
 
-    private val UserAgent = "www.apidoc.me:0.4.64 gilt/quality:0.4.10-SNAPSHOT"
+    private val UserAgent = "apidoc:0.4.67 http://www.apidoc.me/gilt/code/quality/0.0.1-dev/play_2_3_client"
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
@@ -888,7 +888,7 @@ package quality {
       req
     }
 
-    private def POST(
+    def POST(
       path: String,
       data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
       q: Seq[(String, String)] = Seq.empty
@@ -896,14 +896,14 @@ package quality {
       _logRequest("POST", _requestHolder(path).withQueryString(q:_*)).post(data)
     }
 
-    private def GET(
+    def GET(
       path: String,
       q: Seq[(String, String)] = Seq.empty
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
     }
 
-    private def PUT(
+    def PUT(
       path: String,
       data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
       q: Seq[(String, String)] = Seq.empty
@@ -911,7 +911,7 @@ package quality {
       _logRequest("PUT", _requestHolder(path).withQueryString(q:_*)).put(data)
     }
 
-    private def PATCH(
+    def PATCH(
       path: String,
       data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
       q: Seq[(String, String)] = Seq.empty
@@ -919,7 +919,7 @@ package quality {
       _logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(data)
     }
 
-    private def DELETE(
+    def DELETE(
       path: String,
       q: Seq[(String, String)] = Seq.empty
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
@@ -928,16 +928,16 @@ package quality {
 
   }
 
-  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception
+  case class FailedRequest(response: play.api.libs.ws.WSResponse) extends Exception
 
   package error {
-  
+
     import quality.models.json._
-  
+
     case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception {
-    
+
       lazy val errors = response.json.as[scala.collection.Seq[quality.models.Error]]
-    
+
     }
   }
 
