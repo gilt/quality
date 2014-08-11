@@ -454,13 +454,14 @@ package quality {
     }
 
     trait Healthchecks {
-      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Healthcheck]]
+      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Healthcheck]]
     }
 
     object Healthchecks extends Healthchecks {
-      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Healthcheck]] = {
+      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Healthcheck]] = {
         GET(s"/_internal_/healthcheck").map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Healthcheck]]
+          case r if r.status == 200 => Some(r.json.as[quality.models.Healthcheck])
+          case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
       }
@@ -865,7 +866,7 @@ package quality {
       }
     }
 
-    private val UserAgent = "apidoc:0.4.67 http://www.apidoc.me/gilt/code/quality/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.4.68 http://www.apidoc.me/gilt/code/quality/0.4.10-SNAPSHOT/play_2_3_client"
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
