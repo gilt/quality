@@ -1,6 +1,6 @@
 package db
 
-import quality.models.{ Incident, Plan }
+import quality.models.{ Incident, Plan, Severity }
 import java.util.UUID
 
 object Util {
@@ -22,7 +22,7 @@ object Util {
   def incidentForm() = {
     IncidentForm(
       team_key = Some("test-team"),
-      severity = Incident.Severity.Low.toString,
+      severity = Severity.Low.toString,
       summary = "Something happened",
       description = None
     )

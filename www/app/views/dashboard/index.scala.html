@@ -23,10 +23,10 @@
             }
             @org.joda.time.format.DateTimeFormat.longDateTime.print(event.timestamp)
             @{event.model match {
-              case quality.models.Event.Model.Incident => Html(s"${event.action} Incident #${event.data.modelId}: ${event.data.summary}")
-              case quality.models.Event.Model.Plan => Html(s"${event.action} ${event.data.summary}")
-              case quality.models.Event.Model.Rating => Html(s"${event.action} ${event.data.summary}")
-              case quality.models.Event.Model.UNDEFINED(name) => s"$name"
+              case quality.models.Model.Incident => Html(s"${event.action} Incident #${event.data.modelId}: ${event.data.summary}")
+              case quality.models.Model.Plan => Html(s"${event.action} ${event.data.summary}")
+              case quality.models.Model.Rating => Html(s"${event.action} ${event.data.summary}")
+              case quality.models.Model.UNDEFINED(name) => s"$name"
             }}
             @if(!event.url.isEmpty) {</a>}
             </td>

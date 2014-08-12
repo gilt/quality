@@ -3,138 +3,48 @@ package quality.models {
     code: String,
     message: String
   )
+
+  /**
+   * Represents something that has happened - e.g. a team was created, an incident
+   * created, a plan updated, etc.
+   */
   case class Event(
-    model: Event.Model,
-    action: Event.Action,
+    model: Model,
+    action: Action,
     timestamp: org.joda.time.DateTime,
     url: scala.Option[String] = None,
     data: EventData
   )
-  object Event {
 
-    sealed trait Model
-
-    object Model {
-
-      case object Incident extends Model { override def toString = "incident" }
-      case object Plan extends Model { override def toString = "plan" }
-      case object Rating extends Model { override def toString = "rating" }
-
-      /**
-       * UNDEFINED captures values that are sent either in error or
-       * that were added by the server after this library was
-       * generated. We want to make it easy and obvious for users of
-       * this library to handle this case gracefully.
-       *
-       * We use all CAPS for the variable name to avoid collisions
-       * with the camel cased values above.
-       */
-      case class UNDEFINED(override val toString: String) extends Model
-
-      /**
-       * all returns a list of all the valid, known values. We use
-       * lower case to avoid collisions with the camel cased values
-       * above.
-       */
-      val all = Seq(Incident, Plan, Rating)
-
-      private[this]
-      val byName = all.map(x => x.toString -> x).toMap
-
-      def apply(value: String): Model = fromString(value).getOrElse(UNDEFINED(value))
-
-      def fromString(value: String): scala.Option[Model] = byName.get(value)
-
-    }
-
-    sealed trait Action
-
-    object Action {
-
-      case object Created extends Action { override def toString = "created" }
-      case object Updated extends Action { override def toString = "updated" }
-      case object Deleted extends Action { override def toString = "deleted" }
-
-      /**
-       * UNDEFINED captures values that are sent either in error or
-       * that were added by the server after this library was
-       * generated. We want to make it easy and obvious for users of
-       * this library to handle this case gracefully.
-       *
-       * We use all CAPS for the variable name to avoid collisions
-       * with the camel cased values above.
-       */
-      case class UNDEFINED(override val toString: String) extends Action
-
-      /**
-       * all returns a list of all the valid, known values. We use
-       * lower case to avoid collisions with the camel cased values
-       * above.
-       */
-      val all = Seq(Created, Updated, Deleted)
-
-      private[this]
-      val byName = all.map(x => x.toString -> x).toMap
-
-      def apply(value: String): Action = fromString(value).getOrElse(UNDEFINED(value))
-
-      def fromString(value: String): scala.Option[Action] = byName.get(value)
-
-    }
-  }
+  /**
+   * Generic, descriptive data about a specific event
+   */
   case class EventData(
     modelId: Long,
     summary: String
   )
+
   case class Healthcheck(
     status: String
   )
+
+  /**
+   * A bug or error that affected public or internal users in a negative way
+   */
   case class Incident(
     id: Long,
     summary: String,
     description: scala.Option[String] = None,
     team: scala.Option[Team] = None,
-    severity: Incident.Severity,
+    severity: Severity,
     tags: scala.collection.Seq[String] = Nil,
     plan: scala.Option[Plan] = None,
     createdAt: org.joda.time.DateTime
   )
-  object Incident {
 
-    sealed trait Severity
-
-    object Severity {
-
-      case object Low extends Severity { override def toString = "low" }
-      case object High extends Severity { override def toString = "high" }
-
-      /**
-       * UNDEFINED captures values that are sent either in error or
-       * that were added by the server after this library was
-       * generated. We want to make it easy and obvious for users of
-       * this library to handle this case gracefully.
-       *
-       * We use all CAPS for the variable name to avoid collisions
-       * with the camel cased values above.
-       */
-      case class UNDEFINED(override val toString: String) extends Severity
-
-      /**
-       * all returns a list of all the valid, known values. We use
-       * lower case to avoid collisions with the camel cased values
-       * above.
-       */
-      val all = Seq(Low, High)
-
-      private[this]
-      val byName = all.map(x => x.toString -> x).toMap
-
-      def apply(value: String): Severity = fromString(value).getOrElse(UNDEFINED(value))
-
-      def fromString(value: String): scala.Option[Severity] = byName.get(value)
-
-    }
-  }
+  /**
+   * Details for how an incident will be resolved
+   */
   case class Plan(
     id: Long,
     incidentId: Long,
@@ -142,6 +52,10 @@ package quality.models {
     grade: scala.Option[Int] = None,
     createdAt: org.joda.time.DateTime
   )
+
+  /**
+   * Statistics on each team's quality metrics, number of issues
+   */
   case class Statistic(
     team: Team,
     totalGrades: Long,
@@ -151,9 +65,133 @@ package quality.models {
     totalPlans: Long,
     plans: scala.collection.Seq[Plan] = Nil
   )
+
+  /**
+   * A team is the main actor in the system. Teams have a unique key and own
+   * incidents
+   */
   case class Team(
     key: String
   )
+
+  /**
+   * Used in the event system to indicate what happened.
+   */
+  sealed trait Action
+
+  object Action {
+
+    /**
+     * Indicates that an instance of this model was created
+     */
+    case object Created extends Action { override def toString = "created" }
+    /**
+     * Indicates that an instance of this model was updated
+     */
+    case object Updated extends Action { override def toString = "updated" }
+    /**
+     * Indicates that an instance of this model was deleted
+     */
+    case object Deleted extends Action { override def toString = "deleted" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Action
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Created, Updated, Deleted)
+
+    private[this]
+    val byName = all.map(x => x.toString -> x).toMap
+
+    def apply(value: String): Action = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): scala.Option[Action] = byName.get(value)
+
+  }
+
+  /**
+   * The name of the model that was the subject of the event
+   */
+  sealed trait Model
+
+  object Model {
+
+    case object Incident extends Model { override def toString = "incident" }
+    case object Plan extends Model { override def toString = "plan" }
+    case object Rating extends Model { override def toString = "rating" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Model
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Incident, Plan, Rating)
+
+    private[this]
+    val byName = all.map(x => x.toString -> x).toMap
+
+    def apply(value: String): Model = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): scala.Option[Model] = byName.get(value)
+
+  }
+
+  sealed trait Severity
+
+  object Severity {
+
+    case object Low extends Severity { override def toString = "low" }
+    case object High extends Severity { override def toString = "high" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Severity
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Low, High)
+
+    private[this]
+    val byName = all.map(x => x.toString -> x).toMap
+
+    def apply(value: String): Severity = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): scala.Option[Severity] = byName.get(value)
+
+  }
 }
 
 package quality.models {
@@ -180,24 +218,20 @@ package quality.models {
       }
     }
 
-    implicit val jsonReadsQualityEvent_Model = __.read[String].map(Event.Model.apply)
-
-    implicit val jsonWritesQualityEvent_Model = new Writes[Event.Model] {
-      def writes(x: Event.Model) = JsString(x.toString)
+    implicit val jsonReadsQualityEnum_Action = __.read[String].map(Action.apply)
+    implicit val jsonWritesQualityEnum_Action = new Writes[Action] {
+      def writes(x: Action) = JsString(x.toString)
     }
 
-    implicit val jsonReadsQualityEvent_Action = __.read[String].map(Event.Action.apply)
-
-    implicit val jsonWritesQualityEvent_Action = new Writes[Event.Action] {
-      def writes(x: Event.Action) = JsString(x.toString)
+    implicit val jsonReadsQualityEnum_Model = __.read[String].map(Model.apply)
+    implicit val jsonWritesQualityEnum_Model = new Writes[Model] {
+      def writes(x: Model) = JsString(x.toString)
     }
 
-    implicit val jsonReadsQualityIncident_Severity = __.read[String].map(Incident.Severity.apply)
-
-    implicit val jsonWritesQualityIncident_Severity = new Writes[Incident.Severity] {
-      def writes(x: Incident.Severity) = JsString(x.toString)
+    implicit val jsonReadsQualityEnum_Severity = __.read[String].map(Severity.apply)
+    implicit val jsonWritesQualityEnum_Severity = new Writes[Severity] {
+      def writes(x: Severity) = JsString(x.toString)
     }
-
     implicit def jsonReadsQualityError: play.api.libs.json.Reads[Error] = {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
@@ -220,8 +254,8 @@ package quality.models {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
       (
-        (__ \ "model").read[Event.Model] and
-        (__ \ "action").read[Event.Action] and
+        (__ \ "model").read[Model] and
+        (__ \ "action").read[Action] and
         (__ \ "timestamp").read[org.joda.time.DateTime] and
         (__ \ "url").readNullable[String] and
         (__ \ "data").read[EventData]
@@ -232,8 +266,8 @@ package quality.models {
       import play.api.libs.json._
       import play.api.libs.functional.syntax._
       (
-        (__ \ "model").write[Event.Model] and
-        (__ \ "action").write[Event.Action] and
+        (__ \ "model").write[Model] and
+        (__ \ "action").write[Action] and
         (__ \ "timestamp").write[org.joda.time.DateTime] and
         (__ \ "url").write[scala.Option[String]] and
         (__ \ "data").write[EventData]
@@ -278,7 +312,7 @@ package quality.models {
         (__ \ "summary").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "team").readNullable[Team] and
-        (__ \ "severity").read[Incident.Severity] and
+        (__ \ "severity").read[Severity] and
         (__ \ "tags").readNullable[scala.collection.Seq[String]].map(_.getOrElse(Nil)) and
         (__ \ "plan").readNullable[Plan] and
         (__ \ "created_at").read[org.joda.time.DateTime]
@@ -293,7 +327,7 @@ package quality.models {
         (__ \ "summary").write[String] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "team").write[scala.Option[Team]] and
-        (__ \ "severity").write[Incident.Severity] and
+        (__ \ "severity").write[Severity] and
         (__ \ "tags").write[scala.collection.Seq[String]] and
         (__ \ "plan").write[scala.Option[Plan]] and
         (__ \ "created_at").write[org.joda.time.DateTime]
@@ -866,7 +900,7 @@ package quality {
       }
     }
 
-    private val UserAgent = "apidoc:0.4.68 http://www.apidoc.me/gilt/code/quality/0.4.10-SNAPSHOT/play_2_3_client"
+    private val UserAgent = "apidoc:0.4.69 http://www.apidoc.me/gilt/code/quality/0.0.1-dev/play_2_3_client"
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current

@@ -1,6 +1,6 @@
 package db
 
-import quality.models.{ Event, EventData }
+import quality.models.{ Action, Event, EventData, Model }
 import anorm._
 import AnormHelper._
 import anorm.ParameterValue._
@@ -70,7 +70,7 @@ object EventsDao {
     val modelClause = model match {
       case None => "true"
       case Some(modelName: String) => {
-        Event.Model.fromString(modelName) match {
+        Model.fromString(modelName) match {
           case Some(m) => s"events.model = '${m.toString}'"
           case None => "false"
         }
@@ -92,9 +92,9 @@ object EventsDao {
 
     DB.withConnection { implicit c =>
       SQL(sql)().toList.map { row =>
-        val model = Event.Model(row[String]("model"))
+        val model = Model(row[String]("model"))
         val modelId = row[Long]("model_id")
-        val action = Event.Action(row[String]("action"))
+        val action = Action(row[String]("action"))
 
         Event(
           model = model,
@@ -110,18 +110,18 @@ object EventsDao {
     }
   }
 
-  private def buildUrl(action: Event.Action, model: Event.Model, id: Long): Option[String] = {
+  private def buildUrl(action: Action, model: Model, id: Long): Option[String] = {
 
     action match {
-      case Event.Action.Created | Event.Action.Updated => {
+      case Action.Created | Action.Updated => {
         model match {
-          case Event.Model.Incident => Some(s"/incidents/$id")
-          case Event.Model.Plan => Some(s"/plans/$id")
-          case Event.Model.Rating => Some(s"/plans/$id")
-          case Event.Model.UNDEFINED(_) => None
+          case Model.Incident => Some(s"/incidents/$id")
+          case Model.Plan => Some(s"/plans/$id")
+          case Model.Rating => Some(s"/plans/$id")
+          case Model.UNDEFINED(_) => None
         }
       }
-      case Event.Action.Deleted | Event.Action.UNDEFINED(_) => {
+      case Action.Deleted | Action.UNDEFINED(_) => {
         None
       }
     }

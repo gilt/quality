@@ -1,6 +1,6 @@
 package db
 
-import quality.models.{Incident, Plan, Team, Statistic}
+import quality.models.{Incident, Plan, Severity, Statistic, Team}
 import org.scalatest.{ FunSpec, Matchers }
 import play.api.test._
 import play.api.test.Helpers._
@@ -13,7 +13,7 @@ class StatisticsDaoSpec extends FunSpec with Matchers {
       val teamKey = UUID.randomUUID.toString
       Util.upsertTeam(teamKey)
 
-      val incident = Util.createIncident(Some(IncidentForm(team_key = Some(teamKey), severity = Incident.Severity.High.toString, summary = "test")))
+      val incident = Util.createIncident(Some(IncidentForm(team_key = Some(teamKey), severity = Severity.High.toString, summary = "test")))
       val grade = Util.upsertGrade(Some(GradeForm(plan_id = Util.createPlan(Some(PlanForm(incident_id = incident.id, body = "test"))).id, score = 100)))
       val other = Util.createPlan()
 

@@ -1,6 +1,6 @@
 package db
 
-import quality.models.Incident
+import quality.models.{ Incident, Severity }
 import org.scalatest.{ FunSpec, Matchers }
 import play.api.test._
 import play.api.test.Helpers._
@@ -31,7 +31,7 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
     running(FakeApplication()) {
       val form = IncidentForm(
         team_key = None,
-        severity = Incident.Severity.Low.toString,
+        severity = Severity.Low.toString,
         summary = "Something happened",
         description = None
       )
