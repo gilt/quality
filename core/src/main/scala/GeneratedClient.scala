@@ -196,21 +196,23 @@ package quality.models {
 
 package quality.models {
   package object json {
-    import play.api.libs.json._
+    import play.api.libs.json.__
+    import play.api.libs.json.JsString
+    import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
 
-    private implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
+    private[quality] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
-    private implicit val jsonWritesUUID = new Writes[java.util.UUID] {
+    private[quality] implicit val jsonWritesUUID = new Writes[java.util.UUID] {
       def writes(x: java.util.UUID) = JsString(x.toString)
     }
 
-    private implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
+    private[quality] implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
       import org.joda.time.format.ISODateTimeFormat.dateTimeParser
       dateTimeParser.parseDateTime(str)
     }
 
-    private implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
+    private[quality] implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
       def writes(x: org.joda.time.DateTime) = {
         import org.joda.time.format.ISODateTimeFormat.dateTime
         val str = dateTime.print(x)
@@ -233,8 +235,6 @@ package quality.models {
       def writes(x: Severity) = JsString(x.toString)
     }
     implicit def jsonReadsQualityError: play.api.libs.json.Reads[Error] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "code").read[String] and
         (__ \ "message").read[String]
@@ -242,8 +242,6 @@ package quality.models {
     }
 
     implicit def jsonWritesQualityError: play.api.libs.json.Writes[Error] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "code").write[String] and
         (__ \ "message").write[String]
@@ -251,8 +249,6 @@ package quality.models {
     }
 
     implicit def jsonReadsQualityEvent: play.api.libs.json.Reads[Event] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "model").read[Model] and
         (__ \ "action").read[Action] and
@@ -263,8 +259,6 @@ package quality.models {
     }
 
     implicit def jsonWritesQualityEvent: play.api.libs.json.Writes[Event] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "model").write[Model] and
         (__ \ "action").write[Action] and
@@ -275,8 +269,6 @@ package quality.models {
     }
 
     implicit def jsonReadsQualityEventData: play.api.libs.json.Reads[EventData] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "model_id").read[Long] and
         (__ \ "summary").read[String]
@@ -284,8 +276,6 @@ package quality.models {
     }
 
     implicit def jsonWritesQualityEventData: play.api.libs.json.Writes[EventData] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "model_id").write[Long] and
         (__ \ "summary").write[String]
@@ -293,8 +283,6 @@ package quality.models {
     }
 
     implicit def jsonReadsQualityHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (__ \ "status").read[String].map { x => new Healthcheck(status = x) }
     }
 
@@ -305,8 +293,6 @@ package quality.models {
     }
 
     implicit def jsonReadsQualityIncident: play.api.libs.json.Reads[Incident] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "id").read[Long] and
         (__ \ "summary").read[String] and
@@ -320,8 +306,6 @@ package quality.models {
     }
 
     implicit def jsonWritesQualityIncident: play.api.libs.json.Writes[Incident] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "id").write[Long] and
         (__ \ "summary").write[String] and
@@ -335,8 +319,6 @@ package quality.models {
     }
 
     implicit def jsonReadsQualityPlan: play.api.libs.json.Reads[Plan] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "id").read[Long] and
         (__ \ "incident_id").read[Long] and
@@ -347,8 +329,6 @@ package quality.models {
     }
 
     implicit def jsonWritesQualityPlan: play.api.libs.json.Writes[Plan] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "id").write[Long] and
         (__ \ "incident_id").write[Long] and
@@ -359,8 +339,6 @@ package quality.models {
     }
 
     implicit def jsonReadsQualityStatistic: play.api.libs.json.Reads[Statistic] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "team").read[Team] and
         (__ \ "total_grades").read[Long] and
@@ -373,8 +351,6 @@ package quality.models {
     }
 
     implicit def jsonWritesQualityStatistic: play.api.libs.json.Writes[Statistic] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "team").write[Team] and
         (__ \ "total_grades").write[Long] and
@@ -387,8 +363,6 @@ package quality.models {
     }
 
     implicit def jsonReadsQualityTeam: play.api.libs.json.Reads[Team] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (__ \ "key").read[String].map { x => new Team(key = x) }
     }
 
@@ -456,8 +430,8 @@ package quality {
        * - the first record is the most recent event.
        */
       def get(
-        model: scala.Option[String] = None,
-        action: scala.Option[String] = None,
+        model: scala.Option[Model] = None,
+        action: scala.Option[Action] = None,
         numberHours: scala.Option[Int] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
@@ -466,15 +440,15 @@ package quality {
 
     object Events extends Events {
       override def get(
-        model: scala.Option[String] = None,
-        action: scala.Option[String] = None,
+        model: scala.Option[Model] = None,
+        action: scala.Option[Action] = None,
         numberHours: scala.Option[Int] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Event]] = {
         val query = Seq(
-          model.map("model" -> _),
-          action.map("action" -> _),
+          model.map("model" -> _.toString),
+          action.map("action" -> _.toString),
           numberHours.map("number_hours" -> _.toString),
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
@@ -900,7 +874,7 @@ package quality {
       }
     }
 
-    private val UserAgent = "apidoc:0.4.69 http://www.apidoc.me/gilt/code/quality/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.4.72 http://www.apidoc.me/gilt/code/quality/0.0.1-dev/play_2_3_client"
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
@@ -963,13 +937,13 @@ package quality {
 
   }
 
-  case class FailedRequest(response: play.api.libs.ws.WSResponse) extends Exception
+  case class FailedRequest(response: play.api.libs.ws.WSResponse) extends Exception(response.status + ": " + response.body)
 
   package error {
 
     import quality.models.json._
 
-    case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception {
+    case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception(response.status + ": " + response.body) {
 
       lazy val errors = response.json.as[scala.collection.Seq[quality.models.Error]]
 
