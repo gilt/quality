@@ -1,6 +1,6 @@
 package db
 
-import quality.models.{ Error, Incident, Plan, Team }
+import quality.models.{ Error, Incident, Plan, Severity, Team }
 import quality.models.json._
 
 import anorm._
@@ -191,7 +191,7 @@ object IncidentsDao {
         Incident(
           id = incidentId,
           team = row[Option[String]]("team_key").map { key => Team(key = key) },
-          severity = Incident.Severity(row[String]("severity")),
+          severity = Severity(row[String]("severity")),
           summary = row[String]("summary"),
           description = row[Option[String]]("description"),
           tags = Seq.empty,

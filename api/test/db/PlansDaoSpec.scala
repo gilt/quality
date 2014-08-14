@@ -1,6 +1,6 @@
 package db
 
-import quality.models.Incident
+import quality.models.{ Incident, Severity }
 import org.scalatest.{ FunSpec, Matchers }
 import play.api.test._
 import play.api.test.Helpers._
@@ -31,7 +31,7 @@ class PlansDaoSpec extends FunSpec with Matchers {
   it("find by team key") {
     running(FakeApplication()) {
       val teamKey = UUID.randomUUID.toString
-      val incident = Util.createIncident(Some(IncidentForm(team_key = Some(teamKey), severity = Incident.Severity.High.toString, summary = "test")))
+      val incident = Util.createIncident(Some(IncidentForm(team_key = Some(teamKey), severity = Severity.High.toString, summary = "test")))
       val plan = Util.createPlan(Some(PlanForm(incident_id = incident.id, body = "test")))
       val other = Util.createPlan()
 
