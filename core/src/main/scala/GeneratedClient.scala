@@ -874,7 +874,7 @@ package com.gilt.quality {
       }
     }
 
-    private val UserAgent = "apidoc:0.4.72 http://www.apidoc.me/gilt/code/quality/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.5.0 http://www.apidoc.me/gilt/code/quality/0.0.7/play_2_3_client"
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
