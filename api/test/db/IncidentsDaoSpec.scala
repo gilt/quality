@@ -1,6 +1,6 @@
 package db
 
-import quality.models.{ Incident, Severity }
+import com.gilt.quality.models.{ Incident, Severity }
 import org.scalatest.{ FunSpec, Matchers }
 import play.api.test._
 import play.api.test.Helpers._

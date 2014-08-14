@@ -10,6 +10,6 @@ object Api {
     }
   }
 
-  lazy val instance = new quality.Client(configValue("quality.url"))
+  lazy val instance = new com.gilt.quality.Client(configValue("quality.url"))
 
 }

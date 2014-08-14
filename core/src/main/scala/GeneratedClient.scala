@@ -1,4 +1,4 @@
-package quality.models {
+package com.gilt.quality.models {
   case class Error(
     code: String,
     message: String
@@ -194,7 +194,7 @@ package quality.models {
   }
 }
 
-package quality.models {
+package com.gilt.quality.models {
   package object json {
     import play.api.libs.json.__
     import play.api.libs.json.JsString
@@ -374,7 +374,7 @@ package quality.models {
   }
 }
 
-package quality {
+package com.gilt.quality {
   object helpers {
     import org.joda.time.DateTime
     import org.joda.time.format.ISODateTimeFormat
@@ -405,12 +405,12 @@ package quality {
   }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
-    import quality.models._
-    import quality.models.json._
+    import com.gilt.quality.models._
+    import com.gilt.quality.models.json._
 
-    private val logger = play.api.Logger("quality.client")
+    private val logger = play.api.Logger("com.gilt.quality.client")
 
-    logger.info(s"Initializing quality.client for url $apiUrl")
+    logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
 
     def events: Events = Events
 
@@ -435,7 +435,7 @@ package quality {
         numberHours: scala.Option[Int] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Event]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Event]]
     }
 
     object Events extends Events {
@@ -445,7 +445,7 @@ package quality {
         numberHours: scala.Option[Int] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Event]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Event]] = {
         val query = Seq(
           model.map("model" -> _.toString),
           action.map("action" -> _.toString),
@@ -455,20 +455,20 @@ package quality {
         ).flatten
 
         GET(s"/events", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Event]]
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Event]]
           case r => throw new FailedRequest(r)
         }
       }
     }
 
     trait Healthchecks {
-      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Healthcheck]]
+      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]]
     }
 
     object Healthchecks extends Healthchecks {
-      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Healthcheck]] = {
+      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]] = {
         GET(s"/_internal_/healthcheck").map {
-          case r if r.status == 200 => Some(r.json.as[quality.models.Healthcheck])
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.Healthcheck])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -487,14 +487,14 @@ package quality {
         hasGrade: scala.Option[Boolean] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Incident]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Incident]]
 
       /**
        * Returns information about the incident with this specific id.
        */
       def getById(
         id: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Incident]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Incident]]
 
       /**
        * Create a new incident.
@@ -505,7 +505,7 @@ package quality {
         summary: String,
         description: scala.Option[String] = None,
         tags: scala.collection.Seq[String] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Incident]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident]
 
       /**
        * Updates an incident.
@@ -517,7 +517,7 @@ package quality {
         summary: String,
         description: scala.Option[String] = None,
         tags: scala.collection.Seq[String] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Incident]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident]
 
       def deleteById(
         id: Long
@@ -533,7 +533,7 @@ package quality {
         hasGrade: scala.Option[Boolean] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Incident]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Incident]] = {
         val query = Seq(
           id.map("id" -> _.toString),
           teamKey.map("team_key" -> _),
@@ -545,16 +545,16 @@ package quality {
         ).flatten
 
         GET(s"/incidents", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Incident]]
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Incident]]
           case r => throw new FailedRequest(r)
         }
       }
 
       override def getById(
         id: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Incident]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Incident]] = {
         GET(s"/incidents/${id}").map {
-          case r if r.status == 200 => Some(r.json.as[quality.models.Incident])
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.Incident])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -566,7 +566,7 @@ package quality {
         summary: String,
         description: scala.Option[String] = None,
         tags: scala.collection.Seq[String] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Incident] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident] = {
         val payload = play.api.libs.json.Json.obj(
           "team_key" -> play.api.libs.json.Json.toJson(teamKey),
           "severity" -> play.api.libs.json.Json.toJson(severity),
@@ -576,8 +576,8 @@ package quality {
         )
 
         POST(s"/incidents", payload).map {
-          case r if r.status == 201 => r.json.as[quality.models.Incident]
-          case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
+          case r if r.status == 201 => r.json.as[com.gilt.quality.models.Incident]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -589,7 +589,7 @@ package quality {
         summary: String,
         description: scala.Option[String] = None,
         tags: scala.collection.Seq[String] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Incident] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident] = {
         val payload = play.api.libs.json.Json.obj(
           "team_key" -> play.api.libs.json.Json.toJson(teamKey),
           "severity" -> play.api.libs.json.Json.toJson(severity),
@@ -599,8 +599,8 @@ package quality {
         )
 
         PUT(s"/incidents/${id}", payload).map {
-          case r if r.status == 201 => r.json.as[quality.models.Incident]
-          case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
+          case r if r.status == 201 => r.json.as[com.gilt.quality.models.Incident]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -626,7 +626,7 @@ package quality {
         teamKey: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Plan]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Plan]]
 
       /**
        * Create a plan.
@@ -635,7 +635,7 @@ package quality {
         incidentId: Long,
         body: String,
         grade: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Plan]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan]
 
       /**
        * Update a plan.
@@ -645,7 +645,7 @@ package quality {
         incidentId: Long,
         body: String,
         grade: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Plan]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan]
 
       /**
        * Update the grade assigned to a plan.
@@ -653,14 +653,14 @@ package quality {
       def putGradeById(
         id: Long,
         grade: Int
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Plan]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan]
 
       /**
        * Get a single plan.
        */
       def getById(
         id: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Plan]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Plan]]
 
       /**
        * Delete a plan.
@@ -677,7 +677,7 @@ package quality {
         teamKey: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Plan]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Plan]] = {
         val query = Seq(
           id.map("id" -> _.toString),
           incidentId.map("incident_id" -> _.toString),
@@ -687,7 +687,7 @@ package quality {
         ).flatten
 
         GET(s"/plans", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Plan]]
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Plan]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -696,7 +696,7 @@ package quality {
         incidentId: Long,
         body: String,
         grade: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Plan] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan] = {
         val payload = play.api.libs.json.Json.obj(
           "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
           "body" -> play.api.libs.json.Json.toJson(body),
@@ -704,8 +704,8 @@ package quality {
         )
 
         POST(s"/plans", payload).map {
-          case r if r.status == 201 => r.json.as[quality.models.Plan]
-          case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
+          case r if r.status == 201 => r.json.as[com.gilt.quality.models.Plan]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -715,7 +715,7 @@ package quality {
         incidentId: Long,
         body: String,
         grade: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Plan] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan] = {
         val payload = play.api.libs.json.Json.obj(
           "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
           "body" -> play.api.libs.json.Json.toJson(body),
@@ -723,8 +723,8 @@ package quality {
         )
 
         PUT(s"/plans/${id}", payload).map {
-          case r if r.status == 200 => r.json.as[quality.models.Plan]
-          case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
+          case r if r.status == 200 => r.json.as[com.gilt.quality.models.Plan]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -732,23 +732,23 @@ package quality {
       override def putGradeById(
         id: Long,
         grade: Int
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Plan] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan] = {
         val payload = play.api.libs.json.Json.obj(
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
 
         PUT(s"/plans/${id}/grade", payload).map {
-          case r if r.status == 200 => r.json.as[quality.models.Plan]
-          case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
+          case r if r.status == 200 => r.json.as[com.gilt.quality.models.Plan]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
 
       override def getById(
         id: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Plan]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Plan]] = {
         GET(s"/plans/${id}").map {
-          case r if r.status == 200 => Some(r.json.as[quality.models.Plan])
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.Plan])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -772,21 +772,21 @@ package quality {
       def get(
         teamKey: scala.Option[String] = None,
         numberHours: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Statistic]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Statistic]]
     }
 
     object Statistics extends Statistics {
       override def get(
         teamKey: scala.Option[String] = None,
         numberHours: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Statistic]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Statistic]] = {
         val query = Seq(
           teamKey.map("team_key" -> _),
           numberHours.map("number_hours" -> _.toString)
         ).flatten
 
         GET(s"/statistics", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Statistic]]
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Statistic]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -800,21 +800,21 @@ package quality {
         key: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Team]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Team]]
 
       /**
        * Returns information about the team with this specific key.
        */
       def getByKey(
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Team]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Team]]
 
       /**
        * Create a new team.
        */
       def post(
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team]
 
       def deleteByKey(
         key: String
@@ -826,7 +826,7 @@ package quality {
         key: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[quality.models.Team]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Team]] = {
         val query = Seq(
           key.map("key" -> _),
           limit.map("limit" -> _.toString),
@@ -834,16 +834,16 @@ package quality {
         ).flatten
 
         GET(s"/teams", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[quality.models.Team]]
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Team]]
           case r => throw new FailedRequest(r)
         }
       }
 
       override def getByKey(
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[quality.models.Team]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Team]] = {
         GET(s"/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
-          case r if r.status == 200 => Some(r.json.as[quality.models.Team])
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.Team])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -851,14 +851,14 @@ package quality {
 
       override def post(
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[quality.models.Team] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team] = {
         val payload = play.api.libs.json.Json.obj(
           "key" -> play.api.libs.json.Json.toJson(key)
         )
 
         POST(s"/teams", payload).map {
-          case r if r.status == 201 => r.json.as[quality.models.Team]
-          case r if r.status == 409 => throw new quality.error.ErrorsResponse(r)
+          case r if r.status == 201 => r.json.as[com.gilt.quality.models.Team]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -941,11 +941,11 @@ package quality {
 
   package error {
 
-    import quality.models.json._
+    import com.gilt.quality.models.json._
 
     case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception(response.status + ": " + response.body) {
 
-      lazy val errors = response.json.as[scala.collection.Seq[quality.models.Error]]
+      lazy val errors = response.json.as[scala.collection.Seq[com.gilt.quality.models.Error]]
 
     }
   }

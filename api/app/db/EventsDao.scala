@@ -1,6 +1,6 @@
 package db
 
-import quality.models.{ Action, Event, EventData, Model }
+import com.gilt.quality.models.{ Action, Event, EventData, Model }
 import anorm._
 import AnormHelper._
 import anorm.ParameterValue._

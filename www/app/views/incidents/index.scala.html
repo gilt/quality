@@ -1,6 +1,6 @@
 @(filters: controllers.Incidents.Filters,
-  incidents: lib.PaginatedCollection[quality.models.Incident],
-  teams: Seq[quality.models.Team]
+  incidents: lib.PaginatedCollection[com.gilt.quality.models.Incident],
+  teams: Seq[com.gilt.quality.models.Team]
 )(implicit flash: Flash)
 
 @main(title = "Perfect Day Incidents", section = Some("incidents")) {

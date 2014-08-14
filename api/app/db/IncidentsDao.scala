@@ -1,7 +1,7 @@
 package db
 
-import quality.models.{ Error, Incident, Plan, Severity, Team }
-import quality.models.json._
+import com.gilt.quality.models.{ Error, Incident, Plan, Severity, Team }
+import com.gilt.quality.models.json._
 
 import anorm._
 import anorm.ParameterValue._

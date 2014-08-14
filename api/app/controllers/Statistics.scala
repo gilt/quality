@@ -1,7 +1,7 @@
 package controllers
 
-import quality.models.{ Error, Statistic }
-import quality.models.json._
+import com.gilt.quality.models.{ Error, Statistic }
+import com.gilt.quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID

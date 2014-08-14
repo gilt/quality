@@ -10,7 +10,7 @@
 
     @helper.select(
         form("severity"),
-        Seq( ("" -> "-- select --") ) ++ quality.models.Severity.all.map( v => (v.toString -> v.toString) ),
+        Seq( ("" -> "-- select --") ) ++ com.gilt.quality.models.Severity.all.map( v => (v.toString -> v.toString) ),
         '_label -> "Severity",
         '_error -> form.error("severity")
     )

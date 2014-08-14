@@ -1,6 +1,6 @@
 package db
 
-import quality.models.{ Incident, Plan, Severity }
+import com.gilt.quality.models.{ Incident, Plan, Severity }
 import java.util.UUID
 
 object Util {

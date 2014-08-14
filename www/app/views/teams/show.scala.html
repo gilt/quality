@@ -1,6 +1,6 @@
-@(team: quality.models.Team,
-  stats: Option[quality.models.Statistic],
-  incidents: lib.PaginatedCollection[quality.models.Incident]
+@(team: com.gilt.quality.models.Team,
+  stats: Option[com.gilt.quality.models.Statistic],
+  incidents: lib.PaginatedCollection[com.gilt.quality.models.Incident]
 )(implicit flash: Flash)
 
 @main(title = s"Team ${team.key}") {

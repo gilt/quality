@@ -1,8 +1,8 @@
 package controllers
 
 import db.TeamsDao
-import quality.models.Healthcheck
-import quality.models.json._
+import com.gilt.quality.models.Healthcheck
+import com.gilt.quality.models.json._
 import play.api._
 import play.api.mvc._
 import play.api.libs.json._

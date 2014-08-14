@@ -1,5 +1,5 @@
-@(incident: quality.models.Incident,
-  plan: Option[quality.models.Plan]
+@(incident: com.gilt.quality.models.Incident,
+  plan: Option[com.gilt.quality.models.Plan]
 )(implicit flash: Flash)
 
 @main(title = s"#${incident.id}: ${incident.summary}") {

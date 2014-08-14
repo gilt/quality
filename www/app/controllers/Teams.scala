@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import quality.models.Team
+import com.gilt.quality.models.Team
 import lib.{ Pagination, PaginatedCollection }
 import java.util.UUID
 import scala.concurrent.{ Await, Future }
@@ -68,7 +68,7 @@ object Teams extends Controller {
         Api.instance.teams.post(teamForm.key).map { team =>
           Redirect(routes.Teams.show(team.key)).flashing("success" -> "Team created")
         }.recover {
-          case response: quality.error.ErrorsResponse => {
+          case response: com.gilt.quality.error.ErrorsResponse => {
             Ok(views.html.teams.create(boundForm, Some(response.errors.map(_.message).mkString(", "))))
           }
         }

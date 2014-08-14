@@ -1,6 +1,6 @@
 package db
 
-import quality.models.{Statistic, Team}
+import com.gilt.quality.models.{Statistic, Team}
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._

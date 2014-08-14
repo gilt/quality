@@ -1,8 +1,8 @@
 package controllers
 
 import db.EventsDao
-import quality.models.Event
-import quality.models.json._
+import com.gilt.quality.models.Event
+import com.gilt.quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 

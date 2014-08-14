@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import quality.models.{ Error, Incident, Plan }
+import com.gilt.quality.models.{ Error, Incident, Plan }
 
 import play.api._
 import play.api.mvc._
@@ -77,7 +77,7 @@ object Plans extends Controller {
                     ).map { plan =>
                       Redirect(routes.Incidents.show(plan.incidentId)).flashing("success" -> "Plan created")
                     }.recover {
-                      case response: quality.error.ErrorsResponse => {
+                      case response: com.gilt.quality.error.ErrorsResponse => {
                         Ok(views.html.plans.upload(incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
                       }
                     }
@@ -94,7 +94,7 @@ object Plans extends Controller {
                     ).map { plan =>
                       Redirect(routes.Incidents.show(plan.incidentId)).flashing("success" -> "Plan updated")
                     }.recover {
-                      case response: quality.error.ErrorsResponse => {
+                      case response: com.gilt.quality.error.ErrorsResponse => {
                         Ok(views.html.plans.upload(incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
                       }
                     }

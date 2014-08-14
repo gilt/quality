@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import quality.models.Incident
+import com.gilt.quality.models.Incident
 import lib.{ Pagination, PaginatedCollection }
 import scala.concurrent.Future
 
@@ -96,7 +96,7 @@ object Incidents extends Controller {
         ).map { incident =>
           Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident created")
         }.recover {
-          case response: quality.error.ErrorsResponse => {
+          case response: com.gilt.quality.error.ErrorsResponse => {
             Ok(views.html.incidents.create(boundForm, Some(response.errors.map(_.message).mkString("\n"))))
           }
         }
@@ -149,7 +149,7 @@ object Incidents extends Controller {
             ).map { r =>
               Redirect(routes.Incidents.show(incident.id)).flashing("success" -> "Incident updated")
             }.recover {
-              case r: quality.error.ErrorsResponse => {
+              case r: com.gilt.quality.error.ErrorsResponse => {
                 Ok(views.html.incidents.create(boundForm, Some(r.errors.map(_.message).mkString("\n"))))
               }
             }

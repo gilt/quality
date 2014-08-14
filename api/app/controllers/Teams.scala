@@ -1,7 +1,7 @@
 package controllers
 
-import quality.models.{ Error, Team }
-import quality.models.json._
+import com.gilt.quality.models.{ Error, Team }
+import com.gilt.quality.models.json._
 
 import play.api.mvc._
 import play.api.libs.json._

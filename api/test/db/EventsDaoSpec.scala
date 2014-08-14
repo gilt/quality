@@ -1,6 +1,6 @@
 package db
 
-import quality.models.{ Action, Event, Model }
+import com.gilt.quality.models.{ Action, Event, Model }
 import org.scalatest.{ FunSpec, Matchers }
 import play.api.test._
 import play.api.test.Helpers._
