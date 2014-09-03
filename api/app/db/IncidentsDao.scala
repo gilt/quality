@@ -25,7 +25,7 @@ case class IncidentForm(
   def validate(): Option[String] = {
     team_key.flatMap { key =>
       if (teamId.isEmpty) {
-        Some(s"Team with key[$team_key] not found")
+        Some(s"Team '$key' not found")
       } else {
         None
       }
