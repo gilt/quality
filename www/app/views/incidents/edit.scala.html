@@ -1,4 +1,5 @@
 @(incident: com.gilt.quality.models.Incident,
+  teams: Seq[com.gilt.quality.models.Team],
   form: Form[controllers.Incidents.IncidentForm])(implicit flash: Flash)
 
 @main(title = s"Edit Incident ${incident.id}") {
@@ -7,7 +8,7 @@
 
     @helper.form(action = routes.Incidents.postEdit(incident.id)) {
 
-      @incidentForm(form, routes.Incidents.show(incident.id))
+      @incidentForm(form, routes.Incidents.show(incident.id), teams)
 
     }
 

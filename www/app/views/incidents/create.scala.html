@@ -1,4 +1,5 @@
 @(form: Form[controllers.Incidents.IncidentForm],
+  teams: Seq[com.gilt.quality.models.Team],
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
@@ -8,7 +9,7 @@
 
     @helper.form(action = routes.Incidents.postCreate) {
 
-      @incidentForm(form, routes.Incidents.index())
+      @incidentForm(form, routes.Incidents.index(), teams)
 
     }
 

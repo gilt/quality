@@ -1,12 +1,23 @@
 @(form: Form[controllers.Incidents.IncidentForm],
-  cancelUrl: play.api.mvc.Call)(implicit flash: Flash)
+  cancelUrl: play.api.mvc.Call,
+  teams: Seq[com.gilt.quality.models.Team])(implicit flash: Flash)
 
 <fieldset>
-    @helper.inputText(
-        form("teamKey"),
-        '_label -> "Team",
-        '_error -> form.error("teamKey")
-    )
+
+    @if(teams.isEmpty) {
+        @helper.inputText(
+            form("teamKey"),
+            '_label -> "Team",
+            '_error -> form.error("teamKey")
+        )
+    } else {
+        @helper.select(
+            form("teamKey"),
+            Seq( ("" -> "-- select --") ) ++ teams.map( t => (t.key -> t.key) ),
+            '_label -> "Team",
+            '_error -> form.error("teamKey")
+        )
+    }
 
     @helper.select(
         form("severity"),
