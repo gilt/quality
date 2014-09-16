@@ -41,7 +41,7 @@ case class Emailer(config: Configuration) {
   }
 
   /**
-    * @returns the message id of the underlying MimeMessage
+    * @return the message id of the underlying MimeMessage
     */
   def deliver(email: Email): String = {
     email.send()
