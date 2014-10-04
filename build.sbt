@@ -1,6 +1,6 @@
 name := "quality"
 
-scalaVersion in ThisBuild := "2.11.1"
+scalaVersion in ThisBuild := "2.11.2"
 
 lazy val core = project
   .in(file("core"))
@@ -44,7 +44,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("quality-" + _),
   libraryDependencies ++= Seq(
     ws,
-    "org.scalatest" %% "scalatest" % "2.2.0" % "test"
+    "org.scalatest" %% "scalatest" % "2.2.1" % "test"
   ),
   scalacOptions += "-feature"
 )
