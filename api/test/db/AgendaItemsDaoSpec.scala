@@ -6,13 +6,14 @@ import play.api.test._
 import play.api.test.Helpers._
 import java.util.UUID
 
-class MeetingsDaoSpec extends FunSpec with Matchers {
+class AgendaItemsDaoSpec extends FunSpec with Matchers {
 
   it("find by id") {
     running(FakeApplication()) {
       val meeting = Util.createMeeting()
-      val fetched = MeetingsDao.findById(meeting.id).get
-      fetched.id should be(meeting.id)
+      val item = Util.createAgendaItem()
+      val fetched = AgendaItemsDao.findById(item.id).get
+      fetched.id should be(item.id)
     }
   }
 
