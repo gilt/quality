@@ -1,3 +1,6 @@
+import play.PlayScala
+import play.PlayImport.PlayKeys._
+
 name := "quality"
 
 scalaVersion in ThisBuild := "2.11.2"
@@ -23,7 +26,6 @@ lazy val api = project
     libraryDependencies ++= Seq(
       jdbc,
       anorm,
-      ws,
       "org.postgresql" % "postgresql" % "9.3-1101-jdbc4"
     )
   )
@@ -44,7 +46,6 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("quality-" + _),
   libraryDependencies ++= Seq(
     ws,
-    "org.scalatest" %% "scalatest" % "2.2.1" % "test"
-  ),
-  scalacOptions += "-feature"
+    "org.scalatestplus" %% "play" % "1.1.0" % "test"
+  )
 )

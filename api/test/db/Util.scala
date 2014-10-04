@@ -74,13 +74,13 @@ object Util {
     GradesDao.upsert(user, form.getOrElse(gradeForm()))
   }
 
-  def meetingForm() = {
+  def createMeetingForm() = {
     MeetingForm(
       scheduledAt = (new DateTime()).plus(1)
     )
   }
 
-  def createMeeting(form: MeetingForm = meetingForm()): Meeting = {
+  def createMeeting(form: MeetingForm = createMeetingForm()): Meeting = {
     MeetingsDao.create(user, form)
   }
 }
