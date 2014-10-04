@@ -5,7 +5,6 @@ import org.joda.time.DateTime
 import anorm._
 import anorm.ParameterValue._
 import db.AnormHelper._
-import lib.{Validation, ValidationError}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -13,12 +12,7 @@ import play.api.libs.json._
 object MeetingsDao {
 
   private val BaseQuery = """
-    select id, scheduled_at,
-           array_to_json(array(select row_to_json(agenda_items)
-                                 from agenda_items
-                                where agenda_items.deleted_at is null
-                                  and agenda_items.meeting_id = meetings.id
-                                order by agenda_items.incident_id))::varchar as agenda_items
+    select id, scheduled_at
       from meetings
      where deleted_at is null
   """
@@ -28,13 +22,6 @@ object MeetingsDao {
     (scheduled_at, created_by_guid)
     values
     ({scheduled_at}, {user_guid}::uuid)
-  """
-
-  private val SoftDeleteAgendaItemsQuery = """
-    update agenda_items
-       set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now(), updated_at = now()
-     where meeting_id = {meeting_id}
-       and deleted_at is null
   """
 
   def create(user: User, form: MeetingForm): Meeting = {
@@ -53,7 +40,7 @@ object MeetingsDao {
   def softDelete(deletedBy: User, meeting: Meeting) {
     DB.withTransaction { implicit c =>
       SoftDelete.delete(c, "meetings", deletedBy, meeting.id)
-      SQL(SoftDeleteAgendaItemsQuery).on('deleted_by_guid -> deletedBy.guid, 'meeting_id -> meeting.id).execute()
+      AgendaItemsDao.softDeleteAllForMeeting(c, deletedBy, meeting)
     }
   }
 
@@ -80,25 +67,11 @@ object MeetingsDao {
       scheduledAt.map { v => NamedParameter("scheduled_at", toParameterValue(v)) }
     ).flatten
 
-    scheduledAt.foreach { ts =>
-      println("SQL: " + sql)
-      println("scheudledAt: " + ts)
-    }
-
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        val agendaItems = Json.parse(row[String]("agenda_items")).as[JsArray].value.map(_.as[JsObject]).map { json =>
-          AgendaItem(
-            id = (json \ "id").as[Long],
-            incidentId = (json \ "incident_id").as[Long],
-            task = Task((json \ "task").as[String])
-          )
-        }
-
         Meeting(
           id = row[Long]("id"),
-          scheduledAt = row[DateTime]("scheduled_at"),
-          agendaItems = agendaItems
+          scheduledAt = row[DateTime]("scheduled_at")
         )
       }.toSeq
     }

@@ -5,6 +5,11 @@ package com.gilt.quality.models {
    */
   case class AgendaItem(
     id: Long,
+    incident: com.gilt.quality.models.IncidentSummary,
+    task: com.gilt.quality.models.Task
+  )
+
+  case class AgendaItemForm(
     incidentId: Long,
     task: com.gilt.quality.models.Task
   )
@@ -52,6 +57,12 @@ package com.gilt.quality.models {
     createdAt: _root_.org.joda.time.DateTime
   )
 
+  case class IncidentSummary(
+    id: Long,
+    severity: com.gilt.quality.models.Severity,
+    summary: String
+  )
+
   /**
    * Meetings happen on a regular schedule (e.g. thursdays from 11-12 EST). As
    * incidents are created, they are automatically assigned to the next meeting.
@@ -61,8 +72,7 @@ package com.gilt.quality.models {
    */
   case class Meeting(
     id: Long,
-    scheduledAt: _root_.org.joda.time.DateTime,
-    agendaItems: scala.collection.Seq[com.gilt.quality.models.AgendaItem]
+    scheduledAt: _root_.org.joda.time.DateTime
   )
 
   case class MeetingForm(
@@ -313,7 +323,7 @@ package com.gilt.quality.models {
     implicit def jsonReadsQualityAgendaItem: play.api.libs.json.Reads[AgendaItem] = {
       (
         (__ \ "id").read[Long] and
-        (__ \ "incident_id").read[Long] and
+        (__ \ "incident").read[com.gilt.quality.models.IncidentSummary] and
         (__ \ "task").read[com.gilt.quality.models.Task]
       )(AgendaItem.apply _)
     }
@@ -321,9 +331,23 @@ package com.gilt.quality.models {
     implicit def jsonWritesQualityAgendaItem: play.api.libs.json.Writes[AgendaItem] = {
       (
         (__ \ "id").write[Long] and
-        (__ \ "incident_id").write[Long] and
+        (__ \ "incident").write[com.gilt.quality.models.IncidentSummary] and
         (__ \ "task").write[com.gilt.quality.models.Task]
       )(unlift(AgendaItem.unapply _))
+    }
+
+    implicit def jsonReadsQualityAgendaItemForm: play.api.libs.json.Reads[AgendaItemForm] = {
+      (
+        (__ \ "incident_id").read[Long] and
+        (__ \ "task").read[com.gilt.quality.models.Task]
+      )(AgendaItemForm.apply _)
+    }
+
+    implicit def jsonWritesQualityAgendaItemForm: play.api.libs.json.Writes[AgendaItemForm] = {
+      (
+        (__ \ "incident_id").write[Long] and
+        (__ \ "task").write[com.gilt.quality.models.Task]
+      )(unlift(AgendaItemForm.unapply _))
     }
 
     implicit def jsonReadsQualityError: play.api.libs.json.Reads[Error] = {
@@ -410,19 +434,33 @@ package com.gilt.quality.models {
       )(unlift(Incident.unapply _))
     }
 
+    implicit def jsonReadsQualityIncidentSummary: play.api.libs.json.Reads[IncidentSummary] = {
+      (
+        (__ \ "id").read[Long] and
+        (__ \ "severity").read[com.gilt.quality.models.Severity] and
+        (__ \ "summary").read[String]
+      )(IncidentSummary.apply _)
+    }
+
+    implicit def jsonWritesQualityIncidentSummary: play.api.libs.json.Writes[IncidentSummary] = {
+      (
+        (__ \ "id").write[Long] and
+        (__ \ "severity").write[com.gilt.quality.models.Severity] and
+        (__ \ "summary").write[String]
+      )(unlift(IncidentSummary.unapply _))
+    }
+
     implicit def jsonReadsQualityMeeting: play.api.libs.json.Reads[Meeting] = {
       (
         (__ \ "id").read[Long] and
-        (__ \ "scheduled_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "agenda_items").readNullable[scala.collection.Seq[com.gilt.quality.models.AgendaItem]].map(_.getOrElse(Nil))
+        (__ \ "scheduled_at").read[_root_.org.joda.time.DateTime]
       )(Meeting.apply _)
     }
 
     implicit def jsonWritesQualityMeeting: play.api.libs.json.Writes[Meeting] = {
       (
         (__ \ "id").write[Long] and
-        (__ \ "scheduled_at").write[_root_.org.joda.time.DateTime] and
-        (__ \ "agenda_items").write[scala.collection.Seq[com.gilt.quality.models.AgendaItem]]
+        (__ \ "scheduled_at").write[_root_.org.joda.time.DateTime]
       )(unlift(Meeting.unapply _))
     }
 
@@ -537,6 +575,8 @@ package com.gilt.quality {
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
 
+    def agendaItems: AgendaItems = AgendaItems
+
     def events: Events = Events
 
     def healthchecks: Healthchecks = Healthchecks
@@ -550,6 +590,59 @@ package com.gilt.quality {
     def statistics: Statistics = Statistics
 
     def teams: Teams = Teams
+
+    object AgendaItems extends AgendaItems {
+      override def get(
+        meetingId: String,
+        task: scala.Option[com.gilt.quality.models.Task] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.AgendaItem]] = {
+        val queryParameters = Seq(
+          task.map("task" -> _.toString),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/meetings/${play.utils.UriEncoding.encodePathSegment(meetingId, "UTF-8")}/agenda_items", queryParameters = queryParameters).map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.AgendaItem]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def getById(
+        meetingId: String,
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.AgendaItem]] = {
+        _executeRequest("GET", s"/meetings/${play.utils.UriEncoding.encodePathSegment(meetingId, "UTF-8")}/agenda_items/${id}").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.AgendaItem])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def post(agendaItemForm: com.gilt.quality.models.AgendaItemForm, 
+        meetingId: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.AgendaItem] = {
+        val payload = play.api.libs.json.Json.toJson(agendaItemForm)
+
+        _executeRequest("POST", s"/meetings/${play.utils.UriEncoding.encodePathSegment(meetingId, "UTF-8")}/agenda_items", body = Some(payload)).map {
+          case r if r.status == 201 => r.json.as[com.gilt.quality.models.AgendaItem]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def deleteById(
+        meetingId: String,
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
+        _executeRequest("DELETE", s"/meetings/${play.utils.UriEncoding.encodePathSegment(meetingId, "UTF-8")}/agenda_items/${id}").map {
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
 
     object Events extends Events {
       override def get(
@@ -939,6 +1032,35 @@ package com.gilt.quality {
       }
     }
 
+  }
+
+  trait AgendaItems {
+    /**
+     * Search agenda items for a given meeting. Results are always paginated.
+     */
+    def get(
+      meetingId: String,
+      task: scala.Option[com.gilt.quality.models.Task] = None,
+      limit: scala.Option[Int] = None,
+      offset: scala.Option[Int] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.AgendaItem]]
+
+    def getById(
+      meetingId: String,
+      id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.AgendaItem]]
+
+    /**
+     * Creates an agenda item for this meeting.
+     */
+    def post(agendaItemForm: com.gilt.quality.models.AgendaItemForm, 
+      meetingId: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.AgendaItem]
+
+    def deleteById(
+      meetingId: String,
+      id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }
 
   trait Events {

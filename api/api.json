@@ -122,8 +122,7 @@
 	    "description": "Meetings happen on a regular schedule (e.g. thursdays from 11-12 EST). As incidents are created, they are automatically assigned to the next meeting. Incidents can then be reviewed from the context of a meeting, facilitating online navigation. Incidents within a meeting can require one of two actions - team assignment or plan review.",
 	    "fields": [
 		{ "name": "id", "type": "long", "description": "Internal unique identifier for this meeting." },
-		{ "name": "scheduled_at", "type": "date-time-iso8601", "description": "The date and time for which this meeting is scheduled." },
-		{ "name": "agenda_items", "type": "[agenda_item]", "description": "List of incidents to review at this meeting" }
+		{ "name": "scheduled_at", "type": "date-time-iso8601", "description": "The date and time for which this meeting is scheduled." }
 	    ]
 	},
 
@@ -137,10 +136,26 @@
 	    "description": "Describe an agenda item for a meeting. Currently the only agenda items we have are that a particular incident needs to be reviewed.",
 	    "fields": [
 		{ "name": "id", "type": "long", "description": "Internal unique identifier for this record." },
-		{ "name": "incident_id", "type": "long", "description": "The incident to review." },
+		{ "name": "incident", "type": "incident_summary", "description": "Summary of the incident to review." },
 		{ "name": "task", "type": "task", "description": "What needs to be reviewed at this meeting for this incident." }
 	    ]
+	},
+
+	"incident_summary": {
+	    "fields": [
+		{ "name": "id", "type": "long" },
+		{ "name": "severity", "type": "severity" },
+                { "name": "summary", "type": "string" }
+	    ]
+	},
+
+	"agenda_item_form": {
+	    "fields": [
+		{ "name": "incident_id", "type": "long" },
+		{ "name": "task", "type": "task" }
+	    ]
 	}
+
 
     },
 
@@ -423,7 +438,51 @@
                 }
 
 	    ]
+	},
+
+	"agenda_item": {
+	    "path": "/meetings/:meeting_id/agenda_items",
+
+	    "operations": [
+		{
+		    "method": "GET",
+                    "description": "Search agenda items for a given meeting. Results are always paginated.",
+                    "parameters": [
+                        { "name": "task", "type": "task", "description": "Find agenda items with this task", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[agenda_item]" }
+                    }
+                },
+
+		{
+		    "method": "GET",
+		    "path": "/:id",
+                    "responses": {
+                        "200": { "type": "agenda_item" }
+                    }
+                },
+
+
+		{
+		    "description": "Creates an agenda item for this meeting.",
+		    "method": "POST",
+		    "body": { "type": "agenda_item_form" },
+                    "responses": {
+                        "201": { "type": "agenda_item" }
+                    }
+                },
+
+		{
+		    "path": "/:id",
+		    "method": "DELETE"
+                }
+
+	    ]
 	}
+
 
     }
 }

@@ -1,7 +1,7 @@
 package db
 
 import org.joda.time.DateTime
-import com.gilt.quality.models.{ Incident, Meeting, MeetingForm, Plan, Severity }
+import com.gilt.quality.models._
 import java.util.UUID
 
 object Util {
@@ -82,5 +82,19 @@ object Util {
 
   def createMeeting(form: MeetingForm = createMeetingForm()): Meeting = {
     MeetingsDao.create(user, form)
+  }
+
+  def createAgendaItemForm() = {
+    AgendaItemForm(
+      incidentId = createIncident().id,
+      task = Task.ReviewTeam
+    )
+  }
+
+  def createAgendaItem(
+    meeting: Meeting = createMeeting(),
+    form: AgendaItemForm = createAgendaItemForm()
+  ): AgendaItem = {
+    AgendaItemsDao.create(user, AgendaItemFullForm(meeting, form))
   }
 }
