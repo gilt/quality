@@ -10,8 +10,6 @@ import db.{ TeamsDao, TeamForm, User }
 
 object Teams extends Controller {
 
-  private lazy val user = User(guid = UUID.randomUUID) // TODO
-
   def get(key: Option[String], limit: Int = 25, offset: Int = 0) = Action { request =>
     val matches = TeamsDao.findAll(
       key = key,
@@ -38,7 +36,7 @@ object Teams extends Controller {
         val form = s.get
         TeamsDao.findByKey(form.key) match {
           case None => {
-            val team = TeamsDao.create(user, form)
+            val team = TeamsDao.create(User.Default, form)
             Created(Json.toJson(team)).withHeaders(LOCATION -> routes.Teams.getByKey(team.key).url)
           }
           case Some(t: Team) => {
@@ -51,7 +49,7 @@ object Teams extends Controller {
 
   def deleteByKey(key: String) = Action { request =>
     TeamsDao.findByKey(key).foreach { i =>
-      TeamsDao.softDelete(user, i)
+      TeamsDao.softDelete(User.Default, i)
     }
     NoContent
   }

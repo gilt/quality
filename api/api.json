@@ -413,17 +413,7 @@
 		    "method": "POST",
 		    "body": { "type": "meeting_form" },
                     "responses": {
-                        "200": { "type": "meeting" }
-                    }
-                },
-
-		{
-		    "description": "Updates a meeting, creating if it does not exist. In general meetings are created automatically",
-		    "path": "/:id",
-		    "method": "PUT",
-		    "body": { "type": "meeting_form" },
-                    "responses": {
-                        "200": { "type": "meeting" }
+                        "201": { "type": "meeting" }
                     }
                 },
 

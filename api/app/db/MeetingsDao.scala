@@ -5,6 +5,7 @@ import org.joda.time.DateTime
 import anorm._
 import anorm.ParameterValue._
 import db.AnormHelper._
+import lib.{Validation, ValidationError}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -62,19 +63,27 @@ object MeetingsDao {
 
   def findAll(
     id: Option[Long] = None,
+    scheduledAt: Option[DateTime] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Meeting] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and meetings.id = {id}" },
+      scheduledAt.map { v => "and date_trunc('minute', meetings.scheduled_at) = date_trunc('minute', {scheduled_at}::timestamptz)" },
       Some("order by meetings.scheduled_at desc"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      id.map { v => NamedParameter("id", toParameterValue(v)) }
+      id.map { v => NamedParameter("id", toParameterValue(v)) },
+      scheduledAt.map { v => NamedParameter("scheduled_at", toParameterValue(v)) }
     ).flatten
+
+    scheduledAt.foreach { ts =>
+      println("SQL: " + sql)
+      println("scheudledAt: " + ts)
+    }
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>

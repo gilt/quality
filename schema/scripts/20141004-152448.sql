@@ -9,8 +9,6 @@ create table meetings (
 select schema_evolution_manager.create_basic_audit_data('public', 'meetings');
 alter table meetings drop column updated_by_guid;
 
-create unique index on meetings(scheduled_at) where deleted_at is null;
-
 comment on table meetings is '
   Meetings happen on a regular schedule (e.g. thursdays from 11-12
   EST). As incidents are created, they are automatically assigned to
