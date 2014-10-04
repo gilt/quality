@@ -704,18 +704,7 @@ package com.gilt.quality {
         val payload = play.api.libs.json.Json.toJson(meetingForm)
 
         _executeRequest("POST", s"/meetings", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.quality.models.Meeting]
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def putById(meetingForm: com.gilt.quality.models.MeetingForm, 
-        id: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting] = {
-        val payload = play.api.libs.json.Json.toJson(meetingForm)
-
-        _executeRequest("PUT", s"/meetings/${id}", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.quality.models.Meeting]
+          case r if r.status == 201 => r.json.as[com.gilt.quality.models.Meeting]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1033,14 +1022,6 @@ package com.gilt.quality {
      * Creates a meeting. In general meetings are created automatically
      */
     def post(meetingForm: com.gilt.quality.models.MeetingForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting]
-
-    /**
-     * Updates a meeting, creating if it does not exist. In general meetings are
-     * created automatically
-     */
-    def putById(meetingForm: com.gilt.quality.models.MeetingForm, 
-      id: Long
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting]
 
     def deleteById(
       id: Long
