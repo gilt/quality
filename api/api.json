@@ -27,6 +27,14 @@
 		{ "name": "low" },
 		{ "name": "high" }
 	    ]
+	},
+
+	"task": {
+	    "description": "Describes what needs to be reviewed about a specific incident",
+	    "values": [
+		{ "name": "review_team", "description": "Used in meetings to indicate that a team should be assigned to the incident or that the group should review the team assignment to make sure it is correct." },
+		{ "name": "review_plan", "description": "Indicates that the incident plan should be reviewed and rated" }
+	    ]
 	}
 
     },
@@ -108,7 +116,31 @@
                 { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
                 { "name": "message", "type": "string", "description": "Description of the error" }
             ]
-        }
+        },
+
+	"meeting": {
+	    "description": "Meetings happen on a regular schedule (e.g. thursdays from 11-12 EST). As incidents are created, they are automatically assigned to the next meeting. Incidents can then be reviewed from the context of a meeting, facilitating online navigation. Incidents within a meeting can require one of two actions - team assignment or plan review.",
+	    "fields": [
+		{ "name": "id", "type": "long", "description": "Internal unique identifier for this meeting." },
+		{ "name": "scheduled_at", "type": "date-time-iso8601", "description": "The date and time for which this meeting is scheduled." },
+		{ "name": "agenda_items", "type": "[agenda_item]", "description": "List of incidents to review at this meeting" }
+	    ]
+	},
+
+	"meeting_form": {
+	    "fields": [
+		{ "name": "scheduled_at", "type": "date-time-iso8601" }
+	    ]
+	},
+
+	"agenda_item": {
+	    "description": "Describe an agenda item for a meeting. Currently the only agenda items we have are that a particular incident needs to be reviewed.",
+	    "fields": [
+		{ "name": "id", "type": "long", "description": "Internal unique identifier for this record." },
+		{ "name": "incident_id", "type": "long", "description": "The incident to review." },
+		{ "name": "task", "type": "task", "description": "What needs to be reviewed at this meeting for this incident." }
+	    ]
+	}
 
     },
 
@@ -347,6 +379,57 @@
 		    "method": "DELETE",
                     "description": "Delete a plan.",
                     "path": "/:id"
+                }
+
+	    ]
+	},
+
+	"meeting": {
+	    "operations": [
+		{
+		    "method": "GET",
+                    "description": "Search all meetings. Results are always paginated.",
+                    "parameters": [
+                        { "name": "id", "type": "long", "description": "Find meeting with this id. Exact match", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[meeting]" }
+                    }
+                },
+
+		{
+		    "method": "GET",
+		    "path": "/:id",
+                    "responses": {
+                        "200": { "type": "meeting" }
+                    }
+                },
+
+
+		{
+		    "description": "Creates a meeting. In general meetings are created automatically",
+		    "method": "POST",
+		    "body": { "type": "meeting_form" },
+                    "responses": {
+                        "200": { "type": "meeting" }
+                    }
+                },
+
+		{
+		    "description": "Updates a meeting, creating if it does not exist. In general meetings are created automatically",
+		    "path": "/:id",
+		    "method": "PUT",
+		    "body": { "type": "meeting_form" },
+                    "responses": {
+                        "200": { "type": "meeting" }
+                    }
+                },
+
+		{
+		    "path": "/:id",
+		    "method": "DELETE"
                 }
 
 	    ]

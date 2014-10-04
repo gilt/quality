@@ -1,4 +1,14 @@
 package com.gilt.quality.models {
+  /**
+   * Describe an agenda item for a meeting. Currently the only agenda items we have
+   * are that a particular incident needs to be reviewed.
+   */
+  case class AgendaItem(
+    id: Long,
+    incidentId: Long,
+    task: com.gilt.quality.models.Task
+  )
+
   case class Error(
     code: String,
     message: String
@@ -40,6 +50,23 @@ package com.gilt.quality.models {
     tags: scala.collection.Seq[String] = Nil,
     plan: scala.Option[com.gilt.quality.models.Plan] = None,
     createdAt: _root_.org.joda.time.DateTime
+  )
+
+  /**
+   * Meetings happen on a regular schedule (e.g. thursdays from 11-12 EST). As
+   * incidents are created, they are automatically assigned to the next meeting.
+   * Incidents can then be reviewed from the context of a meeting, facilitating
+   * online navigation. Incidents within a meeting can require one of two actions -
+   * team assignment or plan review.
+   */
+  case class Meeting(
+    id: Long,
+    scheduledAt: _root_.org.joda.time.DateTime,
+    agendaItems: scala.collection.Seq[com.gilt.quality.models.AgendaItem]
+  )
+
+  case class MeetingForm(
+    scheduledAt: _root_.org.joda.time.DateTime
   )
 
   /**
@@ -192,6 +219,50 @@ package com.gilt.quality.models {
     def fromString(value: String): scala.Option[Severity] = byName.get(value)
 
   }
+
+  /**
+   * Describes what needs to be reviewed about a specific incident
+   */
+  sealed trait Task
+
+  object Task {
+
+    /**
+     * Used in meetings to indicate that a team should be assigned to the incident or
+     * that the group should review the team assignment to make sure it is correct.
+     */
+    case object ReviewTeam extends Task { override def toString = "review_team" }
+    /**
+     * Indicates that the incident plan should be reviewed and rated
+     */
+    case object ReviewPlan extends Task { override def toString = "review_plan" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Task
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(ReviewTeam, ReviewPlan)
+
+    private[this]
+    val byName = all.map(x => x.toString -> x).toMap
+
+    def apply(value: String): Task = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): scala.Option[Task] = byName.get(value)
+
+  }
 }
 
 package com.gilt.quality.models {
@@ -234,6 +305,27 @@ package com.gilt.quality.models {
     implicit val jsonWritesQualityEnum_Severity = new Writes[Severity] {
       def writes(x: Severity) = JsString(x.toString)
     }
+
+    implicit val jsonReadsQualityEnum_Task = __.read[String].map(Task.apply)
+    implicit val jsonWritesQualityEnum_Task = new Writes[Task] {
+      def writes(x: Task) = JsString(x.toString)
+    }
+    implicit def jsonReadsQualityAgendaItem: play.api.libs.json.Reads[AgendaItem] = {
+      (
+        (__ \ "id").read[Long] and
+        (__ \ "incident_id").read[Long] and
+        (__ \ "task").read[com.gilt.quality.models.Task]
+      )(AgendaItem.apply _)
+    }
+
+    implicit def jsonWritesQualityAgendaItem: play.api.libs.json.Writes[AgendaItem] = {
+      (
+        (__ \ "id").write[Long] and
+        (__ \ "incident_id").write[Long] and
+        (__ \ "task").write[com.gilt.quality.models.Task]
+      )(unlift(AgendaItem.unapply _))
+    }
+
     implicit def jsonReadsQualityError: play.api.libs.json.Reads[Error] = {
       (
         (__ \ "code").read[String] and
@@ -316,6 +408,32 @@ package com.gilt.quality.models {
         (__ \ "plan").write[scala.Option[com.gilt.quality.models.Plan]] and
         (__ \ "created_at").write[_root_.org.joda.time.DateTime]
       )(unlift(Incident.unapply _))
+    }
+
+    implicit def jsonReadsQualityMeeting: play.api.libs.json.Reads[Meeting] = {
+      (
+        (__ \ "id").read[Long] and
+        (__ \ "scheduled_at").read[_root_.org.joda.time.DateTime] and
+        (__ \ "agenda_items").readNullable[scala.collection.Seq[com.gilt.quality.models.AgendaItem]].map(_.getOrElse(Nil))
+      )(Meeting.apply _)
+    }
+
+    implicit def jsonWritesQualityMeeting: play.api.libs.json.Writes[Meeting] = {
+      (
+        (__ \ "id").write[Long] and
+        (__ \ "scheduled_at").write[_root_.org.joda.time.DateTime] and
+        (__ \ "agenda_items").write[scala.collection.Seq[com.gilt.quality.models.AgendaItem]]
+      )(unlift(Meeting.unapply _))
+    }
+
+    implicit def jsonReadsQualityMeetingForm: play.api.libs.json.Reads[MeetingForm] = {
+      (__ \ "scheduled_at").read[_root_.org.joda.time.DateTime].map { x => new MeetingForm(scheduledAt = x) }
+    }
+
+    implicit def jsonWritesQualityMeetingForm: play.api.libs.json.Writes[MeetingForm] = new play.api.libs.json.Writes[MeetingForm] {
+      def writes(x: MeetingForm) = play.api.libs.json.Json.obj(
+        "scheduled_at" -> play.api.libs.json.Json.toJson(x.scheduledAt)
+      )
     }
 
     implicit def jsonReadsQualityPlan: play.api.libs.json.Reads[Plan] = {
@@ -410,7 +528,7 @@ package com.gilt.quality {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
-    private val UserAgent = "apidoc:0.6.0 http://www.apidoc.me/gilt/code/quality/0.0.7/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.0 http://www.apidoc.me/gilt/code/quality/0.0.8-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.quality.client")
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
@@ -420,6 +538,8 @@ package com.gilt.quality {
     def healthchecks: Healthchecks = Healthchecks
 
     def incidents: Incidents = Incidents
+
+    def meetings: Meetings = Meetings
 
     def plans: Plans = Plans
 
@@ -545,6 +665,65 @@ package com.gilt.quality {
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         _executeRequest("DELETE", s"/incidents/${id}").map {
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
+    object Meetings extends Meetings {
+      override def get(
+        id: scala.Option[Long] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Meeting]] = {
+        val queryParameters = Seq(
+          id.map("id" -> _.toString),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/meetings", queryParameters = queryParameters).map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Meeting]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def getById(
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Meeting]] = {
+        _executeRequest("GET", s"/meetings/${id}").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.Meeting])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def post(meetingForm: com.gilt.quality.models.MeetingForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting] = {
+        val payload = play.api.libs.json.Json.toJson(meetingForm)
+
+        _executeRequest("POST", s"/meetings", body = Some(payload)).map {
+          case r if r.status == 200 => r.json.as[com.gilt.quality.models.Meeting]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def putById(meetingForm: com.gilt.quality.models.MeetingForm, 
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting] = {
+        val payload = play.api.libs.json.Json.toJson(meetingForm)
+
+        _executeRequest("PUT", s"/meetings/${id}", body = Some(payload)).map {
+          case r if r.status == 200 => r.json.as[com.gilt.quality.models.Meeting]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def deleteById(
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
+        _executeRequest("DELETE", s"/meetings/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
@@ -830,6 +1009,38 @@ package com.gilt.quality {
       description: scala.Option[String] = None,
       tags: scala.collection.Seq[String] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident]
+
+    def deleteById(
+      id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+  }
+
+  trait Meetings {
+    /**
+     * Search all meetings. Results are always paginated.
+     */
+    def get(
+      id: scala.Option[Long] = None,
+      limit: scala.Option[Int] = None,
+      offset: scala.Option[Int] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Meeting]]
+
+    def getById(
+      id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Meeting]]
+
+    /**
+     * Creates a meeting. In general meetings are created automatically
+     */
+    def post(meetingForm: com.gilt.quality.models.MeetingForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting]
+
+    /**
+     * Updates a meeting, creating if it does not exist. In general meetings are
+     * created automatically
+     */
+    def putById(meetingForm: com.gilt.quality.models.MeetingForm, 
+      id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting]
 
     def deleteById(
       id: Long

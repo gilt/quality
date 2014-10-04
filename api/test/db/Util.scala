@@ -1,6 +1,7 @@
 package db
 
-import com.gilt.quality.models.{ Incident, Plan, Severity }
+import org.joda.time.DateTime
+import com.gilt.quality.models.{ Incident, Meeting, MeetingForm, Plan, Severity }
 import java.util.UUID
 
 object Util {
@@ -73,4 +74,13 @@ object Util {
     GradesDao.upsert(user, form.getOrElse(gradeForm()))
   }
 
+  def meetingForm() = {
+    MeetingForm(
+      scheduledAt = (new DateTime()).plus(1)
+    )
+  }
+
+  def createMeeting(form: MeetingForm = meetingForm()): Meeting = {
+    MeetingsDao.create(user, form)
+  }
 }
