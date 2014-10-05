@@ -13,7 +13,7 @@ class StatisticsDaoSpec extends FunSpec with Matchers {
       val teamKey = UUID.randomUUID.toString
       Util.upsertTeam(key = teamKey)
 
-      val incident = Util.createIncident(Some(IncidentForm(team_key = Some(teamKey), severity = Severity.High.toString, summary = "test")))
+      val incident = Util.createIncident(form = IncidentForm(team_key = Some(teamKey), severity = Severity.High.toString, summary = "test"))
       val grade = Util.upsertGrade(Some(GradeForm(plan_id = Util.createPlan(Some(PlanForm(incident_id = incident.id, body = "test"))).id, score = 100)))
       val other = Util.createPlan()
 

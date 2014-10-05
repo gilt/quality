@@ -22,7 +22,7 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
   it("create with tags") {
     running(FakeApplication()) {
       val tags = Seq("a", "b")
-      val incident = Util.createIncident(Some(Util.incidentForm.copy(tags = Some(tags))))
+      val incident = Util.createIncident(form = Util.incidentForm.copy(tags = Some(tags)))
       IncidentsDao.findById(incident.id).get.tags should be(tags)
     }
   }
@@ -36,7 +36,7 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
         description = None
       )
 
-      val incident = Util.createIncident(Some(form))
+      val incident = Util.createIncident(form = form)
       IncidentsDao.findById(incident.id).get.team should be(None)
     }
   }
@@ -60,15 +60,15 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
   it("Update also updated tags") {
     running(FakeApplication()) {
       val form = Util.incidentForm
-      val incident = Util.createIncident(Some(form.copy(tags = Some(Seq("a")))))
+      val incident = Util.createIncident(form = form.copy(tags = Some(Seq("a"))))
 
-      val updated = IncidentsDao.update(Util.user, incident, form.copy(tags = Some(Seq("a", "b"))))
+      val updated = IncidentsDao.update(Util.user, incident, FullIncidentForm(incident.organization, form.copy(tags = Some(Seq("a", "b")))))
       updated.tags should be(Seq("a", "b"))
 
-      val updated2 = IncidentsDao.update(Util.user, updated, form.copy(tags = Some(Seq("b"))))
+      val updated2 = IncidentsDao.update(Util.user, updated, FullIncidentForm(incident.organization, form.copy(tags = Some(Seq("b")))))
       updated2.tags should be(Seq("b"))
 
-      val updated3 = IncidentsDao.update(Util.user, updated2, form.copy(tags = None))
+      val updated3 = IncidentsDao.update(Util.user, updated2, FullIncidentForm(incident.organization, form.copy(tags = None)))
       updated3.tags should be(Seq.empty)
     }
   }
@@ -77,8 +77,8 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
     running(FakeApplication()) {
       val teamKey = UUID.randomUUID.toString
 
-      val i1 = Util.createIncident(Some(Util.incidentForm.copy(team_key = Some(teamKey))))
-      val i2 = Util.createIncident(Some(Util.incidentForm.copy(team_key = Some(teamKey))))
+      val i1 = Util.createIncident(form = Util.incidentForm.copy(team_key = Some(teamKey)))
+      val i2 = Util.createIncident(form = Util.incidentForm.copy(team_key = Some(teamKey)))
       val other = Util.createIncident()
 
       IncidentsDao.findAll(teamKey = Some(teamKey)).map(_.id).sorted should be(Seq(i1.id, i2.id))
@@ -89,7 +89,7 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
   it("findAll includes plan if available") {
     running(FakeApplication()) {
       val teamKey = UUID.randomUUID.toString
-      val incident = Util.createIncident(Some(Util.incidentForm.copy(team_key = Some(teamKey))))
+      val incident = Util.createIncident(form = Util.incidentForm.copy(team_key = Some(teamKey)))
       val plan = Util.createPlan(Some(PlanForm(incident_id = incident.id, body = "Test", grade = Some(100))))
 
       val fetched = IncidentsDao.findAll(teamKey = Some(teamKey)).head
