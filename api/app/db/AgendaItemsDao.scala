@@ -34,7 +34,7 @@ object AgendaItemsDao {
   private val SoftDeleteAgendaItemsQuery = """
     update agenda_items
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now(), updated_at = now()
-     where agenda_item_id = {agenda_item_id}
+     where meeting_id = {meeting_id}
        and deleted_at is null
   """
 
