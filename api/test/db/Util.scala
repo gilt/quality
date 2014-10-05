@@ -33,7 +33,7 @@ object Util {
     key: String
   ) {
     TeamsDao.lookupId(org, key).getOrElse {
-      TeamsDao.create(user, org, teamForm.copy(key = key))
+      TeamsDao.create(user, FullTeamForm(org, teamForm.copy(key = key)))
     }
   }
 
