@@ -1,12 +1,13 @@
 package controllers
 
-import com.gilt.quality.models.{Error, Team, TeamForm}
+import com.gilt.quality.models.{Team, TeamForm}
 import com.gilt.quality.models.json._
 
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{OrganizationsDao, TeamsDao, User}
+import db.{FullTeamForm, OrganizationsDao, TeamsDao, User}
+import lib.Validation
 
 object Teams extends Controller {
 
@@ -34,17 +35,17 @@ object Teams extends Controller {
   def post() = Action(parse.json) { request =>
     request.body.validate[TeamForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Seq(Error("100", "invalid json: " + e.toString))))
+        Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[TeamForm] => {
-        val form = s.get
-        TeamsDao.findByKey(org, form.key) match {
-          case None => {
-            val team = TeamsDao.create(User.Default, org, form)
+        val fullForm = FullTeamForm(org, s.get)
+        fullForm.validate match {
+          case Nil => {
+            val team = TeamsDao.create(User.Default, fullForm)
             Created(Json.toJson(team)).withHeaders(LOCATION -> routes.Teams.getByKey(team.key).url)
           }
-          case Some(t: Team) => {
-            Conflict(Json.toJson(Seq(Error("team_key_exists", "A team with this key already exists"))))
+          case errors => {
+            Conflict(Json.toJson(errors))
           }
         }
       }

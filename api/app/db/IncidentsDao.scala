@@ -1,8 +1,8 @@
 package db
 
-import com.gilt.quality.models.{ Error, Incident, Organization, Plan, Severity, Team }
+import com.gilt.quality.models.{Error, Incident, Organization, Plan, Severity, Team}
 import com.gilt.quality.models.json._
-import lib.{Validation, ValidationError}
+import lib.Validation
 
 import anorm._
 import anorm.ParameterValue._
@@ -22,7 +22,7 @@ case class FullIncidentForm(
     }
   }
 
-  lazy val validate: Seq[ValidationError] = {
+  lazy val validate: Seq[Error] = {
     form.team_key match {
       case None => Seq.empty
       case Some(key) => {
@@ -112,7 +112,7 @@ object IncidentsDao {
       id
     }
 
-    findById(fullForm.org, id).getOrElse {
+    findById(id).getOrElse {
       sys.error("Failed to create incident")
     }
   }
@@ -137,7 +137,7 @@ object IncidentsDao {
       IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, fullForm.form.tags.getOrElse(Seq.empty))
     }
 
-    findById(fullForm.org, incident.id).getOrElse {
+    findById(incident.id).getOrElse {
       sys.error("Failed to update incident")
     }
   }
@@ -146,11 +146,17 @@ object IncidentsDao {
     SoftDelete.delete("incidents", deletedBy, incident.id)
   }
 
-  def findById(
+  private[db] def findById(
+    id: Long
+  ): Option[Incident] = {
+    findAll(id = Some(id), limit = 1).headOption.map { i => findDetails(i) }
+  }
+
+  def findByOrganizationAndId(
     org: Organization,
     id: Long
   ): Option[Incident] = {
-    findAll(orgKey = org.key, id = Some(id), limit = 1).headOption.map { i => findDetails(i) }
+    findAll(orgKey = Some(org.key), id = Some(id), limit = 1).headOption.map { i => findDetails(i) }
   }
 
   private def findDetails(incident: Incident): Incident = {
@@ -158,7 +164,7 @@ object IncidentsDao {
   }
 
   def findAll(
-    orgKey: String,
+    orgKey: Option[String] = None,
     id: Option[Long] = None,
     teamKey: Option[String] = None,
     hasTeam: Option[Boolean] = None,
@@ -170,7 +176,7 @@ object IncidentsDao {
   ): Seq[Incident] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      Some("and incidents.organization_id = (select id from organizations where deleted_at is null and key = {org_key})"),
+      orgKey.map { v => "and incidents.organization_id = (select id from organizations where deleted_at is null and key = {org_key})" },
       id.map { v => "and incidents.id = {id}" },
       teamKey.map { v => "and incidents.team_id = (select id from teams where deleted_at is null and key = lower(trim({team_key})))" },
       hasTeam.map { v =>
@@ -197,7 +203,7 @@ object IncidentsDao {
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      Some(NamedParameter("org_key", toParameterValue(orgKey))),
+      orgKey.map { v => NamedParameter("org_key", toParameterValue(v)) },
       id.map { v => NamedParameter("id", toParameterValue(v)) },
       teamKey.map { v => NamedParameter("team_key", toParameterValue(v)) },
       severity.map { v => NamedParameter("severity", toParameterValue(severity)) }

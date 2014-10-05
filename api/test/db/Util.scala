@@ -32,7 +32,7 @@ object Util {
     org: Organization = testOrg,
     key: String
   ) {
-    TeamsDao.lookupId(key).getOrElse {
+    TeamsDao.lookupId(org, key).getOrElse {
       TeamsDao.create(user, org, teamForm.copy(key = key))
     }
   }
@@ -46,10 +46,12 @@ object Util {
     )
   }
 
-  def createIncident(form: Option[IncidentForm] = None): Incident = {
-    val f = form.getOrElse(incidentForm())
-    f.team_key.map { key => Util.upsertTeam(key = key) }
-    IncidentsDao.create(user, f)
+  def createIncident(
+    org: Organization = testOrg,
+    form: IncidentForm = incidentForm()
+  ): Incident = {
+    form.team_key.map { Util.upsertTeam(org, _) }
+    IncidentsDao.create(user, FullIncidentForm(org, form))
   }
 
   def incidentTagForm(incident: Option[Incident] = None): IncidentTagForm = {

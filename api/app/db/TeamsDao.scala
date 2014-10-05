@@ -1,11 +1,28 @@
 package db
 
-import com.gilt.quality.models.{Organization, Team, TeamForm}
+import com.gilt.quality.models.{Error, Organization, Team, TeamForm}
+import lib.Validation
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
+
+case class FullTeamForm(
+  org: Organization,
+  form: TeamForm
+) {
+
+  lazy val validate: Seq[Error] = {
+    TeamsDao.findByKey(org, form.key) match {
+      case None => Seq.empty
+      case Some(key) => {
+        Validation.error(s"Team with key[$key] already exists")
+      }
+    }
+  }
+
+}
 
 object TeamsDao {
 
@@ -37,17 +54,19 @@ object TeamsDao {
        and teams.key = {key} and key = {key}
   """
 
-  def create(user: User, org: Organization, form: TeamForm): Team = {
+  def create(user: User, fullForm: FullTeamForm): Team = {
+    assert(fullForm.validate.isEmpty, fullForm.validate.map(_.message).mkString(" "))
+
     val id: Long = DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(
-        'organization_key -> org.key,
-        'key -> form.key.trim.toLowerCase,
+        'organization_key -> fullForm.org.key,
+        'key -> fullForm.form.key.trim.toLowerCase,
         'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
     }
 
-    findByKey(org, form.key).getOrElse {
+    findByKey(fullForm.org, fullForm.form.key).getOrElse {
       sys.error("Failed to create team")
     }
   }
