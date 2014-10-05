@@ -36,8 +36,8 @@ object StatisticsDao {
       Some(BaseQuery.trim),
       teamKey.map { v => "and teams.key = lower(trim({team_key}))" },
       Some("and all_incidents.created_at >= current_timestamp - ({number_hours} * interval '1 hour')"),
-      Some("group by teams.id, teams.key"),
-      Some("order by teams.key desc")
+      Some("group by organizations.key, organizations.name, teams.id, teams.key"),
+      Some("order by organizations.key, teams.key desc")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
