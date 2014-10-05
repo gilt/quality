@@ -98,8 +98,8 @@ object AgendaItemsDao {
           task = Task(row[String]("task")),
           incident = IncidentSummary(
             id = row[Long]("incident_id"),
-            severity = Severity(row[String]("severity")),
-            summary = row[String]("summary")
+            severity = Severity(row[String]("incident_severity")),
+            summary = row[String]("incident_summary")
           )
         )
       }.toSeq
