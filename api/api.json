@@ -66,9 +66,32 @@
             ]
 	},
 
+        "organization": {
+            "description": "Top level organization for which we are managing quality. Key entities like teams and meetings are scoped to the organization.",
+            "fields": [
+                { "name": "key", "type": "string", "description": "Used as a unique key for this organization that is URL safe." },
+                { "name": "name", "type": "string", "description": "The name of this organization." }
+            ]
+        },
+
+        "organization_form": {
+            "fields": [
+                { "name": "name", "type": "string" },
+                { "name": "key", "type": "string", "required": false, "description": "Defaults to a url friendy version of the name" }
+            ]
+        },
+
         "team": {
             "description": "A team is the main actor in the system. Teams have a unique key and own incidents",
             "fields": [
+                { "name": "organization", "type": "organization", "description": "Organization to which this team belongs" },
+                { "name": "key", "type": "string", "description": "Unique identifier for this team" }
+            ]
+        },
+
+        "team_form": {
+            "fields": [
+                { "name": "org_key", "type": "string" },
                 { "name": "key", "type": "string", "description": "Unique identifier for this team" }
             ]
         },
@@ -173,6 +196,47 @@
 	    ]
 	},
 
+	"organization": {
+	    "operations": [
+		{
+		    "method": "GET",
+		    "description": "Search all organizations. Results are always paginated.",
+                    "parameters": [
+                        { "name": "id", "type": "long", "description": "Find organization with this id", "required": false },
+                        { "name": "key", "type": "string", "description": "Find organization with this key", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[organization]" }
+                    }
+                },
+
+		{
+		    "method": "GET",
+		    "path": "/:key",
+                    "responses": {
+                        "200": { "type": "organization" }
+                    }
+                },
+
+
+		{
+		    "method": "POST",
+                    "body": { "type": "organization_form" },
+                    "responses": {
+                        "200": { "type": "organization" }
+                    }
+                },
+
+		{
+		    "method": "DELETE",
+		    "path": "/:key"
+                }
+
+	    ]
+	},
+
 	"event": {
             "operations": [
 		{
@@ -219,9 +283,7 @@
                 {
                     "method": "POST",
                     "description": "Create a new team.",
-                    "parameters": [
-                        { "name": "key", "type": "string" }
-		    ],
+                    "body": { "type": "team_form" },
                     "responses": {
                         "201": { "type": "team" },
                         "409": { "type": "[error]" }

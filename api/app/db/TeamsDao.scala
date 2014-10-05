@@ -1,33 +1,28 @@
 package db
 
-import com.gilt.quality.models.Team
+import com.gilt.quality.models.{Organization, Team, TeamForm}
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class TeamForm(
-  key: String
-)
-
-object TeamForm {
-  implicit val readsTeamForm = Json.reads[TeamForm]
-}
-
 object TeamsDao {
 
   private val BaseQuery = """
-    select key
+    select teams.key,
+           organizations.key as organization_key, 
+           organizations.name as organization_name
       from teams
+      join organizations on organizations.deleted_at is null and organizations.id = teams.organization_id
      where deleted_at is null
   """
 
   private val InsertQuery = """
     insert into teams
-    (key, created_by_guid, updated_by_guid)
+    (organization_id, key, created_by_guid, updated_by_guid)
     values
-    ({key}, {user_guid}::uuid, {user_guid}::uuid)
+    ((select id from organizations where deleted_at is null and key = '{organization_key}'), {key}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
   private val SoftDeleteQuery = """
@@ -35,19 +30,24 @@ object TeamsDao {
   """
 
   private val LookupIdQuery = """
-    select id from teams where deleted_at is null and key = {key}
+    select teams.id
+      from teams
+      left join organizations on organizations.id = teams.organization_id and organizations.key = {org_key}
+     where teams.deleted_at is null
+       and teams.key = {key} and key = {key}
   """
 
-  def create(user: User, form: TeamForm): Team = {
+  def create(user: User, org: Organization, form: TeamForm): Team = {
     val id: Long = DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(
+        'organization_key -> org.key,
         'key -> form.key.trim.toLowerCase,
         'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
     }
 
-    findByKey(form.key).getOrElse {
+    findByKey(org, form.key).getOrElse {
       sys.error("Failed to create team")
     }
   }
@@ -58,36 +58,54 @@ object TeamsDao {
     }
   }
 
-  def findByKey(key: String): Option[Team] = {
-    findAll(key = Some(key.trim.toLowerCase), limit = 1).headOption
+  def findByKey(
+    org: Organization,
+    key: String
+  ): Option[Team] = {
+    findAll(orgKey = org.key, key = Some(key), limit = 1).headOption
   }
 
-  def lookupId(key: String): Option[Long] = {
+  def lookupId(
+    org: Organization,
+    key: String
+  ): Option[Long] = {
     DB.withConnection { implicit c =>
-      SQL(LookupIdQuery).on('key -> key.trim.toLowerCase)().toList.map { row =>
+      SQL(LookupIdQuery).on(
+        'org_key -> org.key,
+        'key -> key.trim.toLowerCase
+      )().toList.map { row =>
         row[Long]("id")
       }.toSeq.headOption
     }
   }
 
-  def findAll(key: Option[String] = None,
-              limit: Int = 50,
-              offset: Int = 0): Seq[Team] = {
+  def findAll(
+    orgKey: String,
+    key: Option[String] = None,
+    limit: Int = 50,
+    offset: Int = 0
+  ): Seq[Team] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      Some(" and teams.organization_id = (select id from organizations where deleted_at is null and key = {org_key}) "),
       key.map { v => "and teams.key = {key}" },
       Some("order by teams.key"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
+      Some(NamedParameter("org_key", toParameterValue(orgKey))),
       key.map { v => NamedParameter("key", toParameterValue(v.trim.toLowerCase)) }
     ).flatten
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         Team(
-          key = row[String]("key")
+          key = row[String]("key"),
+          organization = Organization(
+            key = row[String]("organization_key"),
+            name = row[String]("organization_name")
+          )
         )
       }.toSeq
     }
