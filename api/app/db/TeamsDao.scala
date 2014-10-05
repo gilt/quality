@@ -32,18 +32,14 @@ object TeamsDao {
            organizations.name as organization_name
       from teams
       join organizations on organizations.deleted_at is null and organizations.id = teams.organization_id
-     where deleted_at is null
+     where teams.deleted_at is null
   """
 
   private val InsertQuery = """
     insert into teams
     (organization_id, key, created_by_guid, updated_by_guid)
     values
-    ((select id from organizations where deleted_at is null and key = '{organization_key}'), {key}, {user_guid}::uuid, {user_guid}::uuid)
-  """
-
-  private val SoftDeleteQuery = """
-    update teams set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where key = {key} and deleted_at is null
+    ({organization_id}, {key}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
   private val LookupIdQuery = """
@@ -51,15 +47,19 @@ object TeamsDao {
       from teams
       left join organizations on organizations.id = teams.organization_id and organizations.key = {org_key}
      where teams.deleted_at is null
-       and teams.key = {key} and key = {key}
+       and teams.key = {key}
   """
 
   def create(user: User, fullForm: FullTeamForm): Team = {
     assert(fullForm.validate.isEmpty, fullForm.validate.map(_.message).mkString(" "))
 
-    val id: Long = DB.withTransaction { implicit c =>
+    val orgId = OrganizationsDao.lookupId(fullForm.org.key).getOrElse {
+      sys.error(s"Could not find organizations with key[${fullForm.org.key}]")
+    }
+
+    val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'organization_key -> fullForm.org.key,
+        'organization_id -> orgId,
         'key -> fullForm.form.key.trim.toLowerCase,
         'user_guid -> user.guid,
         'user_guid -> user.guid
@@ -72,9 +72,7 @@ object TeamsDao {
   }
 
   def softDelete(deletedBy: User, team: Team) {
-    DB.withConnection { implicit c =>
-      SQL(SoftDeleteQuery).on('deleted_by_guid -> deletedBy.guid, 'key -> team.key).execute()
-    }
+    SoftDelete.deleteByKey("teams", deletedBy, team.key)
   }
 
   def findByKey(
@@ -106,7 +104,7 @@ object TeamsDao {
   ): Seq[Team] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      Some(" and teams.organization_id = (select id from organizations where deleted_at is null and key = {org_key}) "),
+      Some("and teams.organization_id = (select id from organizations where deleted_at is null and key = {org_key})"),
       key.map { v => "and teams.key = {key}" },
       Some("order by teams.key"),
       Some(s"limit ${limit} offset ${offset}")

@@ -128,7 +128,6 @@ package com.gilt.quality.models {
   )
 
   case class TeamForm(
-    orgKey: String,
     key: String
   )
 
@@ -584,17 +583,13 @@ package com.gilt.quality.models {
     }
 
     implicit def jsonReadsQualityTeamForm: play.api.libs.json.Reads[TeamForm] = {
-      (
-        (__ \ "org_key").read[String] and
-        (__ \ "key").read[String]
-      )(TeamForm.apply _)
+      (__ \ "key").read[String].map { x => new TeamForm(key = x) }
     }
 
-    implicit def jsonWritesQualityTeamForm: play.api.libs.json.Writes[TeamForm] = {
-      (
-        (__ \ "org_key").write[String] and
-        (__ \ "key").write[String]
-      )(unlift(TeamForm.unapply _))
+    implicit def jsonWritesQualityTeamForm: play.api.libs.json.Writes[TeamForm] = new play.api.libs.json.Writes[TeamForm] {
+      def writes(x: TeamForm) = play.api.libs.json.Json.obj(
+        "key" -> play.api.libs.json.Json.toJson(x.key)
+      )
     }
   }
 }

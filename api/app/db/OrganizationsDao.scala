@@ -27,6 +27,10 @@ object OrganizationsDao {
      where organizations.deleted_at is null
   """
 
+  private val LookupIdQuery = """
+    select id from organizations where deleted_at is null and key = lower(trim({key}))
+  """
+
   def validate(
     form: OrganizationForm
   ): Seq[Error] = {
@@ -96,6 +100,18 @@ object OrganizationsDao {
 
   def findByKey(key: String): Option[Organization] = {
     findAll(key = Some(key), limit = 1).headOption
+  }
+
+  private[db] def lookupId(
+    key: String
+  ): Option[Long] = {
+    DB.withConnection { implicit c =>
+      SQL(LookupIdQuery).on(
+        'key -> key
+      )().toList.map { row =>
+        row[Long]("id")
+      }.toSeq.headOption
+    }
   }
 
   def findAll(
