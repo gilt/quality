@@ -65,7 +65,11 @@ object Teams extends Controller {
       },
 
       teamForm => {
-        Api.instance.teams.post(teamForm.key).map { team =>
+        val form = com.gilt.quality.models.TeamForm(
+          orgKey = org.key,
+          key = teamForm.key
+        )
+        Api.instance.teams.post(form).map { team =>
           Redirect(routes.Teams.show(team.key)).flashing("success" -> "Team created")
         }.recover {
           case response: com.gilt.quality.error.ErrorsResponse => {

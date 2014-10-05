@@ -48,6 +48,7 @@ package com.gilt.quality.models {
    */
   case class Incident(
     id: Long,
+    organization: com.gilt.quality.models.Organization,
     summary: String,
     description: scala.Option[String] = None,
     team: scala.Option[com.gilt.quality.models.Team] = None,
@@ -431,6 +432,7 @@ package com.gilt.quality.models {
     implicit def jsonReadsQualityIncident: play.api.libs.json.Reads[Incident] = {
       (
         (__ \ "id").read[Long] and
+        (__ \ "organization").read[com.gilt.quality.models.Organization] and
         (__ \ "summary").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "team").readNullable[com.gilt.quality.models.Team] and
@@ -444,6 +446,7 @@ package com.gilt.quality.models {
     implicit def jsonWritesQualityIncident: play.api.libs.json.Writes[Incident] = {
       (
         (__ \ "id").write[Long] and
+        (__ \ "organization").write[com.gilt.quality.models.Organization] and
         (__ \ "summary").write[String] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "team").write[scala.Option[com.gilt.quality.models.Team]] and

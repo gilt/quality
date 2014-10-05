@@ -113,6 +113,7 @@
             "description": "A bug or error that affected public or internal users in a negative way",
             "fields": [
                 { "name": "id", "type": "long", "description": "Internal unique identifier for this incident." },
+                { "name": "organization", "type": "organization", "description": "Organization to which this incident belongs" },
                 { "name": "summary", "type": "string", "description": "Summary of the incident." },
                 { "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
                 { "name": "team", "type": "team", "description": "Team responsible for resolution of this incident", "required": false },
