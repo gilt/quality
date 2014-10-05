@@ -5,7 +5,7 @@ import com.gilt.quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{IncidentsDao, IncidentForm, OrganizationsDao, User}
+import db.{FullIncidentForm, IncidentsDao, IncidentForm, OrganizationsDao, User}
 
 object Incidents extends Controller {
 
@@ -47,10 +47,10 @@ object Incidents extends Controller {
         Conflict(Json.toJson(Seq(Error("100", "invalid json: " + e.toString))))
       }
       case s: JsSuccess[IncidentForm] => {
-        val form = s.get
-        form.validate(org) match {
+        val fullForm = FullIncidentForm(org, s.get)
+        fullForm.validate match {
           case Nil => {
-            val incident = IncidentsDao.create(User.Default, org, s.get)
+            val incident = IncidentsDao.create(User.Default, fullForm)
             Created(Json.toJson(incident)).withHeaders(LOCATION -> routes.Incidents.getById(incident.id).url)
           }
           case errors => {
@@ -70,10 +70,10 @@ object Incidents extends Controller {
             Conflict(Json.toJson(Error("100", "invalid json")))
           }
           case s: JsSuccess[IncidentForm] => {
-            val form = s.get
-            form.validate(org) match {
+            val fullForm = FullIncidentForm(org, s.get)
+            fullForm.validate match {
               case Nil => {
-                val updated = IncidentsDao.update(User.Default, i, org, s.get)
+                val updated = IncidentsDao.update(User.Default, i, fullForm)
                 Created(Json.toJson(updated)).withHeaders(LOCATION -> routes.Incidents.getById(updated.id).url)
               }
               case errors => {

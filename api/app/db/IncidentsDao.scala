@@ -12,27 +12,21 @@ import play.api.Play.current
 import play.api.libs.json._
 import org.joda.time.DateTime
 
-case class IncidentForm(
-  team_key: Option[String],
-  severity: String,
-  summary: String,
-  description: Option[String] = None,
-  tags: Option[Seq[String]] = None
+case class FullIncidentForm(
+  org: Organization,
+  form: IncidentForm
 ) {
-
-  def teamId(org: Organization): Option[Long] = {
-    team_key.map { key =>
-      TeamsDao.lookupId(org, key).getOrElse {
-        sys.error(s"Could not identify team for org[${org.key}] key[${team_key}]")
-      }
+  lazy val teamId: Option[Long] = {
+    form.team_key.flatMap { key =>
+      TeamsDao.lookupId(org, key)
     }
   }
 
-  def validate(org: Organization): Seq[ValidationError] = {
-    team_key match {
+  lazy val validate: Seq[ValidationError] = {
+    form.team_key match {
       case None => Seq.empty
       case Some(key) => {
-        TeamsDao.lookupId(org, key) match {
+        teamId match {
           case None => Validation.error(s"Team '$key' not found")
           case Some(_) => Seq.empty
         }
@@ -42,6 +36,13 @@ case class IncidentForm(
 
 }
 
+case class IncidentForm(
+  team_key: Option[String],
+  severity: String,
+  summary: String,
+  description: Option[String] = None,
+  tags: Option[Seq[String]] = None
+)
 
 object IncidentForm {
   implicit val readsIncidentForm = Json.reads[IncidentForm]
@@ -51,6 +52,8 @@ object IncidentsDao {
 
   private val BaseQuery = """
     select incidents.id,
+           organizations.key as organization_key, 
+           organizations.name as organization_name,
            teams.key as team_key,
            organizations.key as organization_key,
            organizations.name as organization_name,
@@ -63,6 +66,7 @@ object IncidentsDao {
            plans.created_at as plan_created_at,
            grades.score as grade
       from incidents
+      join organizations on organizations.deleted_at is null and organizations.id = incidents.organization_id
       left join teams on teams.deleted_at is null and teams.id = incidents.team_id
       left join organizations on organizations.deleted_at is null and organizations.id = teams.organization_id
       left join plans on plans.deleted_at is null and plans.incident_id = incidents.id
@@ -88,44 +92,52 @@ object IncidentsDao {
      where id = {id}
   """
 
-  def create(user: User, org: Organization, form: IncidentForm): Incident = {
+  def create(user: User, fullForm: FullIncidentForm): Incident = {
+    assert(fullForm.validate.isEmpty, fullForm.validate.map(_.message).mkString(" "))
+
     val id: Long = DB.withTransaction { implicit c =>
       val id = SQL(InsertQuery).on(
-        'team_id -> form.teamId(org),
-        'severity -> form.severity,
-        'summary -> form.summary,
-        'description -> form.description,
+        'team_id -> fullForm.teamId,
+        'severity -> fullForm.form.severity,
+        'summary -> fullForm.form.summary,
+        'description -> fullForm.form.description,
         'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
 
-      form.tags.foreach { tags =>
+      fullForm.form.tags.foreach { tags =>
         IncidentTagsDao.doUpdate(c, user, id, Seq.empty, tags)
       }
 
       id
     }
 
-    findById(org, id).getOrElse {
+    findById(fullForm.org, id).getOrElse {
       sys.error("Failed to create incident")
     }
   }
 
-  def update(user: User, incident: Incident, org: Organization, form: IncidentForm): Incident = {
+  def update(user: User, incident: Incident, fullForm: FullIncidentForm): Incident = {
+    assert(fullForm.validate.isEmpty, fullForm.validate.map(_.message).mkString(" "))
+    assert(
+      incident.organization.key == fullForm.org.key,
+      s"Incident[${incident.id}] belongs to org[${incident.organization.key}] and not[${fullForm.org.key}]"
+    )
+
     DB.withTransaction { implicit c =>
       SQL(UpdateQuery).on(
         'id -> incident.id,
-        'team_id -> form.teamId(org),
-        'severity -> form.severity,
-        'summary -> form.summary,
-        'description -> form.description,
+        'team_id -> fullForm.teamId,
+        'severity -> fullForm.form.severity,
+        'summary -> fullForm.form.summary,
+        'description -> fullForm.form.description,
         'user_guid -> user.guid
       ).executeUpdate()
 
-      IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, form.tags.getOrElse(Seq.empty))
+      IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, fullForm.form.tags.getOrElse(Seq.empty))
     }
 
-    findById(org, incident.id).getOrElse {
+    findById(fullForm.org, incident.id).getOrElse {
       sys.error("Failed to update incident")
     }
   }
@@ -207,6 +219,10 @@ object IncidentsDao {
 
         Incident(
           id = incidentId,
+          organization = Organization(
+            key = row[String]("organization_key"),
+            name = row[String]("organization_name")
+          ),
           team = row[Option[String]]("team_key").map { team_key =>
             Team(
               key = team_key,
