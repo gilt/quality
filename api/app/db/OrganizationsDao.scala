@@ -1,8 +1,8 @@
 package db
 
-import com.gilt.quality.models.Organization
+import com.gilt.quality.models.{Error, Organization}
 import anorm._
-import lib.{UrlKey, Validation, ValidationError}
+import lib.{UrlKey, Validation}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -29,7 +29,7 @@ object OrganizationsDao {
 
   def validate(
     form: OrganizationForm
-  ): Seq[ValidationError] = {
+  ): Seq[Error] = {
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")
     } else {

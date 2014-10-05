@@ -48,7 +48,7 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
       val updated = IncidentsDao.update(
         Util.user,
         incident,
-        Util.incidentForm.copy(summary = newSummary)
+        FullIncidentForm(Util.testOrg, Util.incidentForm.copy(summary = newSummary))
       )
 
       val fetched = IncidentsDao.findById(incident.id).get

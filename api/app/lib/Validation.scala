@@ -1,15 +1,8 @@
 package lib
 
+import com.gilt.quality.models.Error
 import play.api.libs.json.Json
 import play.api.libs.json.JsError
-
-case class ValidationError(code: String, message: String)
-
-object ValidationError {
-
-  implicit val validationErrorWrites = Json.writes[ValidationError]
-
-}
 
 object Validation {
 
@@ -17,24 +10,24 @@ object Validation {
   private val ErrorCode = "validation_error"
   private val ServerError = "server_error"
 
-  def invalidJson(error: JsError): Seq[ValidationError] = {
+  def invalidJson(error: JsError): Seq[Error] = {
     invalidJson(error.toString)
   }
 
-  def invalidJson(error: String): Seq[ValidationError] = {
-    Seq(ValidationError(InvalidJsonCode, error))
+  def invalidJson(error: String): Seq[Error] = {
+    Seq(Error(InvalidJsonCode, error))
   }
 
-  def error(message: String): Seq[ValidationError] = {
+  def error(message: String): Seq[Error] = {
     errors(Seq(message))
   }
 
-  def errors(messages: Seq[String]): Seq[ValidationError] = {
-    messages.map { msg => ValidationError(ErrorCode, msg) }
+  def errors(messages: Seq[String]): Seq[Error] = {
+    messages.map { msg => Error(ErrorCode, msg) }
   }
 
-  def serverError(error: String = "Internal Server Error"): Seq[ValidationError] = {
-    Seq(ValidationError(ServerError, error))
+  def serverError(error: String = "Internal Server Error"): Seq[Error] = {
+    Seq(Error(ServerError, error))
   }
 
 }

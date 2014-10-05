@@ -21,7 +21,7 @@ object Incidents extends Controller {
     limit: Int = 25,
     offset: Int = 0) = Action { request =>
     val matches = IncidentsDao.findAll(
-      orgKey = org.key,
+      orgKey = Some(org.key),
       id = id,
       teamKey = team_key,
       hasTeam = has_team,
@@ -35,7 +35,7 @@ object Incidents extends Controller {
   }
 
   def getById(id: Long) = Action {
-    IncidentsDao.findById(org, id) match {
+    IncidentsDao.findByOrganizationAndId(org, id) match {
       case None => NotFound
       case Some(i: Incident) => Ok(Json.toJson(i))
     }
@@ -62,7 +62,7 @@ object Incidents extends Controller {
   }
 
   def putById(id: Long) = Action(parse.json) { request =>
-    IncidentsDao.findById(org, id) match {
+    IncidentsDao.findByOrganizationAndId(org, id) match {
       case None => NotFound
       case Some(i: Incident) => {
         request.body.validate[IncidentForm] match {
@@ -87,7 +87,7 @@ object Incidents extends Controller {
   }
 
   def deleteById(id: Long) = Action { request =>
-    IncidentsDao.findById(org, id).foreach { i =>
+    IncidentsDao.findByOrganizationAndId(org, id).foreach { i =>
       IncidentsDao.softDelete(User.Default, i)
     }
     NoContent
