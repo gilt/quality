@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{AgendaItem, Meeting, MeetingForm, Task}
+import com.gilt.quality.models.{AgendaItem, Meeting, MeetingForm, Organization, Task}
 import org.joda.time.DateTime
 import anorm._
 import anorm.ParameterValue._
@@ -8,6 +8,11 @@ import db.AnormHelper._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
+
+case class FullMeetingForm(
+  org: Organization,
+  form: MeetingForm
+)
 
 object MeetingsDao {
 
@@ -19,15 +24,20 @@ object MeetingsDao {
 
   private val InsertQuery = """
     insert into meetings
-    (scheduled_at, created_by_guid)
+    (organization_id, scheduled_at, created_by_guid)
     values
-    ({scheduled_at}, {user_guid}::uuid)
+    ({organization_id}, {scheduled_at}, {user_guid}::uuid)
   """
 
-  def create(user: User, form: MeetingForm): Meeting = {
-    val id: Long = DB.withTransaction { implicit c =>
+  def create(user: User, fullForm: FullMeetingForm): Meeting = {
+    val orgId = OrganizationsDao.lookupId(fullForm.org.key).getOrElse {
+      sys.error(s"Could not find organizations with key[${fullForm.org.key}]")
+    }
+
+    val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'scheduled_at -> form.scheduledAt,
+        'organization_id -> orgId,
+        'scheduled_at -> fullForm.form.scheduledAt,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
     }
@@ -48,7 +58,12 @@ object MeetingsDao {
     findAll(id = Some(id), limit = 1).headOption
   }
 
+  def findByOrganizationAndId(org: Organization, id: Long): Option[Meeting] = {
+    findAll(id = Some(id), limit = 1).headOption
+  }
+
   def findAll(
+    orgKey: Option[String] = None,
     id: Option[Long] = None,
     scheduledAt: Option[DateTime] = None,
     limit: Int = 50,
@@ -56,6 +71,7 @@ object MeetingsDao {
   ): Seq[Meeting] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      orgKey.map { v => "and meetings.organization_id = (select id from organizations where deleted_at is null and key = {org_key})" },
       id.map { v => "and meetings.id = {id}" },
       scheduledAt.map { v => "and date_trunc('minute', meetings.scheduled_at) = date_trunc('minute', {scheduled_at}::timestamptz)" },
       Some("order by meetings.scheduled_at desc"),
@@ -63,6 +79,7 @@ object MeetingsDao {
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
+      orgKey.map { v => NamedParameter("org_key", toParameterValue(v)) },
       id.map { v => NamedParameter("id", toParameterValue(v)) },
       scheduledAt.map { v => NamedParameter("scheduled_at", toParameterValue(v)) }
     ).flatten

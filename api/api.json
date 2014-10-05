@@ -91,7 +91,6 @@
 
         "team_form": {
             "fields": [
-                { "name": "org_key", "type": "string" },
                 { "name": "key", "type": "string", "description": "Unique identifier for this team" }
             ]
         },

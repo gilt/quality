@@ -21,19 +21,12 @@ object Util {
     )
   }
 
-  def teamForm() = {
-    TeamForm(
-      orgKey = createOrganization().key,
-      key = "test-team"
-    )
-  }
-
   def upsertTeam(
     org: Organization = testOrg,
     key: String
   ) {
     TeamsDao.lookupId(org, key).getOrElse {
-      TeamsDao.create(user, FullTeamForm(org, teamForm.copy(key = key)))
+      TeamsDao.create(user, FullTeamForm(org, TeamForm(key = key)))
     }
   }
 
@@ -99,8 +92,11 @@ object Util {
     )
   }
 
-  def createMeeting(form: MeetingForm = createMeetingForm()): Meeting = {
-    MeetingsDao.create(user, form)
+  def createMeeting(
+    org: Organization = testOrg,
+    form: MeetingForm = createMeetingForm()
+  ): Meeting = {
+    MeetingsDao.create(user, FullMeetingForm(org, form))
   }
 
   def createAgendaItemForm() = {

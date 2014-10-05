@@ -55,8 +55,6 @@ object IncidentsDao {
            organizations.key as organization_key, 
            organizations.name as organization_name,
            teams.key as team_key,
-           organizations.key as organization_key,
-           organizations.name as organization_name,
            incidents.severity,
            incidents.summary,
            incidents.description,
@@ -68,7 +66,6 @@ object IncidentsDao {
       from incidents
       join organizations on organizations.deleted_at is null and organizations.id = incidents.organization_id
       left join teams on teams.deleted_at is null and teams.id = incidents.team_id
-      left join organizations on organizations.deleted_at is null and organizations.id = teams.organization_id
       left join plans on plans.deleted_at is null and plans.incident_id = incidents.id
       left join grades on grades.deleted_at is null and grades.plan_id = plans.id
      where incidents.deleted_at is null
@@ -76,9 +73,9 @@ object IncidentsDao {
 
   private val InsertQuery = """
     insert into incidents
-    (team_id, severity, summary, description, created_by_guid, updated_by_guid)
+    (organization_id, team_id, severity, summary, description, created_by_guid, updated_by_guid)
     values
-    ({team_id}, {severity}, {summary}, {description}, {user_guid}::uuid, {user_guid}::uuid)
+    ({organization_id}, {team_id}, {severity}, {summary}, {description}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
   private val UpdateQuery = """
@@ -95,8 +92,13 @@ object IncidentsDao {
   def create(user: User, fullForm: FullIncidentForm): Incident = {
     assert(fullForm.validate.isEmpty, fullForm.validate.map(_.message).mkString(" "))
 
+    val orgId = OrganizationsDao.lookupId(fullForm.org.key).getOrElse {
+      sys.error(s"Could not find organizations with key[${fullForm.org.key}]")
+    }
+
     val id: Long = DB.withTransaction { implicit c =>
       val id = SQL(InsertQuery).on(
+        'organization_id -> orgId,
         'team_id -> fullForm.teamId,
         'severity -> fullForm.form.severity,
         'summary -> fullForm.form.summary,

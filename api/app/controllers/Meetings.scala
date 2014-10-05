@@ -6,10 +6,13 @@ import com.gilt.quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{MeetingsDao, User}
+import db.{FullMeetingForm, MeetingsDao, OrganizationsDao, User}
 import lib.Validation
 
 object Meetings extends Controller {
+
+  val orgKey = "gilt" // TODO
+  lazy val org = OrganizationsDao.findByKey(orgKey).get // TODO
 
   def get(
     id: Option[Long],
@@ -26,7 +29,7 @@ object Meetings extends Controller {
   }
 
   def getById(id: Long) = Action {
-    MeetingsDao.findById(id) match {
+    MeetingsDao.findByOrganizationAndId(org, id) match {
       case None => NotFound
       case Some(m: Meeting) => Ok(Json.toJson(m))
     }
@@ -37,14 +40,15 @@ object Meetings extends Controller {
       case e: JsError => Conflict(Json.toJson(Validation.invalidJson(e)))
 
       case s: JsSuccess[MeetingForm] => {
-        val meeting = MeetingsDao.create(User.Default, s.get)
+        val form = FullMeetingForm(org, s.get)
+        val meeting = MeetingsDao.create(User.Default, form)
         Created(Json.toJson(meeting)).withHeaders(LOCATION -> routes.Meetings.getById(meeting.id).url)
       }
     }
   }
 
   def deleteById(id: Long) = Action { request =>
-    MeetingsDao.findById(id).foreach { m =>
+    MeetingsDao.findByOrganizationAndId(org, id).foreach { m =>
       MeetingsDao.softDelete(User.Default, m)
     }
     NoContent
