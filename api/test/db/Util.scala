@@ -7,16 +7,33 @@ import java.util.UUID
 object Util {
 
   val user = User(guid = UUID.randomUUID)
+  lazy val testOrg = createOrganization()
+
+  def createOrganization(
+    form: OrganizationForm = createOrganizationForm()
+  ): Organization = {
+    OrganizationsDao.create(user, form)
+  }
+
+  def createOrganizationForm(): OrganizationForm = {
+    OrganizationForm(
+      name = "Test Org " + UUID.randomUUID.toString
+    )
+  }
 
   def teamForm() = {
     TeamForm(
+      orgKey = createOrganization().key,
       key = "test-team"
     )
   }
 
-  def upsertTeam(key: String) {
+  def upsertTeam(
+    org: Organization = testOrg,
+    key: String
+  ) {
     TeamsDao.lookupId(key).getOrElse {
-      TeamsDao.create(user, TeamForm(key = key))
+      TeamsDao.create(user, org, teamForm.copy(key = key))
     }
   }
 
@@ -31,7 +48,7 @@ object Util {
 
   def createIncident(form: Option[IncidentForm] = None): Incident = {
     val f = form.getOrElse(incidentForm())
-    f.team_key.map { key => Util.upsertTeam(key) }
+    f.team_key.map { key => Util.upsertTeam(key = key) }
     IncidentsDao.create(user, f)
   }
 

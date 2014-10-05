@@ -1,32 +1,26 @@
 package db
 
-import com.gilt.quality.models.{Statistic, Team}
+import com.gilt.quality.models.{Organization, Statistic, Team}
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class StatisticForm(
-  team_key: String,
-  num_days: Int
-)
-
-object StatisticForm {
-  implicit val readsTeamStatisticForm = Json.reads[TeamForm]
-}
-
 object StatisticsDao {
 
   private val BaseQuery = """
       select teams.id, 
           teams.key as team_key, 
+          organizations.key as organization_key, 
+          organizations.name as organization_name, 
           count(all_incidents.id) as total_incidents, 
           count(plans.id) as total_plans, 
           count(all_incidents.id) - count(plans.id) as total_open_incidents,
           count(grades.id) as total_grades, 
           ceiling(avg(grades.score)) as average_grade 
       from teams 
+      join organizations on organizations.deleted_at is null and organizations.id = teams.organization_id
       left join incidents as all_incidents on all_incidents.team_id = teams.id and all_incidents.deleted_at is null
       left join plans on plans.incident_id = all_incidents.id and plans.deleted_at is null 
       left join grades on grades.plan_id = plans.id and grades.deleted_at is null 
@@ -55,7 +49,11 @@ object StatisticsDao {
       SQL(sql).on(bind: _*)().toList.map { row =>
         Statistic(
           team = Team(
-            key = row[String]("team_key")  
+            key = row[String]("team_key"),
+            organization = Organization(
+              key = row[String]("organization_key"),
+              name = row[String]("organization_name")
+            )
           ),
           totalGrades = row[Long]("total_grades"),
           averageGrade = row[Option[BigDecimal]]("average_grade").map{v => v.toInt},

@@ -1,17 +1,21 @@
 package controllers
 
-import com.gilt.quality.models.{ Error, Team }
+import com.gilt.quality.models.{Error, Team, TeamForm}
 import com.gilt.quality.models.json._
 
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{ TeamsDao, TeamForm, User }
+import db.{OrganizationsDao, TeamsDao, User}
 
 object Teams extends Controller {
 
+  val orgKey = "gilt" // TODO
+  lazy val org = OrganizationsDao.findByKey(orgKey).get // TODO
+
   def get(key: Option[String], limit: Int = 25, offset: Int = 0) = Action { request =>
     val matches = TeamsDao.findAll(
+      orgKey = orgKey,
       key = key,
       limit = limit,
       offset = offset
@@ -21,7 +25,7 @@ object Teams extends Controller {
   }
 
   def getByKey(key: String) = Action {
-    TeamsDao.findByKey(key) match {
+    TeamsDao.findByKey(org, key) match {
       case None => NotFound
       case Some(t: Team) => Ok(Json.toJson(t))
     }
@@ -34,9 +38,9 @@ object Teams extends Controller {
       }
       case s: JsSuccess[TeamForm] => {
         val form = s.get
-        TeamsDao.findByKey(form.key) match {
+        TeamsDao.findByKey(org, form.key) match {
           case None => {
-            val team = TeamsDao.create(User.Default, form)
+            val team = TeamsDao.create(User.Default, org, form)
             Created(Json.toJson(team)).withHeaders(LOCATION -> routes.Teams.getByKey(team.key).url)
           }
           case Some(t: Team) => {
@@ -48,7 +52,7 @@ object Teams extends Controller {
   }
 
   def deleteByKey(key: String) = Action { request =>
-    TeamsDao.findByKey(key).foreach { i =>
+    TeamsDao.findByKey(org, key).foreach { i =>
       TeamsDao.softDelete(User.Default, i)
     }
     NoContent

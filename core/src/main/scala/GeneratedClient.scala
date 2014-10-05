@@ -80,6 +80,20 @@ package com.gilt.quality.models {
   )
 
   /**
+   * Top level organization for which we are managing quality. Key entities like
+   * teams and meetings are scoped to the organization.
+   */
+  case class Organization(
+    key: String,
+    name: String
+  )
+
+  case class OrganizationForm(
+    name: String,
+    key: scala.Option[String] = None
+  )
+
+  /**
    * Details for how an incident will be resolved
    */
   case class Plan(
@@ -108,6 +122,12 @@ package com.gilt.quality.models {
    * incidents
    */
   case class Team(
+    organization: com.gilt.quality.models.Organization,
+    key: String
+  )
+
+  case class TeamForm(
+    orgKey: String,
     key: String
   )
 
@@ -474,6 +494,34 @@ package com.gilt.quality.models {
       )
     }
 
+    implicit def jsonReadsQualityOrganization: play.api.libs.json.Reads[Organization] = {
+      (
+        (__ \ "key").read[String] and
+        (__ \ "name").read[String]
+      )(Organization.apply _)
+    }
+
+    implicit def jsonWritesQualityOrganization: play.api.libs.json.Writes[Organization] = {
+      (
+        (__ \ "key").write[String] and
+        (__ \ "name").write[String]
+      )(unlift(Organization.unapply _))
+    }
+
+    implicit def jsonReadsQualityOrganizationForm: play.api.libs.json.Reads[OrganizationForm] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "key").readNullable[String]
+      )(OrganizationForm.apply _)
+    }
+
+    implicit def jsonWritesQualityOrganizationForm: play.api.libs.json.Writes[OrganizationForm] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "key").write[scala.Option[String]]
+      )(unlift(OrganizationForm.unapply _))
+    }
+
     implicit def jsonReadsQualityPlan: play.api.libs.json.Reads[Plan] = {
       (
         (__ \ "id").read[Long] and
@@ -519,13 +567,31 @@ package com.gilt.quality.models {
     }
 
     implicit def jsonReadsQualityTeam: play.api.libs.json.Reads[Team] = {
-      (__ \ "key").read[String].map { x => new Team(key = x) }
+      (
+        (__ \ "organization").read[com.gilt.quality.models.Organization] and
+        (__ \ "key").read[String]
+      )(Team.apply _)
     }
 
-    implicit def jsonWritesQualityTeam: play.api.libs.json.Writes[Team] = new play.api.libs.json.Writes[Team] {
-      def writes(x: Team) = play.api.libs.json.Json.obj(
-        "key" -> play.api.libs.json.Json.toJson(x.key)
-      )
+    implicit def jsonWritesQualityTeam: play.api.libs.json.Writes[Team] = {
+      (
+        (__ \ "organization").write[com.gilt.quality.models.Organization] and
+        (__ \ "key").write[String]
+      )(unlift(Team.unapply _))
+    }
+
+    implicit def jsonReadsQualityTeamForm: play.api.libs.json.Reads[TeamForm] = {
+      (
+        (__ \ "org_key").read[String] and
+        (__ \ "key").read[String]
+      )(TeamForm.apply _)
+    }
+
+    implicit def jsonWritesQualityTeamForm: play.api.libs.json.Writes[TeamForm] = {
+      (
+        (__ \ "org_key").write[String] and
+        (__ \ "key").write[String]
+      )(unlift(TeamForm.unapply _))
     }
   }
 }
@@ -580,6 +646,8 @@ package com.gilt.quality {
     def incidents: Incidents = Incidents
 
     def meetings: Meetings = Meetings
+
+    def organizations: Organizations = Organizations
 
     def plans: Plans = Plans
 
@@ -813,6 +881,56 @@ package com.gilt.quality {
       }
     }
 
+    object Organizations extends Organizations {
+      override def get(
+        id: scala.Option[Long] = None,
+        key: scala.Option[String] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Organization]] = {
+        val queryParameters = Seq(
+          id.map("id" -> _.toString),
+          key.map("key" -> _),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/organizations", queryParameters = queryParameters).map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Organization]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def getByKey(
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Organization]] = {
+        _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.Organization])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def post(organizationForm: com.gilt.quality.models.OrganizationForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Organization] = {
+        val payload = play.api.libs.json.Json.toJson(organizationForm)
+
+        _executeRequest("POST", s"/organizations", body = Some(payload)).map {
+          case r if r.status == 200 => r.json.as[com.gilt.quality.models.Organization]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def deleteByKey(
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
+        _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
     object Plans extends Plans {
       override def get(
         id: scala.Option[Long] = None,
@@ -953,12 +1071,8 @@ package com.gilt.quality {
         }
       }
 
-      override def post(
-        key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team] = {
-        val payload = play.api.libs.json.Json.obj(
-          "key" -> play.api.libs.json.Json.toJson(key)
-        )
+      override def post(teamForm: com.gilt.quality.models.TeamForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team] = {
+        val payload = play.api.libs.json.Json.toJson(teamForm)
 
         _executeRequest("POST", s"/teams", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.Team]
@@ -1150,6 +1264,28 @@ package com.gilt.quality {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }
 
+  trait Organizations {
+    /**
+     * Search all organizations. Results are always paginated.
+     */
+    def get(
+      id: scala.Option[Long] = None,
+      key: scala.Option[String] = None,
+      limit: scala.Option[Int] = None,
+      offset: scala.Option[Int] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Organization]]
+
+    def getByKey(
+      key: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Organization]]
+
+    def post(organizationForm: com.gilt.quality.models.OrganizationForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Organization]
+
+    def deleteByKey(
+      key: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+  }
+
   trait Plans {
     /**
      * Search all plans. Results are always paginated.
@@ -1234,9 +1370,7 @@ package com.gilt.quality {
     /**
      * Create a new team.
      */
-    def post(
-      key: String
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team]
+    def post(teamForm: com.gilt.quality.models.TeamForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team]
 
     def deleteByKey(
       key: String
