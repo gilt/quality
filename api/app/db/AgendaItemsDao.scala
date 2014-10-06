@@ -72,6 +72,7 @@ object AgendaItemsDao {
   def findAll(
     id: Option[Long] = None,
     meetingId: Option[Long] = None,
+    incidentId: Option[Long] = None,
     task: Option[Task] = None,
     limit: Int = 50,
     offset: Int = 0
@@ -80,6 +81,7 @@ object AgendaItemsDao {
       Some(BaseQuery.trim),
       id.map { v => "and agenda_items.id = {id}" },
       meetingId.map { v => "and agenda_items.meeting_id = {meeting_id}" },
+      incidentId.map { v => "and agenda_items.incident_id = {incident_id}" },
       task.map { v => "and agenda_items.task = {task}" },
       Some("order by agenda_items.incident_id"),
       Some(s"limit ${limit} offset ${offset}")
@@ -88,6 +90,7 @@ object AgendaItemsDao {
     val bind = Seq(
       id.map { v => NamedParameter("id", toParameterValue(v)) },
       meetingId.map { v => NamedParameter("meeting_id", toParameterValue(v)) },
+      incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
       task.map { v => NamedParameter("task", toParameterValue(task.toString)) }
     ).flatten
 

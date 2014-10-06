@@ -66,6 +66,7 @@ object MeetingsDao {
     orgKey: Option[String] = None,
     id: Option[Long] = None,
     scheduledAt: Option[DateTime] = None,
+    isUpcoming: Option[Boolean] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Meeting] = {
@@ -74,6 +75,12 @@ object MeetingsDao {
       orgKey.map { v => "and meetings.organization_id = (select id from organizations where deleted_at is null and key = {org_key})" },
       id.map { v => "and meetings.id = {id}" },
       scheduledAt.map { v => "and date_trunc('minute', meetings.scheduled_at) = date_trunc('minute', {scheduled_at}::timestamptz)" },
+      isUpcoming.map { v =>
+        v match {
+          case true => "and meetings.scheduled_at > now()"
+          case false => "and meetings.scheduled_at <= now()"
+        }
+      },
       Some("order by meetings.scheduled_at desc"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")

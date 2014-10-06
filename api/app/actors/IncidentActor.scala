@@ -16,23 +16,11 @@ class IncidentActor extends Actor {
   def receive = {
     case IncidentMessage.SyncAll => {
       println("IncidentMessage.SyncAll")
-    }
-
-    case IncidentMessage.SyncOne(incidentId) => {
-      println(s"IncidentActor IncidentMessage.SyncOne($incidentId)")
-      syncIncidentById(incidentId)
-    }
-  }
-
-  private def syncIncidentById(incidentId: Long) {
-    IncidentsDao.findById(incidentId) match {
-      case None => {
-        // No-op
-      }
-      case Some(incident) => {
-
+      IncidentsDao.findRecentlyModifiedIncidentIds.foreach { incidentId =>
+        sender ! IncidentMessage.SyncOne(incidentId)
       }
     }
   }
+
 }
 

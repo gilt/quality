@@ -89,6 +89,15 @@ object IncidentsDao {
      where id = {id}
   """
 
+  def findRecentlyModifiedIncidentIds(): Seq[Long] = {
+    val query = BaseQuery + " and incidents.updated_at > now() - interval '3 days' "
+    DB.withConnection { implicit c =>
+      SQL(query)().toList.map { row =>
+        row[Long]("id")
+      }.toSeq
+    }
+  }
+
   def create(user: User, fullForm: FullIncidentForm): Incident = {
     assert(fullForm.validate.isEmpty, fullForm.validate.map(_.message).mkString(" "))
 
