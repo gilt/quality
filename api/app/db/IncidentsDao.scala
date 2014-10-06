@@ -114,6 +114,8 @@ object IncidentsDao {
       id
     }
 
+    global.Actors.mainActor ! actors.IncidentMessage.SyncOne(id)
+
     findById(id).getOrElse {
       sys.error("Failed to create incident")
     }
@@ -139,6 +141,8 @@ object IncidentsDao {
       IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, fullForm.form.tags.getOrElse(Seq.empty))
     }
 
+    global.Actors.mainActor ! actors.IncidentMessage.SyncOne(incident.id)
+
     findById(incident.id).getOrElse {
       sys.error("Failed to update incident")
     }
@@ -148,7 +152,7 @@ object IncidentsDao {
     SoftDelete.delete("incidents", deletedBy, incident.id)
   }
 
-  private[db] def findById(
+  def findById(
     id: Long
   ): Option[Incident] = {
     findAll(id = Some(id), limit = 1).headOption.map { i => findDetails(i) }

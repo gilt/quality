@@ -9,6 +9,11 @@ object Validation {
   private val InvalidJsonCode = "invalid_json"
   private val ErrorCode = "validation_error"
   private val ServerError = "server_error"
+  private val BadRequest = "bad_request"
+
+  def badRequest(error: String): Seq[Error] = {
+    Seq(Error(BadRequest, error))
+  }
 
   def invalidJson(error: JsError): Seq[Error] = {
     invalidJson(error.toString)

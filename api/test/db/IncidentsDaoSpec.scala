@@ -78,13 +78,11 @@ class IncidentsDaoSpec extends FunSpec with Matchers {
       val teamKey = UUID.randomUUID.toString
 
       val i1 = Util.createIncident(form = Util.incidentForm.copy(team_key = Some(teamKey)))
-      /*
        val i2 = Util.createIncident(form = Util.incidentForm.copy(team_key = Some(teamKey)))
       val other = Util.createIncident()
 
       IncidentsDao.findAll(teamKey = Some(teamKey)).map(_.id).sorted should be(Seq(i1.id, i2.id))
       IncidentsDao.findAll(teamKey = Some(UUID.randomUUID.toString)).map(_.id) should be(Seq.empty)
-       */
     }
   }
 

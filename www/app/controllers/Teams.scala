@@ -66,7 +66,6 @@ object Teams extends Controller {
 
       teamForm => {
         val form = com.gilt.quality.models.TeamForm(
-          orgKey = org.key,
           key = teamForm.key
         )
         Api.instance.teams.post(form).map { team =>
