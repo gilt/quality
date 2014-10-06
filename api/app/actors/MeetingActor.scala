@@ -23,19 +23,17 @@ class MeetingActor extends Actor {
       * Creates upcoming meetings for all organizations.
       */
     case MeetingMessage.EnsureUpcoming => {
-      println("MeetingMessage.EnsureUpcoming - TODO")
+      println("MeetingMessage.EnsureUpcoming")
 
       OrganizationsDao.findAll().foreach { org =>
         MeetingSchedule.findByOrganization(org).map { schedule =>
           schedule.upcomingDates.foreach { date =>
-            println(s" -- date[$date]")
-
             MeetingsDao.findAll(
               orgKey = Some(org.key),
               scheduledAt = Some(date),
               limit = 1
             ).headOption.getOrElse {
-              println(s"  -- scheduling meeting for $date")
+              println(s" -- scheduling org[${org.key}] meeting for $date")
               MeetingsDao.create(
                 User.Actor,
                 FullMeetingForm(
@@ -58,46 +56,46 @@ class MeetingActor extends Actor {
       *  b. OR this incident has already been in a meeting for all Tasks
       */
     case MeetingMessage.AssignIncident(incidentId) => {
-      println(s"MeetingMessage.AssignIncident($incidentId) - TODO")
+      println(s"MeetingMessage.AssignIncident($incidentId)")
 
-      AllTasks.find { task =>
-        AgendaItemsDao.findAll(
-          incidentId = Some(incidentId),
-          task = Some(task),
-          limit = 1
-        ).headOption.isEmpty
-      }.map { task =>
-        assignIncidentToNextMeeting(incidentId, task)
-      }
-    }
+      IncidentsDao.findById(incidentId).map { incident =>
 
-  }
+        // Only assign incidents for organizations w/ meetings
+        // enabled. These orgs will always have upcoming meetings
+        // (managed by the EnsureUpcoming message above)
+        bestNextMeetingForOrg(incident.organization).map { meeting =>
 
-  private def assignIncidentToNextMeeting(
-    incidentId: Long,
-    task: Task
-  ) {
-    IncidentsDao.findById(incidentId) match {
-      case None => {
-        // Incident already deleted
-      }
-      case Some(incident) => {
-        bestNextMeetingForOrg(incident.organization) match {
-          case None => {
-            println(s" -- org[[${incident.organization.key}] - no upcoming meeting")
-          }
-          case Some(meeting) => {
-            println(s" -- assigning[${incident.id}] for task[$task] to meeting[$meeting]")
-            AgendaItemsDao.create(
-              User.Actor,
-              AgendaItemFullForm(
-                meeting,
-                AgendaItemForm(
-                  incidentId = incident.id,
-                  task = task
-                )
-              )
-            )
+          val incidentTasks = AgendaItemsDao.findAll(
+            incidentId = Some(incidentId)
+          ).map(_.task)
+
+          AllTasks.find { t => !incidentTasks.contains(t) } match {
+            case None => {
+              // All tasks completed or scheduled
+            }
+            case Some(task) => {
+              AgendaItemsDao.findAll(
+                meetingId = Some(meeting.id),
+                incidentId = Some(incidentId),
+                limit = 1
+              ).headOption match {
+                case None => {
+                  AgendaItemsDao.create(
+                    User.Actor,
+                    AgendaItemFullForm(
+                      meeting,
+                      AgendaItemForm(
+                        incidentId = incidentId,
+                        task = task
+                      )
+                    )
+                  )
+                }
+                case Some(_) => {
+                  // Incident already part of this next meeting
+                }
+              }
+            }
           }
         }
       }
