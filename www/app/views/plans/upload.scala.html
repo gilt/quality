@@ -9,7 +9,7 @@
     <fieldset>
       @helper.input(field = form("body"), '_label -> "Plan to Prevent Recurrence", '_error -> form.error("body")) { (id, name, value, args) =>
         <textarea name="@name" id="@id" @toHtmlArgs(args) rows="25" cols="80">@value</textarea>
-        <span class="help-block"><a href="https://code.google.com/p/markdown4j/#Using_Markdown4j">Markdown reference</a></span>
+        <span class="help-block"><a href="https://code.google.com/p/markdown4j/#Using_Markdown4j" target="_blank">Markdown reference</a></span>
       }
     </fieldset>
 
