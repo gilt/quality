@@ -410,7 +410,7 @@ package com.gilt.quality {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
-    private val UserAgent = "apidoc:0.6.0 http://www.apidoc.me/gilt/code/quality/0.0.7/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.2 http://www.apidoc.me/gilt/code/quality/0.0.5/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.quality.client")
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
@@ -720,7 +720,7 @@ package com.gilt.quality {
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
-      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("User-Agent" -> "UserAgent")
+      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("User-Agent" -> UserAgent)
       apiToken.fold(holder) { token =>
         holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
       }
@@ -945,6 +945,49 @@ package com.gilt.quality {
       import com.gilt.quality.models.json._
       lazy val errors = response.json.as[scala.collection.Seq[com.gilt.quality.models.Error]]
     }
+  }
+
+  object Bindables {
+
+  import play.api.mvc.QueryStringBindable
+
+  import play.api.mvc.PathBindable
+
+    import com.gilt.quality.models._
+
+    // Action
+    private val enumActionNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Action.all.mkString(", ")}"
+
+    implicit val pathBindableEnumAction = new PathBindable.Parsing[Action] (
+      Action.fromString(_).get, _.toString, enumActionNotFound
+    )
+
+    implicit val queryStringBindableEnumAction = new QueryStringBindable.Parsing[Action](
+      Action.fromString(_).get, _.toString, enumActionNotFound
+    )
+
+    // Model
+    private val enumModelNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Model.all.mkString(", ")}"
+
+    implicit val pathBindableEnumModel = new PathBindable.Parsing[Model] (
+      Model.fromString(_).get, _.toString, enumModelNotFound
+    )
+
+    implicit val queryStringBindableEnumModel = new QueryStringBindable.Parsing[Model](
+      Model.fromString(_).get, _.toString, enumModelNotFound
+    )
+
+    // Severity
+    private val enumSeverityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Severity.all.mkString(", ")}"
+
+    implicit val pathBindableEnumSeverity = new PathBindable.Parsing[Severity] (
+      Severity.fromString(_).get, _.toString, enumSeverityNotFound
+    )
+
+    implicit val queryStringBindableEnumSeverity = new QueryStringBindable.Parsing[Severity](
+      Severity.fromString(_).get, _.toString, enumSeverityNotFound
+    )
+
   }
 
 }
