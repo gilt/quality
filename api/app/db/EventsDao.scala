@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{ Action, Event, EventData, Model }
+import com.gilt.quality.models.{Action, Event, EventData, Model}
 import anorm._
 import AnormHelper._
 import anorm.ParameterValue._
@@ -59,7 +59,8 @@ object EventsDao {
   """
 
   def findAll(
-    model: Option[String] = None,
+    model: Option[Model] = None,
+    action: Option[Action] = None,
     numberHours: Option[Int] = None,
     limit: Int = 50,
     offset: Int = 0
@@ -69,12 +70,12 @@ object EventsDao {
 
     val modelClause = model match {
       case None => "true"
-      case Some(modelName: String) => {
-        Model.fromString(modelName) match {
-          case Some(m) => s"events.model = '${m.toString}'"
-          case None => "false"
-        }
-      }
+      case Some(m) => s"events.model = '${m.toString}'"
+    }
+
+    val actionClause = action match {
+      case None => "true"
+      case Some(m) => s"events.action = '${m.toString}'"
     }
 
     val numberHoursClause = numberHours match {
@@ -88,7 +89,7 @@ object EventsDao {
         "(" + PlansQuery.format(max) + ")",
         "(" + GradesQuery.format(max) + ")"
       ).mkString("\n UNION ALL \n") +
-      s"\n) events where $modelClause and $numberHoursClause order by events.timestamp desc limit ${limit} offset ${offset}"
+      s"\n) events where $modelClause and $actionClause and $numberHoursClause order by events.timestamp desc limit ${limit} offset ${offset}"
 
     DB.withConnection { implicit c =>
       SQL(sql)().toList.map { row =>
