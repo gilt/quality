@@ -1,3 +1,5 @@
+import play.PlayImport.PlayKeys._
+
 name := "quality"
 
 scalaVersion in ThisBuild := "2.11.1"
@@ -25,7 +27,8 @@ lazy val api = project
       anorm,
       ws,
       "org.postgresql" % "postgresql" % "9.3-1101-jdbc4"
-    )
+    ),
+    routesImport += "com.gilt.quality.Bindables._"
   )
 
 lazy val www = project
