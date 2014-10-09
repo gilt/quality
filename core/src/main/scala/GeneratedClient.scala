@@ -595,46 +595,11 @@ package com.gilt.quality.models {
 }
 
 package com.gilt.quality {
-  object helpers {
-
-    import play.api.mvc.QueryStringBindable
-
-    import org.joda.time.DateTime
-    import org.joda.time.format.ISODateTimeFormat
-
-    import scala.util.{ Failure, Success, Try }
-
-    private[helpers] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
-    private[helpers] val dateTimeISOFormatter = ISODateTimeFormat.dateTime()
-
-    private[helpers] def parseDateTimeISO(s: String): Either[String, DateTime] = {
-      Try(dateTimeISOParser.parseDateTime(s)) match {
-        case Success(dt) => Right(dt)
-        case Failure(f) => Left("Could not parse DateTime: " + f.getMessage)
-      }
-    }
-  
-
-    implicit object DateTimeISOQueryStringBinder extends QueryStringBindable[DateTime] {
-      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, DateTime]] = {
-        for {
-          values <- params.get(key)
-          s <- values.headOption
-        } yield parseDateTimeISO(s)
-      }
-
-      override def unbind(key: String, time: DateTime): String = key + "=" + dateTimeISOFormatter.print(time)
-    }
-  }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
-<<<<<<< HEAD
-    private val UserAgent = "apidoc:0.6.2 http://www.apidoc.me/gilt/code/quality/0.0.5/play_2_3_client"
-=======
-    private val UserAgent = "apidoc:0.6.0 http://www.apidoc.me/gilt/code/quality/0.0.8-dev/play_2_3_client"
->>>>>>> Checkpoint for meetings
+    private val UserAgent = "apidoc:0.6.3 http://www.apidoc.me/gilt/code/quality/0.0.10-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.quality.client")
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
@@ -1399,13 +1364,22 @@ package com.gilt.quality {
 
   object Bindables {
 
-  import play.api.mvc.QueryStringBindable
-
-  import play.api.mvc.PathBindable
-
+    import play.api.mvc.{PathBindable, QueryStringBindable}
+    import org.joda.time.{DateTime, LocalDate}
+    import org.joda.time.format.ISODateTimeFormat
     import com.gilt.quality.models._
 
-    // Action
+    // Type: date-time-iso8601
+    implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[DateTime](
+      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
+    )
+
+    // Type: date-iso8601
+    implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
+      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29"
+    )
+
+    // Enum: Action
     private val enumActionNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Action.all.mkString(", ")}"
 
     implicit val pathBindableEnumAction = new PathBindable.Parsing[Action] (
@@ -1416,7 +1390,7 @@ package com.gilt.quality {
       Action.fromString(_).get, _.toString, enumActionNotFound
     )
 
-    // Model
+    // Enum: Model
     private val enumModelNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Model.all.mkString(", ")}"
 
     implicit val pathBindableEnumModel = new PathBindable.Parsing[Model] (
@@ -1427,7 +1401,7 @@ package com.gilt.quality {
       Model.fromString(_).get, _.toString, enumModelNotFound
     )
 
-    // Severity
+    // Enum: Severity
     private val enumSeverityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Severity.all.mkString(", ")}"
 
     implicit val pathBindableEnumSeverity = new PathBindable.Parsing[Severity] (
@@ -1436,6 +1410,17 @@ package com.gilt.quality {
 
     implicit val queryStringBindableEnumSeverity = new QueryStringBindable.Parsing[Severity](
       Severity.fromString(_).get, _.toString, enumSeverityNotFound
+    )
+
+    // Enum: Task
+    private val enumTaskNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Task.all.mkString(", ")}"
+
+    implicit val pathBindableEnumTask = new PathBindable.Parsing[Task] (
+      Task.fromString(_).get, _.toString, enumTaskNotFound
+    )
+
+    implicit val queryStringBindableEnumTask = new QueryStringBindable.Parsing[Task](
+      Task.fromString(_).get, _.toString, enumTaskNotFound
     )
 
   }
