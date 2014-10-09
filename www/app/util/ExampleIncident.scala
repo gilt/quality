@@ -6,26 +6,13 @@ object ExampleIncident {
 Impact
 =====
   - 
-  - 
 
 Cause
 =====
 
 
 
-Solution
-======
-  - 
-  - 
-
 Time Line
 =======
-  - 
-  - 
-
-Prevention
-========
-  - 
-  - 
 """
 }
