@@ -69,6 +69,13 @@ object AgendaItemsDao {
     findAll(id = Some(id), limit = 1).headOption
   }
 
+  def findByMeetingIdAndId(
+    meetingId: Long,
+    id: Long
+  ): Option[AgendaItem] = {
+    findAll(id = Some(id), meetingId = Some(meetingId), limit = 1).headOption
+  }
+
   def findAll(
     id: Option[Long] = None,
     meetingId: Option[Long] = None,

@@ -1,5 +1,6 @@
 package controllers
 
+import db.{AgendaItemsDao, User}
 import lib.Validation
 import com.gilt.quality.models.json._
 import play.api.mvc._
@@ -11,17 +12,35 @@ trait AgendaItems {
   this: Controller =>
 
   def get(
-    meeting_id: String,
+    meetingId: Long,
     task: Option[com.gilt.quality.models.Task],
     limit: Int = 25,
     offset: Int = 0
-  ) = TODO
+  ) = Action {
+    val items = AgendaItemsDao.findAll(
+      meetingId = Some(meetingId),
+      task = task,
+      limit = limit,
+      offset = offset
+    )
 
+    Ok(Json.toJson(items))
+  }
 
-  def getById(meeting_id: String, id: Long) = TODO
+  def getById(meetingId: Long, id: Long) = Action {
+    AgendaItemsDao.findByMeetingIdAndId(meetingId, id) match {
+      case None => NotFound
+      case Some(item) => Ok(Json.toJson(item))
+    }
+  }
 
-  def deleteById(meeting_id: String, id: Long) = TODO
+  def deleteById(meetingId: Long, id: Long) = Action {
+    AgendaItemsDao.findByMeetingIdAndId(meetingId, id).map { item =>
+      AgendaItemsDao.softDelete(User.Default, item)
+    }
+    NoContent
+  }
 
-  def post(meeting_id: String) = TODO
+  def post(meetingId: Long) = TODO
 
 }

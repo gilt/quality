@@ -510,6 +510,7 @@
 		    "method": "GET",
                     "description": "Search agenda items for a given meeting. Results are always paginated.",
                     "parameters": [
+                        { "name": "id", "type": "long", "description": "Find agenda items with this id", "required": false },
                         { "name": "task", "type": "task", "description": "Find agenda items with this task", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
