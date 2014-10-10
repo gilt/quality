@@ -510,6 +510,7 @@
 		    "method": "GET",
                     "description": "Search agenda items for a given meeting. Results are always paginated.",
                     "parameters": [
+                        { "name": "meeting_id", "type": "long" },
                         { "name": "id", "type": "long", "description": "Find agenda items with this id", "required": false },
                         { "name": "task", "type": "task", "description": "Find agenda items with this task", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
@@ -523,6 +524,9 @@
 		{
 		    "method": "GET",
 		    "path": "/:id",
+		    "parameters": [
+                        { "name": "meeting_id", "type": "long" }
+		    ],
                     "responses": {
                         "200": { "type": "agenda_item" }
                     }
@@ -532,6 +536,9 @@
 		{
 		    "description": "Creates an agenda item for this meeting.",
 		    "method": "POST",
+		    "parameters": [
+                        { "name": "meeting_id", "type": "long" }
+		    ],
 		    "body": { "type": "agenda_item_form" },
                     "responses": {
                         "201": { "type": "agenda_item" }
@@ -540,7 +547,10 @@
 
 		{
 		    "path": "/:id",
-		    "method": "DELETE"
+		    "method": "DELETE",
+		    "parameters": [
+                        { "name": "meeting_id", "type": "long" }
+		    ]
                 }
 
 	    ]
