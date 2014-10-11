@@ -1,0 +1,48 @@
+@(org: com.gilt.quality.models.Organization,
+  meeting: com.gilt.quality.models.Meeting,
+  agendaItems: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem]
+)(implicit flash: Flash)
+
+@main(org = Some(org), title = s"Meeting on ${_root_.org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)}") {
+
+  <ul>
+    <li><a href="@routes.Meetings.postDeleteById(org.key, meeting.id)" class="delete" data-confirm="Are you sure to delete this meeting?">Delete</a></li>
+  </ul>
+
+  <h3>Agenda Items</h3>
+  @if(agendaItems.isEmpty) {
+    <em>No agenda items found</em>
+  } else {
+
+    <table class="table table-hover table-condensed">
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Incident</th>
+          <th>Summary</th>
+        </tr>
+      </thead>
+      <tbody>
+        @agendaItems.items.map { item =>
+         <tr>
+           <td>@item.task.toString</td>
+           <td><a href="@routes.Incidents.show(org.key, item.incident.id)">@item.incident.id</a></td>
+           <td>@item.incident.summary</td>
+         </tr>
+       }
+      </tbody>
+    </table>
+  
+    @if(agendaItems.hasPrevious || agendaItems.hasNext) {
+      <ul class="pager">
+        @if(agendaItems.hasPrevious) {
+          <li><a href="@routes.Meetings.show(org.key, meeting.id, agendaItems.page - 1)">Previous</a></li>
+        }
+        @if(agendaItems.hasNext) {
+          <li><a href="@routes.Meetings.show(org.key, meeting.id, agendaItems.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}
