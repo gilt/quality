@@ -1,7 +1,7 @@
 package db
 
 import com.gilt.quality.models.{Error, Organization, Team, TeamForm}
-import lib.Validation
+import lib.{UrlKey, Validation}
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
@@ -14,12 +14,21 @@ case class FullTeamForm(
 ) {
 
   lazy val validate: Seq[Error] = {
-    TeamsDao.findByKey(org, form.key) match {
-      case None => Seq.empty
-      case Some(key) => {
-        Validation.error(s"Team with key[$key] already exists")
+    val keyErrors = TeamsDao.findByKey(org, form.key) match {
+      case Some(team) => {
+        Seq(s"Team with key[${form.key}] already exists")
+      }
+      case None => {
+        val generated = UrlKey.generate(form.key)
+        if (form.key == generated) {
+          Seq.empty
+        } else {
+          Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
+        }
       }
     }
+
+    Validation.errors(keyErrors)
   }
 
 }

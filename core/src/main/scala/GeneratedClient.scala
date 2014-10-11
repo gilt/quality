@@ -1021,7 +1021,8 @@ package com.gilt.quality {
     }
 
     object Teams extends Teams {
-      override def get(
+      override def getByOrg(
+        org: String,
         key: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
@@ -1032,36 +1033,40 @@ package com.gilt.quality {
           offset.map("offset" -> _.toString)
         ).flatten
 
-        _executeRequest("GET", s"/teams", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Team]]
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def getByKey(
+      override def getByOrgAndKey(
+        org: String,
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Team]] = {
-        _executeRequest("GET", s"/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.Team])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def post(teamForm: com.gilt.quality.models.TeamForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team] = {
+      override def postByOrg(teamForm: com.gilt.quality.models.TeamForm, 
+        org: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team] = {
         val payload = play.api.libs.json.Json.toJson(teamForm)
 
-        _executeRequest("POST", s"/teams", body = Some(payload)).map {
+        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.Team]
           case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def deleteByKey(
+      override def deleteByOrgAndKey(
+        org: String,
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
-        _executeRequest("DELETE", s"/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
+        _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
@@ -1321,7 +1326,8 @@ package com.gilt.quality {
     /**
      * Search all teams. Results are always paginated.
      */
-    def get(
+    def getByOrg(
+      org: String,
       key: scala.Option[String] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
@@ -1330,16 +1336,20 @@ package com.gilt.quality {
     /**
      * Returns information about the team with this specific key.
      */
-    def getByKey(
+    def getByOrgAndKey(
+      org: String,
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Team]]
 
     /**
      * Create a new team.
      */
-    def post(teamForm: com.gilt.quality.models.TeamForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team]
+    def postByOrg(teamForm: com.gilt.quality.models.TeamForm, 
+      org: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team]
 
-    def deleteByKey(
+    def deleteByOrgAndKey(
+      org: String,
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }
