@@ -17,7 +17,7 @@ object Plans extends Controller {
   def getById(
     org: String,
     id: Long
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     Api.instance.plans.getByOrgAndId(org, id).map {
       case None => {
         Redirect(routes.Incidents.index(org)).flashing("warning" -> "Plan not found")
@@ -32,7 +32,7 @@ object Plans extends Controller {
     org: String,
     id: Long,
     incidentId: Long
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     for {
       planResult <- Api.instance.plans.deleteByOrgAndId(org, id)
     } yield {
@@ -43,7 +43,7 @@ object Plans extends Controller {
   def uploadByIncidentId(
     org: String,
     incidentId: Long
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     for {
       incidentOption <- Api.instance.incidents.getByOrgAndId(org, incidentId)
       plansResult <- Api.instance.plans.getByOrg(org, incidentId = Some(incidentId))
@@ -55,7 +55,7 @@ object Plans extends Controller {
           val form = uiForm.fill(
             UiForm(body = plan.map(_.body).getOrElse(""))
           )
-          Ok(views.html.plans.upload(incident, form))
+          Ok(views.html.plans.upload(request.org, incident, form))
         }
       }
     }
@@ -64,7 +64,7 @@ object Plans extends Controller {
   def postUploadByIncidentId(
     org: String,
     incidentId: Long
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     for {
       incidentOption <- Api.instance.incidents.getByOrgAndId(org, incidentId)
       plans <- Api.instance.plans.getByOrg(org, incidentId = Some(incidentId))
@@ -76,7 +76,7 @@ object Plans extends Controller {
           boundForm.fold (
 
             formWithErrors => {
-              Ok(views.html.plans.upload(incident, formWithErrors))
+              Ok(views.html.plans.upload(request.org, incident, formWithErrors))
             },
 
             uiForm => {
@@ -94,7 +94,7 @@ object Plans extends Controller {
                       Redirect(routes.Incidents.show(org, plan.incidentId)).flashing("success" -> "Plan created")
                     }.recover {
                       case response: com.gilt.quality.error.ErrorsResponse => {
-                        Ok(views.html.plans.upload(incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
+                        Ok(views.html.plans.upload(request.org, incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
                       }
                     }
                     , 1000.millis
@@ -114,7 +114,7 @@ object Plans extends Controller {
                       Redirect(routes.Incidents.show(org, plan.incidentId)).flashing("success" -> "Plan updated")
                     }.recover {
                       case response: com.gilt.quality.error.ErrorsResponse => {
-                        Ok(views.html.plans.upload(incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
+                        Ok(views.html.plans.upload(request.org, incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
                       }
                     }
                     , 1000.millis
@@ -133,7 +133,7 @@ object Plans extends Controller {
     org: String,
     id: Long,
     grade: Int
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     Api.instance.plans.getByOrgAndId(org, id).flatMap {
       case None => Future {
         Redirect(routes.Incidents.index(org)).flashing("warning" -> "Plan not found")

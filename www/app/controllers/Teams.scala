@@ -22,7 +22,7 @@ object Teams extends Controller {
     org: String,
     key: Option[String] = None,
     page: Int = 0
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     val filters = Filters(key = lib.Filters.toOption(key))
     for {
       teams <- Api.instance.teams.getByOrg(
@@ -32,7 +32,7 @@ object Teams extends Controller {
         offset = Some(page * Pagination.DefaultLimit)
       )
     } yield {
-      Ok(views.html.teams.index(filters, PaginatedCollection(page, teams)))
+      Ok(views.html.teams.index(request.org, filters, PaginatedCollection(page, teams)))
     }
   }
 
@@ -40,7 +40,7 @@ object Teams extends Controller {
     org: String,
     key: String,
     incidentsPage: Int = 0
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     for {
       team <- Api.instance.teams.getByOrgAndKey(org, key)
       stats <- Api.instance.Statistics.getByOrg(org = org, teamKey = Some(key), numberHours = Some(Dashboard.OneWeekInHours * 12))
@@ -56,22 +56,22 @@ object Teams extends Controller {
           Redirect(routes.Teams.index(org)).flashing("warning" -> s"Team $key not found")
         }
         case Some(team: Team) => {
-          Ok(views.html.teams.show(team, stats.headOption, PaginatedCollection(incidentsPage, incidents)))
+          Ok(views.html.teams.show(request.org, team, stats.headOption, PaginatedCollection(incidentsPage, incidents)))
         }
       }
     }
   }
 
-  def create(org: String) = Action { implicit request =>
-    Ok(views.html.teams.create(teamForm))
+  def create(org: String) = OrgAction { implicit request =>
+    Ok(views.html.teams.create(request.org, teamForm))
   }
 
-  def postCreate(org: String) = Action.async { implicit request =>
+  def postCreate(org: String) = OrgAction.async { implicit request =>
     val boundForm = teamForm.bindFromRequest
     boundForm.fold (
 
       formWithErrors => Future {
-        Ok(views.html.teams.create(formWithErrors))
+        Ok(views.html.teams.create(request.org, formWithErrors))
       },
 
       teamForm => {
@@ -82,7 +82,7 @@ object Teams extends Controller {
           Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
         }.recover {
           case response: com.gilt.quality.error.ErrorsResponse => {
-            Ok(views.html.teams.create(boundForm, Some(response.errors.map(_.message).mkString(", "))))
+            Ok(views.html.teams.create(request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
           }
         }
       }
@@ -93,7 +93,7 @@ object Teams extends Controller {
   def postDeleteByKey(
     org: String,
     key: String
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     for {
       result <- Api.instance.teams.deleteByOrgAndKey(org, key)
     } yield {

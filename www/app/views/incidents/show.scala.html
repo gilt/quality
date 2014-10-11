@@ -1,8 +1,9 @@
-@(incident: com.gilt.quality.models.Incident,
+@(org: com.gilt.quality.models.Organization,
+  incident: com.gilt.quality.models.Incident,
   plan: Option[com.gilt.quality.models.Plan]
 )(implicit flash: Flash)
 
-@main(title = s"#${incident.id}: ${incident.summary}") {
+@main(org, title = s"#${incident.id}: ${incident.summary}") {
 
   <ul>
     <li>Team: 

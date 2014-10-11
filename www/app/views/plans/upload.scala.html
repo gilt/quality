@@ -1,9 +1,10 @@
-@(incident: com.gilt.quality.models.Incident,
+@(org: com.gilt.quality.models.Organization,
+  incident: com.gilt.quality.models.Incident,
   form: Form[controllers.Plans.UiForm],
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(title = s"Upload Prevention Plan for Incident ${incident.id}", errorMessage = errorMessage) {
+@main(org, title = s"Upload Prevention Plan for Incident ${incident.id}", errorMessage = errorMessage) {
 
   @helper.form(action = routes.Plans.postUploadByIncidentId(incident.id)) {
     <fieldset>

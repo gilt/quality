@@ -1,8 +1,9 @@
-@(form: Form[controllers.Teams.TeamForm],
+@(org: com.gilt.quality.models.Organization,
+  form: Form[controllers.Teams.TeamForm],
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(title = s"Create Team", errorMessage = errorMessage) {
+@main(org, title = s"Create Team", errorMessage = errorMessage) {
 
   <div class="container">
 

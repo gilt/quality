@@ -1,12 +1,13 @@
-@(statistics: Seq[com.gilt.quality.models.Statistic],
+@(org: com.gilt.quality.models.Organization,
+  statistics: Seq[com.gilt.quality.models.Statistic],
   events: Seq[com.gilt.quality.models.Event]
 )(implicit flash: Flash)
 
-@main(title = "Gilt Quality", section = Some("dashboard")) {
+@main(org, title = s"Quality", section = Some("dashboard")) {
 
   <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create()">Create Incident</a>
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Teams.create()">Add team</a>
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(org.key)">Create Incident</a>
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Teams.create(org.key)">Add team</a>
   </div>
 
   <h3>Latest Events</h3>

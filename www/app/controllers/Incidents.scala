@@ -27,7 +27,7 @@ object Incidents extends Controller {
     hasPlan: Option[String],
     hasGrade: Option[String],
     page: Int = 0
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     val filters = Filters(
       teamKey = lib.Filters.toOption(teamKey),
       hasTeam = lib.Filters.toOption(hasTeam),
@@ -48,14 +48,14 @@ object Incidents extends Controller {
       teams <- Api.instance.teams.getByOrg(org, limit = Some(MaxTeams))
     } yield {
       val teamsOrEmpty = if (teams.size >= MaxTeams) { Seq.empty } else { teams }
-      Ok(views.html.incidents.index(filters, PaginatedCollection(page, incidents), teamsOrEmpty))
+      Ok(views.html.incidents.index(request.org, filters, PaginatedCollection(page, incidents), teamsOrEmpty))
     }
   }
 
   def show(
     org: String,
     id: Long
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     for {
       incident <- Api.instance.incidents.getByOrgAndId(org, id)
       plans <- Api.instance.Plans.getByOrg(org, incidentId = Some(id))
@@ -63,7 +63,7 @@ object Incidents extends Controller {
       incident match {
         case None => Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $id not found")
         case Some(i) => {
-          Ok(views.html.incidents.show(i, plans.headOption))
+          Ok(views.html.incidents.show(request.org, i, plans.headOption))
         }
       }
     }
@@ -72,7 +72,7 @@ object Incidents extends Controller {
   def postDeleteById(
     org: String,
     id: Long
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     for {
       result <- Api.instance.incidents.deleteByOrgAndId(org, id)
     } yield {
@@ -83,7 +83,7 @@ object Incidents extends Controller {
   def create(
     org: String,
     teamKey: Option[String] = None
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     for {
       teams <- Api.instance.teams.getByOrg(org, limit = Some(MaxTeams))
     } yield {
@@ -97,11 +97,11 @@ object Incidents extends Controller {
           tags = ""
         )
       )
-      Ok(views.html.incidents.create(form, teamsOrEmpty))
+      Ok(views.html.incidents.create(request.org, form, teamsOrEmpty))
     }
   }
 
-  def postCreate(org: String) = Action.async { implicit request =>
+  def postCreate(org: String) = OrgAction.async { implicit request =>
     val boundForm = uiForm.bindFromRequest
     boundForm.fold (
 
@@ -110,7 +110,7 @@ object Incidents extends Controller {
           teams <- Api.instance.teams.getByOrg(org, limit = Some(MaxTeams))
         } yield {
           val teamsOrEmpty = if (teams.size >= MaxTeams) { Seq.empty } else { teams }
-          Ok(views.html.incidents.create(formWithErrors, teamsOrEmpty))
+          Ok(views.html.incidents.create(request.org, formWithErrors, teamsOrEmpty))
         }
       },
 
@@ -128,7 +128,7 @@ object Incidents extends Controller {
           Redirect(routes.Incidents.show(org, incident.id)).flashing("success" -> "Incident created")
         }.recover {
           case response: com.gilt.quality.error.ErrorsResponse => {
-            Ok(views.html.incidents.create(boundForm, fetchTeamsOrEmpty(org), Some(response.errors.map(_.message).mkString("\n"))))
+            Ok(views.html.incidents.create(request.org, boundForm, fetchTeamsOrEmpty(org), Some(response.errors.map(_.message).mkString("\n"))))
           }
         }
       }
@@ -138,7 +138,7 @@ object Incidents extends Controller {
   def edit(
     org: String,
     id: Long
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     for {
       teams <- Api.instance.teams.getByOrg(org, limit = Some(MaxTeams))
       incidentOption <- Api.instance.incidents.getByOrgAndId(org, id)
@@ -158,7 +158,7 @@ object Incidents extends Controller {
             )
           )
           val teamsOrEmpty = if (teams.size >= MaxTeams) { Seq.empty } else { teams }
-          Ok(views.html.incidents.edit(incident, teamsOrEmpty, form))
+          Ok(views.html.incidents.edit(request.org, incident, teamsOrEmpty, form))
         }
       }
     }
@@ -167,7 +167,7 @@ object Incidents extends Controller {
   def postEdit(
     org: String,
     id: Long
-  ) = Action.async { implicit request =>
+  ) = OrgAction.async { implicit request =>
     Api.instance.incidents.getByOrgAndId(org, id).flatMap {
       case None => Future {
         Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $id not found")
@@ -182,7 +182,7 @@ object Incidents extends Controller {
               teams <- Api.instance.teams.getByOrg(org, limit = Some(MaxTeams))
             } yield {
               val teamsOrEmpty = if (teams.size >= MaxTeams) { Seq.empty } else { teams }
-              Ok(views.html.incidents.edit(incident, teamsOrEmpty, formWithErrors))
+              Ok(views.html.incidents.edit(request.org, incident, teamsOrEmpty, formWithErrors))
             }
           },
 
@@ -201,7 +201,7 @@ object Incidents extends Controller {
               Redirect(routes.Incidents.show(org, incident.id)).flashing("success" -> "Incident updated")
             }.recover {
               case r: com.gilt.quality.error.ErrorsResponse => {
-                Ok(views.html.incidents.create(boundForm, fetchTeamsOrEmpty(org), Some(r.errors.map(_.message).mkString("\n"))))
+                Ok(views.html.incidents.create(request.org, boundForm, fetchTeamsOrEmpty(org), Some(r.errors.map(_.message).mkString("\n"))))
               }
             }
           }

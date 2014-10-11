@@ -15,7 +15,7 @@
   <tbody>
     @incidents.map { incident =>
      <tr>
-       <td><a href="@routes.Incidents.show(incident.id)">@incident.id</a></td>
+       <td><a href="@routes.Incidents.show(org.key, incident.id)">@incident.id</a></td>
        <td>@org.joda.time.format.DateTimeFormat.shortDate.print(incident.createdAt)</td>
        <td>@incident.severity</td>
        <td>

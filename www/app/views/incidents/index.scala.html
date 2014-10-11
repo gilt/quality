@@ -1,12 +1,13 @@
-@(filters: controllers.Incidents.Filters,
+@(org: com.gilt.quality.models.Organization,
+  filters: controllers.Incidents.Filters,
   incidents: lib.PaginatedCollection[com.gilt.quality.models.Incident],
   teams: Seq[com.gilt.quality.models.Team]
 )(implicit flash: Flash)
 
-@main(title = "Perfect Day Incidents", section = Some("incidents")) {
+@main(org, title = "Perfect Day Incidents", section = Some("incidents")) {
 
   <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create()">Add incident</a>
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(org.key)">Add incident</a>
   </div>
 
   <form role="form">
@@ -27,10 +28,10 @@
     @if(incidents.hasPrevious || incidents.hasNext) {
       <ul class="pager">
         @if(incidents.hasPrevious) {
-          <li><a href="@routes.Incidents.index(filters.teamKey, filters.hasTeam, filters.hasPlan, filters.hasGrade, incidents.page - 1)">Previous</a></li>
+          <li><a href="@routes.Incidents.index(org.key, filters.teamKey, filters.hasTeam, filters.hasPlan, filters.hasGrade, incidents.page - 1)">Previous</a></li>
         }
         @if(incidents.hasNext) {
-          <li><a href="@routes.Incidents.index(filters.teamKey, filters.hasTeam, filters.hasPlan, filters.hasGrade, incidents.page + 1)">Next</a></li>
+          <li><a href="@routes.Incidents.index(org.key, filters.teamKey, filters.hasTeam, filters.hasPlan, filters.hasGrade, incidents.page + 1)">Next</a></li>
         }
       </ul>
     }

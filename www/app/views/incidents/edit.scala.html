@@ -1,8 +1,9 @@
-@(incident: com.gilt.quality.models.Incident,
+@(org: com.gilt.quality.models.Organization,
+  incident: com.gilt.quality.models.Incident,
   teams: Seq[com.gilt.quality.models.Team],
   form: Form[controllers.Incidents.UiForm])(implicit flash: Flash)
 
-@main(title = s"Edit Incident ${incident.id}") {
+@main(org, title = s"Edit Incident ${incident.id}") {
 
   <div class="container">
 
