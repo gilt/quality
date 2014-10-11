@@ -123,7 +123,7 @@ object AgendaItemsDao {
       id.map { v => NamedParameter("id", toParameterValue(v)) },
       meetingId.map { v => NamedParameter("meeting_id", toParameterValue(v)) },
       incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
-      task.map { v => NamedParameter("task", toParameterValue(task.toString)) }
+      task.map { v => NamedParameter("task", toParameterValue(v.toString)) }
     ).flatten
 
     DB.withConnection { implicit c =>
