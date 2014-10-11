@@ -225,7 +225,7 @@
 		    "method": "POST",
                     "body": { "type": "organization_form" },
                     "responses": {
-                        "200": { "type": "organization" }
+                        "201": { "type": "organization" }
                     }
                 },
 
