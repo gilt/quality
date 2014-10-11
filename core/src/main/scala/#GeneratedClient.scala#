@@ -711,8 +711,7 @@ package com.gilt.quality {
     }
 
     object Events extends Events {
-      override def getByOrg(
-        org: String,
+      override def get(
         model: scala.Option[com.gilt.quality.models.Model] = None,
         action: scala.Option[com.gilt.quality.models.Action] = None,
         numberHours: scala.Option[Int] = None,
@@ -727,7 +726,7 @@ package com.gilt.quality {
           offset.map("offset" -> _.toString)
         ).flatten
 
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/events", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/events", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Event]]
           case r => throw new FailedRequest(r)
         }
@@ -1182,8 +1181,7 @@ package com.gilt.quality {
      * Search all events. Results are always paginated. Events are sorted in time order
      * - the first record is the most recent event.
      */
-    def getByOrg(
-      org: String,
+    def get(
       model: scala.Option[com.gilt.quality.models.Model] = None,
       action: scala.Option[com.gilt.quality.models.Action] = None,
       numberHours: scala.Option[Int] = None,

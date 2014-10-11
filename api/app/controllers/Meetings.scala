@@ -11,15 +11,14 @@ import lib.Validation
 
 object Meetings extends Controller {
 
-  val orgKey = "gilt" // TODO
-  lazy val org = OrganizationsDao.findByKey(orgKey).get // TODO
-
-  def get(
+  def getByOrg(
+    org: String,
     id: Option[Long],
     limit: Int = 25,
     offset: Int = 0
-  ) = Action { request =>
+  ) = OrgAction { request =>
     val meetings = MeetingsDao.findAll(
+      orgKey = Some(org),
       id = id,
       limit = limit,
       offset = offset
@@ -28,28 +27,34 @@ object Meetings extends Controller {
     Ok(Json.toJson(meetings))
   }
 
-  def getById(id: Long) = Action {
-    MeetingsDao.findByOrganizationAndId(org, id) match {
+  def getByOrgAndId(
+    org: String,
+    id: Long
+  ) = OrgAction { request =>
+    MeetingsDao.findByOrganizationAndId(request.org, id) match {
       case None => NotFound
       case Some(m: Meeting) => Ok(Json.toJson(m))
     }
   }
 
-  def post() = Action(parse.json) { request =>
+  def postByOrg(org: String) = OrgAction(parse.json) { request =>
     request.body.validate[MeetingForm] match {
       case e: JsError => Conflict(Json.toJson(Validation.invalidJson(e)))
 
       case s: JsSuccess[MeetingForm] => {
-        val form = FullMeetingForm(org, s.get)
-        val meeting = MeetingsDao.create(User.Default, form)
-        Created(Json.toJson(meeting)).withHeaders(LOCATION -> routes.Meetings.getById(meeting.id).url)
+        val form = FullMeetingForm(request.org, s.get)
+        val meeting = MeetingsDao.create(request.user, form)
+        Created(Json.toJson(meeting)).withHeaders(LOCATION -> routes.Meetings.getByOrgAndId(request.org.key, meeting.id).url)
       }
     }
   }
 
-  def deleteById(id: Long) = Action { request =>
-    MeetingsDao.findByOrganizationAndId(org, id).foreach { m =>
-      MeetingsDao.softDelete(User.Default, m)
+  def deleteByOrgAndId(
+    org: String,
+    id: Long
+  ) = OrgAction { request =>
+    MeetingsDao.findByOrganizationAndId(request.org, id).foreach { m =>
+      MeetingsDao.softDelete(request.user, m)
     }
     NoContent
   }

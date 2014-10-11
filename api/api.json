@@ -249,6 +249,7 @@
 	},
 
 	"event": {
+	    "path": "/:org/events",
             "operations": [
 		{
 		    "method": "GET",
@@ -310,6 +311,7 @@
 	},
 
     "statistic":{
+	"path": "/:org/statistics",
         "operations": [
             {   
                 "method": "GET",
@@ -327,7 +329,7 @@
     },
 
         "incident": {
-
+	    "path": "/:org/incidents",
             "operations": [
                 {
                     "method": "GET",
@@ -371,7 +373,7 @@
                     "description": "Updates an incident.",
                     "body": { "type": "incident_form" },
                     "responses": {
-                        "201": { "type": "incident" },
+                        "209": { "type": "incident" },
                         "409": { "type": "[error]" }
                     }
                 },
@@ -462,6 +464,7 @@
 	},
 
 	"meeting": {
+	    "path": "/:org/meetings",
 	    "operations": [
 		{
 		    "method": "GET",
@@ -504,7 +507,7 @@
 	},
 
 	"agenda_item": {
-	    "path": "/meetings/:meeting_id/agenda_items",
+	    "path": "/:org/meetings/:meeting_id/agenda_items",
 
 	    "operations": [
 		{

@@ -12,15 +12,16 @@ object AgendaItems extends Controller with AgendaItems
 trait AgendaItems {
   this: Controller =>
 
-  def get(
+  def getMeetingsByOrgAndMeetingId(
+    org: String,
     meetingId: Long,
     id: Option[Long],
     task: Option[com.gilt.quality.models.Task],
     limit: Int = 25,
     offset: Int = 0
-  ) = Action {
+  ) = MeetingAction { request =>
     val items = AgendaItemsDao.findAll(
-      meetingId = Some(meetingId),
+      meetingId = Some(request.meeting.id),
       id = id,
       task = task,
       limit = limit,
@@ -30,39 +31,45 @@ trait AgendaItems {
     Ok(Json.toJson(items))
   }
 
-  def getById(meetingId: Long, id: Long) = Action {
-    AgendaItemsDao.findByMeetingIdAndId(meetingId, id) match {
+  def getMeetingsByOrgAndMeetingIdAndId(
+    org: String,
+    meetingId: Long,
+    id: Long
+  ) = MeetingAction { request =>
+    AgendaItemsDao.findByMeetingIdAndId(request.meeting.id, id) match {
       case None => NotFound
       case Some(item) => Ok(Json.toJson(item))
     }
   }
 
-  def deleteById(meetingId: Long, id: Long) = Action {
-    AgendaItemsDao.findByMeetingIdAndId(meetingId, id).map { item =>
-      AgendaItemsDao.softDelete(User.Default, item)
+  def deleteMeetingsByOrgAndMeetingIdAndId(
+    org: String,
+    meetingId: Long,
+    id: Long
+  ) = MeetingAction { request =>
+    AgendaItemsDao.findByMeetingIdAndId(request.meeting.id, id).map { item =>
+      AgendaItemsDao.softDelete(request.user, item)
     }
     NoContent
   }
 
-  def post(meetingId: Long) = Action(parse.json) { request =>
-    MeetingsDao.findById(meetingId) match {
-      case None => NotFound
-      case Some(meeting) => {
-        request.body.validate[AgendaItemForm] match {
-          case e: JsError => {
-            BadRequest(Json.toJson(Validation.invalidJson(e)))
+  def postMeetingsByOrgAndMeetingId(
+    org: String,
+    meetingId: Long
+  ) = MeetingAction(parse.json) { request =>
+    request.body.validate[AgendaItemForm] match {
+      case e: JsError => {
+        BadRequest(Json.toJson(Validation.invalidJson(e)))
+      }
+      case s: JsSuccess[AgendaItemForm] => {
+        val form = FullAgendaItemForm(request.meeting, s.get)
+        AgendaItemsDao.validate(form) match {
+          case Nil => {
+            val org = AgendaItemsDao.create(request.user, form)
+            Created(Json.toJson(org))
           }
-          case s: JsSuccess[AgendaItemForm] => {
-            val form = FullAgendaItemForm(meeting, s.get)
-            AgendaItemsDao.validate(form) match {
-              case Nil => {
-                val org = AgendaItemsDao.create(User.Default, form)
-                Created(Json.toJson(org))
-              }
-              case errors => {
-                Conflict(Json.toJson(errors))
-              }
-            }
+          case errors => {
+            Conflict(Json.toJson(errors))
           }
         }
       }

@@ -40,9 +40,10 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   ) = TeamForm(key = "team-" + UUID.randomUUID.toString)
 
   def createIncident(
+    org: Organization,
     form: IncidentForm = createIncidentForm()
   ): Incident = {
-    await(client.incidents.post(form))
+    await(client.incidents.postByOrg(org = org.key, incidentForm = form))
   }
 
   def createIncidentForm(
@@ -56,9 +57,10 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   )
 
   def createMeeting(
+    org: Organization,
     form: MeetingForm = createMeetingForm()
   ): Meeting = {
-    await(client.meetings.post(form))
+    await(client.meetings.postByOrg(org = org.key, meetingForm = form))
   }
 
   def createMeetingForm() = {
@@ -68,20 +70,22 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   }
 
   def createAgendaItem(
-    meeting: Meeting = createMeeting(),
-    form: AgendaItemForm = createAgendaItemForm()
+    org: Organization,
+    meeting: Option[Meeting] = None,
+    form: Option[AgendaItemForm] = None
   ): AgendaItem = {
     await(
-      client.agendaItems.post(
-        meetingId = meeting.id,
-        agendaItemForm = form
+      client.agendaItems.postMeetingsAndAgendaItemsByOrgAndMeetingId(
+        org = org.key,
+        meetingId = meeting.getOrElse(createMeeting(org)).id,
+        agendaItemForm = form.getOrElse(createAgendaItemForm(org))
       )
     )
   }
 
-  def createAgendaItemForm() = {
+  def createAgendaItemForm(org: Organization) = {
     AgendaItemForm(
-      incidentId = createIncident().id,
+      incidentId = createIncident(org).id,
       task = Task.ReviewTeam
     )
   }

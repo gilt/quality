@@ -20,7 +20,7 @@ object StatisticsDao {
           count(grades.id) as total_grades, 
           ceiling(avg(grades.score)) as average_grade 
       from teams 
-      join organizations on organizations.deleted_at is null and organizations.id = teams.organization_id
+      join organizations on organizations.deleted_at is null and organizations.id = teams.organization_id and organizations.key = {org_key}
       left join incidents as all_incidents on all_incidents.team_id = teams.id and all_incidents.deleted_at is null
       left join plans on plans.incident_id = all_incidents.id and plans.deleted_at is null 
       left join grades on grades.plan_id = plans.id and grades.deleted_at is null 
@@ -28,6 +28,7 @@ object StatisticsDao {
   """
 
   def findAll(
+    orgKey: String,
     numberHours: Int,
     teamKey: Option[String] = None
   ): Seq[Statistic] = {
@@ -41,6 +42,7 @@ object StatisticsDao {
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
+      Some(NamedParameter("org_key", toParameterValue(orgKey))),
       teamKey.map { v => NamedParameter("team_key", toParameterValue(v)) },
       Some(NamedParameter("number_hours", toParameterValue(numberHours)))
     ).flatten

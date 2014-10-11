@@ -41,8 +41,6 @@ trait Organizations {
       }
       case s: JsSuccess[OrganizationForm] => {
         val form = s.get
-        println("FORM: " + form)
-        println(" -- " + OrganizationsDao.validate(form))
         OrganizationsDao.validate(form) match {
           case Nil => {
             val org = OrganizationsDao.create(User.Default, form)

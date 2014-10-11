@@ -8,8 +8,16 @@ import play.api.libs.json._
 
 object Events extends Controller {
 
-  def get(model: Option[Model], action: Option[com.gilt.quality.models.Action], number_hours: Option[Int], limit: Int = 25, offset: Int = 0) = Action { request =>
+  def getByOrg(
+    org: String,
+    model: Option[Model],
+    action: Option[com.gilt.quality.models.Action],
+    number_hours: Option[Int],
+    limit: Int = 25,
+    offset: Int = 0
+  ) = OrgAction { request =>
     val events = EventsDao.findAll(
+      org = request.org,
       model = model,
       action = action,
       numberHours = number_hours,

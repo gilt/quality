@@ -2,6 +2,7 @@ package controllers
 
 import com.gilt.quality.models.{Meeting, MeetingForm}
 import com.gilt.quality.error.ErrorsResponse
+import java.util.UUID
 import org.joda.time.DateTime
 
 import play.api.test._
@@ -11,31 +12,33 @@ class MeetingsSpec extends BaseSpec {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "POST /meetings" in new WithServer {
+  lazy val org = createOrganization()
+
+  "POST /:org/meetings" in new WithServer {
     val scheduledAt = (new DateTime()).plus(3)
-    val meeting = createMeeting(MeetingForm(scheduledAt = scheduledAt))
+    val meeting = createMeeting(org, MeetingForm(scheduledAt = scheduledAt))
     meeting.scheduledAt must be(scheduledAt)
   }
 
-  "DELETE /meetings/:id" in new WithServer {
-    val meeting = createMeeting()
-    await(client.meetings.deleteById(meeting.id)) must be(Some(()))
-    await(client.meetings.get(id = Some(meeting.id))) must be(Seq.empty)
+  "DELETE /:org/meetings/:id" in new WithServer {
+    val meeting = createMeeting(org)
+    await(client.meetings.deleteByOrgAndId(org.key, meeting.id)) must be(Some(()))
+    await(client.meetings.getByOrg(org.key, id = Some(meeting.id))) must be(Seq.empty)
   }
 
-  "GET /meetings" in new WithServer {
-    val meeting1 = createMeeting()
-    val meeting2 = createMeeting()
+  "GET /:org/meetings" in new WithServer {
+    val meeting1 = createMeeting(org)
+    val meeting2 = createMeeting(org)
 
-    await(client.meetings.get(id = Some(-1))) must be(Seq.empty)
-    await(client.meetings.get(id = Some(meeting1.id))).head must be(meeting1)
-    await(client.meetings.get(id = Some(meeting2.id))).head must be(meeting2)
+    await(client.meetings.getByOrg(org.key, id = Some(-1))) must be(Seq.empty)
+    await(client.meetings.getByOrg(org.key, id = Some(meeting1.id))).head must be(meeting1)
+    await(client.meetings.getByOrg(org.key, id = Some(meeting2.id))).head must be(meeting2)
   }
 
-  "GET /meetings/:id" in new WithServer {
-    val meeting = createMeeting()
-    await(client.meetings.getById(meeting.id)) must be(Some(meeting))
-    await(client.meetings.getById(-1)) must be(None)
+  "GET /:org/meetings/:id" in new WithServer {
+    val meeting = createMeeting(org)
+    await(client.meetings.getByOrgAndId(org.key, meeting.id)) must be(Some(meeting))
+    await(client.meetings.getByOrgAndId(org.key, -1)) must be(None)
   }
 
 }
