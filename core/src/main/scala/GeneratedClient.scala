@@ -5,7 +5,7 @@ package com.gilt.quality.models {
    */
   case class AgendaItem(
     id: Long,
-    incident: com.gilt.quality.models.IncidentSummary,
+    incident: com.gilt.quality.models.Incident,
     task: com.gilt.quality.models.Task
   )
 
@@ -356,7 +356,7 @@ package com.gilt.quality.models {
     implicit def jsonReadsQualityAgendaItem: play.api.libs.json.Reads[AgendaItem] = {
       (
         (__ \ "id").read[Long] and
-        (__ \ "incident").read[com.gilt.quality.models.IncidentSummary] and
+        (__ \ "incident").read[com.gilt.quality.models.Incident] and
         (__ \ "task").read[com.gilt.quality.models.Task]
       )(AgendaItem.apply _)
     }
@@ -364,7 +364,7 @@ package com.gilt.quality.models {
     implicit def jsonWritesQualityAgendaItem: play.api.libs.json.Writes[AgendaItem] = {
       (
         (__ \ "id").write[Long] and
-        (__ \ "incident").write[com.gilt.quality.models.IncidentSummary] and
+        (__ \ "incident").write[com.gilt.quality.models.Incident] and
         (__ \ "task").write[com.gilt.quality.models.Task]
       )(unlift(AgendaItem.unapply _))
     }

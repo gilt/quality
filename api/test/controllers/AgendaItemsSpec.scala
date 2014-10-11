@@ -102,7 +102,6 @@ class AgendaItemsSpec extends BaseSpec {
     await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(org.key, meeting.id, item.id)).map(_.id) must be(Some(item.id))
     await(client.agendaItems.deleteMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(org.key, meeting.id, item.id))
     await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(org.key, meeting.id, item.id)).map(_.id) must be(None)
-
   }
 
 }

@@ -1,12 +1,13 @@
 package db
 
-import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Error, IncidentSummary, Meeting, Severity, Task}
+import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Error, Incident, Meeting, Organization, Plan, Severity, Task, Team}
 import lib.Validation
 import anorm._
 import anorm.ParameterValue._
+import AnormHelper._
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
+import org.joda.time.DateTime
 
 case class FullAgendaItemForm(
   meeting: Meeting,
@@ -18,10 +19,23 @@ object AgendaItemsDao {
   private val BaseQuery = """
     select agenda_items.id, agenda_items,task,
            incidents.id as incident_id,
+           organizations.key as organization_key, 
+           organizations.name as organization_name,
+           teams.key as team_key,
            incidents.severity as incident_severity,
-           incidents.summary as incident_summary
+           incidents.summary as incident_summary,
+           incidents.description as incident_description,
+           incidents.created_at as incident_created_at,
+           plans.id as plan_id,
+           plans.body as plan_body,
+           plans.created_at as plan_created_at,
+           grades.score as grade
       from agenda_items
       join incidents on incidents.id = agenda_items.incident_id and incidents.deleted_at is null
+      join organizations on organizations.deleted_at is null and organizations.id = incidents.organization_id
+      left join teams on teams.deleted_at is null and teams.id = incidents.team_id
+      left join plans on plans.deleted_at is null and plans.incident_id = incidents.id
+      left join grades on grades.deleted_at is null and grades.plan_id = plans.id
      where agenda_items.deleted_at is null
   """
 
@@ -114,13 +128,42 @@ object AgendaItemsDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
+        val incidentId = row[Long]("incident_id")
+
+        val plan = row[Option[Long]]("plan_id").map { planId =>
+          Plan(
+            id = planId,
+            incidentId = incidentId,
+            body = row[String]("plan_body"),
+            grade = row[Option[Int]]("grade"),
+            createdAt = row[DateTime]("plan_created_at")
+          )
+        }
+
         AgendaItem(
           id = row[Long]("id"),
           task = Task(row[String]("task")),
-          incident = IncidentSummary(
-            id = row[Long]("incident_id"),
+          incident = Incident(
+            id = incidentId,
+            organization = Organization(
+              key = row[String]("organization_key"),
+              name = row[String]("organization_name")
+            ),
+            team = row[Option[String]]("team_key").map { teamKey =>
+              Team(
+                key = teamKey,
+                organization = Organization(
+                  key = row[String]("organization_key"),
+                  name = row[String]("organization_name")
+                )
+              )
+            },
             severity = Severity(row[String]("incident_severity")),
-            summary = row[String]("incident_summary")
+            summary = row[String]("incident_summary"),
+            description = row[Option[String]]("incident_description"),
+            tags = Seq.empty,
+            plan = plan,
+            createdAt = row[DateTime]("incident_created_at")
           )
         )
       }.toSeq
