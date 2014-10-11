@@ -1,4 +1,4 @@
-GET        /meetings/:meeting_id/agenda_items         controllers.AgendaItems.get(meeting_id: Long, task: Option[com.gilt.quality.models.Task], limit: Int ?= 25, offset: Int ?= 0)
+GET        /meetings/:meeting_id/agenda_items         controllers.AgendaItems.get(meeting_id: Long, id: Option[Long], task: Option[com.gilt.quality.models.Task], limit: Int ?= 25, offset: Int ?= 0)
 GET        /meetings/:meeting_id/agenda_items/:id     controllers.AgendaItems.getById(meeting_id: Long, id: Long)
 POST       /meetings/:meeting_id/agenda_items         controllers.AgendaItems.post(meeting_id: Long)
 DELETE     /meetings/:meeting_id/agenda_items/:id     controllers.AgendaItems.deleteById(meeting_id: Long, id: Long)
