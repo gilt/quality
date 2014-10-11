@@ -1,48 +1,57 @@
 package db
 
-import com.gilt.quality.models.{ Error, Incident, Plan, Severity, Team }
+import com.gilt.quality.models.{Error, Incident, IncidentForm, Organization, Plan, Severity, Team}
 import com.gilt.quality.models.json._
+import lib.Validation
 
 import anorm._
 import anorm.ParameterValue._
 import AnormHelper._
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
 import org.joda.time.DateTime
 
-case class IncidentForm(
-  team_key: Option[String],
-  severity: String,
-  summary: String,
-  description: Option[String] = None,
-  tags: Option[Seq[String]] = None
+case class FullIncidentForm(
+  org: Organization,
+  form: IncidentForm
 ) {
+  lazy val orgId = OrganizationsDao.lookupId(org.key).getOrElse {
+    sys.error(s"Could not find organizations with key[${org.key}]")
+  }
 
-  lazy val teamId: Option[Long] = team_key.flatMap( key => TeamsDao.lookupId(key) )
-
-  // TODO: Return Seq[Error]
-  def validate(): Option[String] = {
-    team_key.flatMap { key =>
-      if (teamId.isEmpty) {
-        Some(s"Team '$key' not found")
-      } else {
-        None
-      }
+  lazy val teamId: Option[Long] = {
+    form.teamKey.flatMap { key =>
+      TeamsDao.lookupId(org, key)
     }
   }
 
-}
+  lazy val validate: Seq[Error] = {
+    val keyErrors = form.teamKey match {
+      case None => Seq.empty
+      case Some(key) => {
+        teamId match {
+          case None => Seq(s"Team[$key] not found")
+          case Some(_) => Seq.empty
+        }
+      }
+    }
 
+    val severityErrors = form.severity match {
+      case Severity.UNDEFINED(value) => Seq(s"Invalid severity[$value]")
+      case _ => Seq.empty
+    }
 
-object IncidentForm {
-  implicit val readsIncidentForm = Json.reads[IncidentForm]
+    Validation.errors(keyErrors ++ severityErrors)
+  }
+
 }
 
 object IncidentsDao {
 
   private val BaseQuery = """
     select incidents.id,
+           organizations.key as organization_key, 
+           organizations.name as organization_name,
            teams.key as team_key,
            incidents.severity,
            incidents.summary,
@@ -53,6 +62,7 @@ object IncidentsDao {
            plans.created_at as plan_created_at,
            grades.score as grade
       from incidents
+      join organizations on organizations.deleted_at is null and organizations.id = incidents.organization_id
       left join teams on teams.deleted_at is null and teams.id = incidents.team_id
       left join plans on plans.deleted_at is null and plans.incident_id = incidents.id
       left join grades on grades.deleted_at is null and grades.plan_id = plans.id
@@ -61,9 +71,9 @@ object IncidentsDao {
 
   private val InsertQuery = """
     insert into incidents
-    (team_id, severity, summary, description, created_by_guid, updated_by_guid)
+    (organization_id, team_id, severity, summary, description, created_by_guid, updated_by_guid)
     values
-    ({team_id}, {severity}, {summary}, {description}, {user_guid}::uuid, {user_guid}::uuid)
+    ({organization_id}, {team_id}, {severity}, {summary}, {description}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
   private val UpdateQuery = """
@@ -77,44 +87,65 @@ object IncidentsDao {
      where id = {id}
   """
 
-  def create(user: User, form: IncidentForm): Incident = {
+  def findRecentlyModifiedIncidentIds(): Seq[Long] = {
+    val query = BaseQuery + " and incidents.updated_at > now() - interval '3 days' "
+    DB.withConnection { implicit c =>
+      SQL(query)().toList.map { row =>
+        row[Long]("id")
+      }.toSeq
+    }
+  }
+
+  def create(user: User, fullForm: FullIncidentForm): Incident = {
+    val errors = fullForm.validate
+    assert(errors.isEmpty, errors.map(_.message).mkString(" "))
+
     val id: Long = DB.withTransaction { implicit c =>
       val id = SQL(InsertQuery).on(
-        'team_id -> form.teamId,
-        'severity -> form.severity,
-        'summary -> form.summary,
-        'description -> form.description,
+        'organization_id -> fullForm.orgId,
+        'team_id -> fullForm.teamId,
+        'severity -> fullForm.form.severity.toString,
+        'summary -> fullForm.form.summary,
+        'description -> fullForm.form.description,
         'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
 
-      form.tags.foreach { tags =>
-        IncidentTagsDao.doUpdate(c, user, id, Seq.empty, tags)
-      }
+      IncidentTagsDao.doUpdate(c, user, id, Seq.empty, fullForm.form.tags)
 
       id
     }
 
-    findById(id).getOrElse {
+    global.Actors.mainActor ! actors.MeetingMessage.SyncIncident(id)
+
+    findByOrganizationAndId(fullForm.org, id).getOrElse {
       sys.error("Failed to create incident")
     }
   }
 
-  def update(user: User, incident: Incident, form: IncidentForm): Incident = {
+  def update(user: User, incident: Incident, fullForm: FullIncidentForm): Incident = {
+    assert(fullForm.validate.isEmpty, fullForm.validate.map(_.message).mkString(" "))
+    assert(
+      incident.organization.key == fullForm.org.key,
+      s"Incident[${incident.id}] belongs to org[${incident.organization.key}] and not[${fullForm.org.key}]"
+    )
+
     DB.withTransaction { implicit c =>
       SQL(UpdateQuery).on(
         'id -> incident.id,
-        'team_id -> form.teamId,
-        'severity -> form.severity,
-        'summary -> form.summary,
-        'description -> form.description,
+        'team_id -> fullForm.teamId,
+        'severity -> fullForm.form.severity.toString,
+        'summary -> fullForm.form.summary,
+        'description -> fullForm.form.description,
         'user_guid -> user.guid
       ).executeUpdate()
 
-      IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, form.tags.getOrElse(Seq.empty))
+      IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, fullForm.form.tags)
     }
 
-    findById(incident.id).getOrElse {
+    global.Actors.mainActor ! actors.MeetingMessage.SyncIncident(incident.id)
+
+    findByOrganizationAndId(fullForm.org, incident.id).getOrElse {
       sys.error("Failed to update incident")
     }
   }
@@ -127,11 +158,19 @@ object IncidentsDao {
     findAll(id = Some(id), limit = 1).headOption.map { i => findDetails(i) }
   }
 
+  def findByOrganizationAndId(
+    org: Organization,
+    id: Long
+  ): Option[Incident] = {
+    findAll(org = Some(org), id = Some(id), limit = 1).headOption.map { i => findDetails(i) }
+  }
+
   private def findDetails(incident: Incident): Incident = {
     incident.copy(tags = IncidentTagsDao.findAll(incidentId = Some(incident.id)).map(_.tag))
   }
 
   def findAll(
+    org: Option[Organization] = None,
     id: Option[Long] = None,
     teamKey: Option[String] = None,
     hasTeam: Option[Boolean] = None,
@@ -141,8 +180,20 @@ object IncidentsDao {
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Incident] = {
+    val orgId = org match {
+      case None => None
+      case Some(o) => {
+        Some(
+          OrganizationsDao.lookupId(o.key).getOrElse {
+            sys.error("Organization ID not found for key[${org.key}]")
+          }
+        )
+      }
+    }
+
     val sql = Seq(
       Some(BaseQuery.trim),
+      org.map { v => "and organizations.id = {organization_id}" },
       id.map { v => "and incidents.id = {id}" },
       teamKey.map { v => "and incidents.team_id = (select id from teams where deleted_at is null and key = lower(trim({team_key})))" },
       hasTeam.map { v =>
@@ -169,6 +220,7 @@ object IncidentsDao {
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
+      orgId.map { v => NamedParameter("organization_id", toParameterValue(v)) },
       id.map { v => NamedParameter("id", toParameterValue(v)) },
       teamKey.map { v => NamedParameter("team_key", toParameterValue(v)) },
       severity.map { v => NamedParameter("severity", toParameterValue(severity)) }
@@ -190,7 +242,19 @@ object IncidentsDao {
 
         Incident(
           id = incidentId,
-          team = row[Option[String]]("team_key").map { key => Team(key = key) },
+          organization = Organization(
+            key = row[String]("organization_key"),
+            name = row[String]("organization_name")
+          ),
+          team = row[Option[String]]("team_key").map { teamKey =>
+            Team(
+              key = teamKey,
+              organization = Organization(
+                key = row[String]("organization_key"),
+                name = row[String]("organization_name")
+              )
+            )
+          },
           severity = Severity(row[String]("severity")),
           summary = row[String]("summary"),
           description = row[Option[String]]("description"),

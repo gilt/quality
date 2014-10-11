@@ -1,0 +1,49 @@
+@(org: com.gilt.quality.models.Organization,
+  meeting: com.gilt.quality.models.Meeting,
+  reviewTeams: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem],
+  reviewPlans: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem]
+)(implicit flash: Flash)
+
+@main(org = Some(org), title = s"Meeting on ${_root_.org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)}") {
+
+  <ul>
+    <li><a href="@routes.Meetings.postDeleteById(org.key, meeting.id)" class="delete" data-confirm="Are you sure to delete this meeting?">Delete</a></li>
+  </ul>
+
+  <h3>Incidents pending team review</h3>
+  @if(reviewTeams.isEmpty) {
+    <em>None</em>
+  } else {
+    @views.html.incidents.incidentsTable(org, reviewTeams.items.map(_.incident))
+  
+    @if(reviewTeams.hasPrevious || reviewTeams.hasNext) {
+      <ul class="pager">
+        @if(reviewTeams.hasPrevious) {
+          <li><a href="@routes.Meetings.show(org.key, meeting.id, reviewTeams.page - 1, reviewPlans.page)">Previous</a></li>
+        }
+        @if(reviewTeams.hasNext) {
+          <li><a href="@routes.Meetings.show(org.key, meeting.id, reviewTeams.page + 1, reviewPlans.page)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+  <h3>Incidents pending plan review</h3>
+  @if(reviewPlans.isEmpty) {
+    <em>None</em>
+  } else {
+    @views.html.incidents.incidentsTable(org, reviewPlans.items.map(_.incident))
+  
+    @if(reviewPlans.hasPrevious || reviewPlans.hasNext) {
+      <ul class="pager">
+        @if(reviewPlans.hasPrevious) {
+          <li><a href="@routes.Meetings.show(org.key, meeting.id, reviewTeams.page, reviewPlans.page - 1)">Previous</a></li>
+        }
+        @if(reviewPlans.hasNext) {
+          <li><a href="@routes.Meetings.show(org.key, meeting.id, reviewTeams.page, reviewPlans.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}

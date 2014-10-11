@@ -1,0 +1,31 @@
+@(orgs: lib.PaginatedCollection[com.gilt.quality.models.Organization])(implicit flash: Flash)
+
+@main(title = "Organizations") {
+
+  @if(orgs.isEmpty) {
+    <em>No orgs found</em>
+  } else {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @orgs.items.map { org =>
+         <tr>
+           <td><a href="@routes.Dashboard.index(org.key)">@org.key</a></td>
+         </tr>
+       }
+      </tbody>
+    </table>
+  
+    @if(orgs.hasPrevious || orgs.hasNext) {
+      <ul class="pager">
+        @if(orgs.hasPrevious) {
+          <li><a href="@routes.Application.index(orgs.page - 1)">Previous</a></li>
+        }
+        @if(orgs.hasNext) {
+          <li><a href="@routes.Application.index(orgs.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}
+  

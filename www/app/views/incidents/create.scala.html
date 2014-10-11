@@ -1,15 +1,16 @@
-@(form: Form[controllers.Incidents.IncidentForm],
+@(org: com.gilt.quality.models.Organization,
+  form: Form[controllers.Incidents.UiForm],
   teams: Seq[com.gilt.quality.models.Team],
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(title = s"Create Incident", errorMessage = errorMessage) {
+@main(org = Some(org), title = s"Create Incident", errorMessage = errorMessage) {
 
   <div class="container">
 
-    @helper.form(action = routes.Incidents.postCreate) {
+    @helper.form(action = routes.Incidents.postCreate(org.key)) {
 
-      @incidentForm(form, routes.Incidents.index(), teams)
+      @incidentForm(form, routes.Incidents.index(org.key), teams)
 
     }
 

@@ -1,4 +1,5 @@
 @(title: String,
+  org: Option[com.gilt.quality.models.Organization] = None,
   section: Option[String] = None,
   errorMessage: Option[String] = None
 )(content: Html)(implicit flash: Flash)
@@ -27,13 +28,18 @@
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar models">
-          <ul class="nav nav-sidebar">
-            <li><a@if(section == Some("dashboard")) { class="active" } href="/">Dashboard</a></li>
-            <li><a@if(section == Some("incidents")) { class="active" } href="@routes.Incidents.index()">Incidents</a></li>
-            <li><a@if(section == Some("teams")) { class="active" } href="@routes.Teams.index()">Teams</a></li>
-          </ul>
-        </div>
+
+        @org.map { o =>
+          <div class="col-sm-3 col-md-2 sidebar models">
+            <ul class="nav nav-sidebar">
+              <li><a@if(section == Some("dashboard")) { class="active" } href="@routes.Dashboard.index(o.key)">Dashboard</a></li>
+              <li><a@if(section == Some("meetings")) { class="active" } href="@routes.Meetings.index(o.key)">Meetings</a></li>
+              <li><a@if(section == Some("incidents")) { class="active" } href="@routes.Incidents.index(o.key)">Incidents</a></li>
+              <li><a@if(section == Some("teams")) { class="active" } href="@routes.Teams.index(o.key)">Teams</a></li>
+            </ul>
+          </div>
+        }
+
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 
           @flash.get("success").map { msg => <span class="label label-success">@msg</span> }

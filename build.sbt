@@ -1,8 +1,9 @@
+import play.PlayScala
 import play.PlayImport.PlayKeys._
 
 name := "quality"
 
-scalaVersion in ThisBuild := "2.11.1"
+scalaVersion in ThisBuild := "2.11.2"
 
 lazy val core = project
   .in(file("core"))
@@ -25,7 +26,6 @@ lazy val api = project
     libraryDependencies ++= Seq(
       jdbc,
       anorm,
-      ws,
       "org.postgresql" % "postgresql" % "9.3-1101-jdbc4"
     ),
     routesImport += "com.gilt.quality.Bindables._"
@@ -47,7 +47,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("quality-" + _),
   libraryDependencies ++= Seq(
     ws,
-    "org.scalatest" %% "scalatest" % "2.2.0" % "test"
-  ),
-  scalacOptions += "-feature"
+    "org.scalatestplus" %% "play" % "1.1.0" % "test",
+    "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
+  )
 )

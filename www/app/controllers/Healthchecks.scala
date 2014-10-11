@@ -12,7 +12,7 @@ object Healthchecks extends Controller {
    */
   def index() = Action.async { request =>
     for {
-      teams <- client.Api.instance.teams.get(limit = Some(1))
+      teams <- client.Api.instance.organizations.get(limit = Some(1))
     } yield {
       Ok("healthy")
     }

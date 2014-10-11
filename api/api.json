@@ -27,6 +27,14 @@
 		{ "name": "low" },
 		{ "name": "high" }
 	    ]
+	},
+
+	"task": {
+	    "description": "Describes what needs to be reviewed about a specific incident",
+	    "values": [
+		{ "name": "review_team", "description": "Used in meetings to indicate that a team should be assigned to the incident or that the group should review the team assignment to make sure it is correct." },
+		{ "name": "review_plan", "description": "Indicates that the incident plan should be reviewed and rated" }
+	    ]
 	}
 
     },
@@ -58,8 +66,30 @@
             ]
 	},
 
+        "organization": {
+            "description": "Top level organization for which we are managing quality. Key entities like teams and meetings are scoped to the organization.",
+            "fields": [
+                { "name": "key", "type": "string", "description": "Used as a unique key for this organization that is URL safe." },
+                { "name": "name", "type": "string", "description": "The name of this organization." }
+            ]
+        },
+
+        "organization_form": {
+            "fields": [
+                { "name": "name", "type": "string" },
+                { "name": "key", "type": "string", "required": false, "description": "Defaults to a url friendy version of the name" }
+            ]
+        },
+
         "team": {
             "description": "A team is the main actor in the system. Teams have a unique key and own incidents",
+            "fields": [
+                { "name": "organization", "type": "organization", "description": "Organization to which this team belongs" },
+                { "name": "key", "type": "string", "description": "Unique identifier for this team" }
+            ]
+        },
+
+        "team_form": {
             "fields": [
                 { "name": "key", "type": "string", "description": "Unique identifier for this team" }
             ]
@@ -82,6 +112,7 @@
             "description": "A bug or error that affected public or internal users in a negative way",
             "fields": [
                 { "name": "id", "type": "long", "description": "Internal unique identifier for this incident." },
+                { "name": "organization", "type": "organization", "description": "Organization to which this incident belongs" },
                 { "name": "summary", "type": "string", "description": "Summary of the incident." },
                 { "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
                 { "name": "team", "type": "team", "description": "Team responsible for resolution of this incident", "required": false },
@@ -91,6 +122,16 @@
                 { "name": "created_at", "type": "date-time-iso8601" }
             ]
         },
+
+	"incident_form": {
+	    "fields": [
+		{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident", "required": false },
+		{ "name": "severity", "type": "severity" },
+		{ "name": "summary", "type": "string", "description": "Summary of the incident." },
+		{ "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
+		{ "name": "tags", "type": "[string]", "description": "Optional list of tags to apply to this incident", "required": false }
+	    ]
+	},
 
         "plan": {
             "description": "Details for how an incident will be resolved",
@@ -103,12 +144,58 @@
             ]
         },
 
+	"plan_form": {
+            "fields": [
+                { "name": "incident_id", "type": "long" },
+                { "name": "body", "type": "string" }
+            ]
+	},
+
         "error": {
             "fields": [
                 { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
                 { "name": "message", "type": "string", "description": "Description of the error" }
             ]
-        }
+        },
+
+	"meeting": {
+	    "description": "Meetings happen on a regular schedule (e.g. thursdays from 11-12 EST). As incidents are created, they are automatically assigned to the next meeting. Incidents can then be reviewed from the context of a meeting, facilitating online navigation. Incidents within a meeting can require one of two actions - team assignment or plan review.",
+	    "fields": [
+		{ "name": "id", "type": "long", "description": "Internal unique identifier for this meeting." },
+		{ "name": "scheduled_at", "type": "date-time-iso8601", "description": "The date and time for which this meeting is scheduled." }
+	    ]
+	},
+
+	"meeting_form": {
+	    "fields": [
+		{ "name": "scheduled_at", "type": "date-time-iso8601" }
+	    ]
+	},
+
+	"agenda_item": {
+	    "description": "Describe an agenda item for a meeting. Currently the only agenda items we have are that a particular incident needs to be reviewed.",
+	    "fields": [
+		{ "name": "id", "type": "long", "description": "Internal unique identifier for this record." },
+		{ "name": "incident", "type": "incident", "description": "Summary of the incident to review." },
+		{ "name": "task", "type": "task", "description": "What needs to be reviewed at this meeting for this incident." }
+	    ]
+	},
+
+	"incident_summary": {
+	    "fields": [
+		{ "name": "id", "type": "long" },
+		{ "name": "severity", "type": "severity" },
+                { "name": "summary", "type": "string" }
+	    ]
+	},
+
+	"agenda_item_form": {
+	    "fields": [
+		{ "name": "incident_id", "type": "long" },
+		{ "name": "task", "type": "task" }
+	    ]
+	}
+
 
     },
 
@@ -126,7 +213,50 @@
 	    ]
 	},
 
+	"organization": {
+	    "operations": [
+		{
+		    "method": "GET",
+		    "description": "Search all organizations. Results are always paginated.",
+                    "parameters": [
+                        { "name": "id", "type": "long", "description": "Find organization with this id", "required": false },
+                        { "name": "key", "type": "string", "description": "Find organization with this key", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[organization]" }
+                    }
+                },
+
+		{
+		    "method": "GET",
+		    "path": "/:key",
+                    "responses": {
+                        "200": { "type": "organization" }
+                    }
+                },
+
+
+		{
+		    "method": "POST",
+                    "body": { "type": "organization_form" },
+                    "responses": {
+                        "201": { "type": "organization" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+		{
+		    "method": "DELETE",
+		    "path": "/:key"
+                }
+
+	    ]
+	},
+
 	"event": {
+	    "path": "/:org/events",
             "operations": [
 		{
 		    "method": "GET",
@@ -146,6 +276,7 @@
 	},
 
 	"team": {
+	    "path": "/:org/teams",
 	    "operations": [
 		{
 		    "method": "GET",
@@ -172,9 +303,7 @@
                 {
                     "method": "POST",
                     "description": "Create a new team.",
-                    "parameters": [
-                        { "name": "key", "type": "string" }
-		    ],
+                    "body": { "type": "team_form" },
                     "responses": {
                         "201": { "type": "team" },
                         "409": { "type": "[error]" }
@@ -189,6 +318,7 @@
 	},
 
     "statistic":{
+	"path": "/:org/statistics",
         "operations": [
             {   
                 "method": "GET",
@@ -206,7 +336,7 @@
     },
 
         "incident": {
-
+	    "path": "/:org/incidents",
             "operations": [
                 {
                     "method": "GET",
@@ -237,13 +367,7 @@
                 {
                     "method": "POST",
                     "description": "Create a new incident.",
-                    "parameters": [
-			{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident", "required": false },
-			{ "name": "severity", "type": "string", "example": "low or high" },
-			{ "name": "summary", "type": "string", "description": "Summary of the incident." },
-			{ "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
-			{ "name": "tags", "type": "[string]", "description": "Optional list of tags to apply to this incident", "required": false }
-		    ],
+                    "body": { "type": "incident_form" },
                     "responses": {
                         "201": { "type": "incident" },
                         "409": { "type": "[error]" }
@@ -254,15 +378,9 @@
                     "method": "PUT",
 		    "path": "/:id",
                     "description": "Updates an incident.",
-                    "parameters": [
-			{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident", "required": false },
-			{ "name": "severity", "type": "string", "example": "low or high" },
-			{ "name": "summary", "type": "string", "description": "Summary of the incident." },
-			{ "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
-			{ "name": "tags", "type": "[string]", "description": "Optional list of tags to apply to this incident", "required": false }
-		    ],
+                    "body": { "type": "incident_form" },
                     "responses": {
-                        "201": { "type": "incident" },
+                        "200": { "type": "incident" },
                         "409": { "type": "[error]" }
                     }
                 },
@@ -276,6 +394,7 @@
         },
 
 	"plan": {
+	    "path": "/:org/plans",
 	    "operations": [
 		{
 		    "method": "GET",
@@ -295,11 +414,7 @@
 		{
 		    "method": "POST",
                     "description": "Create a plan.",
-                    "parameters": [
-                        { "name": "incident_id", "type": "long" },
-                        { "name": "body", "type": "string" },
-                        { "name": "grade", "type": "integer", "required": false }
-                    ],
+		    "body": { "type": "plan_form" },
                     "responses": {
                         "201": { "type": "plan" },
                         "409": { "type": "[error]" }
@@ -310,11 +425,7 @@
 		    "method": "PUT",
                     "description": "Update a plan.",
 		    "path": "/:id",
-                    "parameters": [
-                        { "name": "incident_id", "type": "long" },
-                        { "name": "body", "type": "string" },
-                        { "name": "grade", "type": "integer", "required": false }
-                    ],
+		    "body": { "type": "plan_form" },
                     "responses": {
                         "200": { "type": "plan" },
                         "409": { "type": "[error]" }
@@ -350,7 +461,107 @@
                 }
 
 	    ]
+	},
+
+	"meeting": {
+	    "path": "/:org/meetings",
+	    "operations": [
+		{
+		    "method": "GET",
+                    "description": "Search all meetings. Results are always paginated.",
+                    "parameters": [
+                        { "name": "id", "type": "long", "description": "Find meeting with this id. Exact match", "required": false },
+                        { "name": "incident_id", "type": "long", "description": "Find meetings where this incident_id is on the agenda", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[meeting]" }
+                    }
+                },
+
+		{
+		    "method": "GET",
+		    "path": "/:id",
+                    "responses": {
+                        "200": { "type": "meeting" }
+                    }
+                },
+
+
+		{
+		    "description": "Creates a meeting. In general meetings are created automatically",
+		    "method": "POST",
+		    "body": { "type": "meeting_form" },
+                    "responses": {
+                        "201": { "type": "meeting" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+		{
+		    "path": "/:id",
+		    "method": "DELETE"
+                }
+
+	    ]
+	},
+
+	"agenda_item": {
+	    "path": "/:org/meetings/:meeting_id/agenda_items",
+
+	    "operations": [
+		{
+		    "method": "GET",
+                    "description": "Search agenda items for a given meeting. Results are always paginated.",
+                    "parameters": [
+                        { "name": "meeting_id", "type": "long" },
+                        { "name": "id", "type": "long", "description": "Find agenda items with this id", "required": false },
+                        { "name": "task", "type": "task", "description": "Find agenda items with this task", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[agenda_item]" }
+                    }
+                },
+
+		{
+		    "method": "GET",
+		    "path": "/:id",
+		    "parameters": [
+                        { "name": "meeting_id", "type": "long" }
+		    ],
+                    "responses": {
+                        "200": { "type": "agenda_item" }
+                    }
+                },
+
+
+		{
+		    "description": "Creates an agenda item for this meeting.",
+		    "method": "POST",
+		    "parameters": [
+                        { "name": "meeting_id", "type": "long" }
+		    ],
+		    "body": { "type": "agenda_item_form" },
+                    "responses": {
+                        "201": { "type": "agenda_item" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+		{
+		    "path": "/:id",
+		    "method": "DELETE",
+		    "parameters": [
+                        { "name": "meeting_id", "type": "long" }
+		    ]
+                }
+
+	    ]
 	}
+
 
     }
 }

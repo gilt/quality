@@ -1,14 +1,15 @@
-@(form: Form[controllers.Teams.TeamForm],
+@(org: com.gilt.quality.models.Organization,
+  form: Form[controllers.Teams.TeamForm],
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(title = s"Create Team", errorMessage = errorMessage) {
+@main(org = Some(org), title = s"Create Team", errorMessage = errorMessage) {
 
   <div class="container">
 
-    @helper.form(action = routes.Teams.postCreate) {
+    @helper.form(action = routes.Teams.postCreate(org.key)) {
 
-      @teamForm(form, routes.Teams.index())
+      @teamForm(form, routes.Teams.index(org.key))
 
     }
 

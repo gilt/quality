@@ -1,16 +1,17 @@
-@(team: com.gilt.quality.models.Team,
+@(org: com.gilt.quality.models.Organization,
+  team: com.gilt.quality.models.Team,
   stats: Option[com.gilt.quality.models.Statistic],
   incidents: lib.PaginatedCollection[com.gilt.quality.models.Incident]
 )(implicit flash: Flash)
 
-@main(title = s"Team ${team.key}") {
+@main(org = Some(org), title = s"Team ${team.key}") {
 
   <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(teamKey = Some(team.key))">Create Incident</a>
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(org.key, teamKey = Some(team.key))">Create Incident</a>
   </div>
 
   <ul>
-    <li><a href="@routes.Teams.postDeleteByKey(team.key)" class="delete" data-confirm="Are you sure to delete this team?">Delete</a></li>
+    <li><a href="@routes.Teams.postDeleteByKey(org.key, team.key)" class="delete" data-confirm="Are you sure to delete this team?">Delete</a></li>
   </ul>
 
   <h3>Statistics over past 12 weeks</h3>
@@ -18,23 +19,23 @@
     <em>None</em>
   } else {
     <li>Average Grade: @Html(lib.GradeImage.imageTag(stats.get.averageGrade))</li>
-    <li>Total Incidents: <a href="@routes.Incidents.index(team_key = Some(team.key))">@stats.get.totalIncidents</a></li>
-    <li>Total Open Incidents: <a href="@routes.Incidents.index(team_key = Some(team.key), has_plan = Some("0"))">@stats.get.totalOpenIncidents</a></li>
+    <li>Total Incidents: <a href="@routes.Incidents.index(org.key, team_key = Some(team.key))">@stats.get.totalIncidents</a></li>
+    <li>Total Open Incidents: <a href="@routes.Incidents.index(org.key, team_key = Some(team.key), has_plan = Some("0"))">@stats.get.totalOpenIncidents</a></li>
   }
 
   <h3>Incidents</h3>
   @if(incidents.isEmpty) {
     <em>No incidents found</em>
   } else {
-    @views.html.incidents.incidentsTable(incidents.items, false)
+    @views.html.incidents.incidentsTable(org, incidents.items, false)
   
     @if(incidents.hasPrevious || incidents.hasNext) {
       <ul class="pager">
         @if(incidents.hasPrevious) {
-          <li><a href="@routes.Teams.show(team.key, incidents.page - 1)">Previous</a></li>
+          <li><a href="@routes.Teams.show(org.key, team.key, incidents.page - 1)">Previous</a></li>
         }
         @if(incidents.hasNext) {
-          <li><a href="@routes.Teams.show(team.key, incidents.page + 1)">Next</a></li>
+          <li><a href="@routes.Teams.show(org.key, team.key, incidents.page + 1)">Next</a></li>
         }
       </ul>
     }

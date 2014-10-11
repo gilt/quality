@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+server = "http://localhost:9000"
+project = "quality"
+
+data = {
+  "play_2_3_client" => "core/src/main/scala/GeneratedClient.scala",
+  "play_2_x_routes" => "api/conf/routes"
+}
+
+data.each do |target, path|
+  cmd = "curl --silent #{server}/gilt/code/#{project}/latest/#{target} > #{path}"
+  puts cmd
+  system(cmd)
+end

@@ -1,16 +1,27 @@
 package controllers
 
-import com.gilt.quality.models.{ Error, Incident, Plan }
+import com.gilt.quality.models.{Error, Incident, IncidentForm, Plan}
 import com.gilt.quality.models.json._
+import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{ IncidentsDao, IncidentForm, User }
+import db.{FullIncidentForm, IncidentsDao, OrganizationsDao, User}
 
 object Incidents extends Controller {
 
-  def get(id: Option[Long], team_key: Option[String], has_team: Option[Boolean], has_plan: Option[Boolean], has_grade: Option[Boolean], limit: Int = 25, offset: Int = 0) = Action { request =>
+  def getByOrg(
+    org: String,
+    id: Option[Long],
+    team_key: Option[String],
+    has_team: Option[Boolean],
+    has_plan: Option[Boolean],
+    has_grade: Option[Boolean],
+    limit: Int = 25,
+    offset: Int = 0
+  ) = OrgAction { request =>
     val matches = IncidentsDao.findAll(
+      org = Some(request.org),
       id = id,
       teamKey = team_key,
       hasTeam = has_team,
@@ -23,50 +34,56 @@ object Incidents extends Controller {
     Ok(Json.toJson(matches.toSeq))
   }
 
-  def getById(id: Long) = Action {
-    IncidentsDao.findById(id) match {
+  def getByOrgAndId(
+    org: String,
+    id: Long
+  ) = OrgAction { request =>
+    IncidentsDao.findByOrganizationAndId(request.org, id) match {
       case None => NotFound
       case Some(i: Incident) => Ok(Json.toJson(i))
     }
   }
 
-  def post() = Action(parse.json) { request =>
+  def postByOrg(org: String) = OrgAction(parse.json) { request =>
     request.body.validate[IncidentForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Seq(Error("100", "invalid json: " + e.toString))))
+        Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[IncidentForm] => {
-        val form = s.get
-        form.validate match {
-          case None => {
-            val incident = IncidentsDao.create(User.Default, s.get)
-            Created(Json.toJson(incident)).withHeaders(LOCATION -> routes.Incidents.getById(incident.id).url)
+        val fullForm = FullIncidentForm(request.org, s.get)
+        fullForm.validate match {
+          case Nil => {
+            val incident = IncidentsDao.create(request.user, fullForm)
+            Created(Json.toJson(incident)).withHeaders(LOCATION -> routes.Incidents.getByOrgAndId(request.org.key, incident.id).url)
           }
-          case Some(error) => {
-            Conflict(Json.toJson(Seq(Error("101", "Validation error: " + error))))
+          case errors => {
+            Conflict(Json.toJson(errors))
           }
         }
       }
     }
   }
 
-  def putById(id: Long) = Action(parse.json) { request =>
-    IncidentsDao.findById(id) match {
+  def putByOrgAndId(
+    org: String,
+    id: Long
+  ) = OrgAction(parse.json) { request =>
+    IncidentsDao.findByOrganizationAndId(request.org, id) match {
       case None => NotFound
       case Some(i: Incident) => {
         request.body.validate[IncidentForm] match {
           case e: JsError => {
-            Conflict(Json.toJson(Error("100", "invalid json")))
+            Conflict(Json.toJson(Validation.invalidJson(e)))
           }
           case s: JsSuccess[IncidentForm] => {
-            val form = s.get
-            form.validate match {
-              case None => {
-                val updated = IncidentsDao.update(User.Default, i, s.get)
-                Created(Json.toJson(updated)).withHeaders(LOCATION -> routes.Incidents.getById(updated.id).url)
+            val fullForm = FullIncidentForm(request.org, s.get)
+            fullForm.validate match {
+              case Nil => {
+                val updated = IncidentsDao.update(request.user, i, fullForm)
+                Ok(Json.toJson(updated)).withHeaders(LOCATION -> routes.Incidents.getByOrgAndId(request.org.key, updated.id).url)
               }
-              case Some(error) => {
-                Conflict(Json.toJson(Seq(Error("101", "Validation error: " + error))))
+              case errors => {
+                Conflict(Json.toJson(errors))
               }
             }
           }
@@ -75,9 +92,12 @@ object Incidents extends Controller {
     }
   }
 
-  def deleteById(id: Long) = Action { request =>
-    IncidentsDao.findById(id).foreach { i =>
-      IncidentsDao.softDelete(User.Default, i)
+  def deleteByOrgAndId(
+    org: String,
+    id: Long
+  ) = OrgAction { request =>
+    IncidentsDao.findByOrganizationAndId(request.org, id).foreach { i =>
+      IncidentsDao.softDelete(request.user, i)
     }
     NoContent
   }

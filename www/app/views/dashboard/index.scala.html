@@ -1,12 +1,13 @@
-@(statistics: Seq[com.gilt.quality.models.Statistic],
+@(org: com.gilt.quality.models.Organization,
+  statistics: Seq[com.gilt.quality.models.Statistic],
   events: Seq[com.gilt.quality.models.Event]
 )(implicit flash: Flash)
 
-@main(title = "Gilt Quality", section = Some("dashboard")) {
+@main(org = Some(org), title = s"Quality", section = Some("dashboard")) {
 
   <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create()">Create Incident</a>
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Teams.create()">Add team</a>
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(org.key)">Create Incident</a>
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Teams.create(org.key)">Add team</a>
   </div>
 
   <h3>Latest Events</h3>
@@ -21,7 +22,7 @@
             @if(!event.url.isEmpty) {
               <a href="@event.url.getOrElse("")">
             }
-            @org.joda.time.format.DateTimeFormat.longDateTime.print(event.timestamp)
+            @_root_.org.joda.time.format.DateTimeFormat.longDateTime.print(event.timestamp)
             @{event.model match {
               case com.gilt.quality.models.Model.Incident => Html(s"${event.action} Incident #${event.data.modelId}: ${event.data.summary}")
               case com.gilt.quality.models.Model.Plan => Html(s"${event.action} ${event.data.summary}")
@@ -42,14 +43,14 @@
       @statistics.map { statistic =>
        <tr>
         <td>
-          <a href="@routes.Teams.show(statistic.team.key)">@statistic.team.key</a><br />
+          <a href="@routes.Teams.show(org.key, statistic.team.key)">@statistic.team.key</a><br />
           Average Grade: @Html(lib.GradeImage.imageTag(statistic.averageGrade))<br/>
-          Total Incidents: <a href="@routes.Incidents.index(team_key = Some(statistic.team.key))">@statistic.totalIncidents</a><br />
-          Total Open Incidents: <a href="@routes.Incidents.index(team_key = Some(statistic.team.key), has_plan = Some("0"))">@statistic.totalOpenIncidents</a><br />
+          Total Incidents: <a href="@routes.Incidents.index(org.key, team_key = Some(statistic.team.key))">@statistic.totalIncidents</a><br />
+          Total Open Incidents: <a href="@routes.Incidents.index(org.key, team_key = Some(statistic.team.key), has_plan = Some("0"))">@statistic.totalOpenIncidents</a><br />
         </td>
         <td>
           @statistic.plans.map { plan =>
-            <a href="@routes.Incidents.show(plan.incidentId)">@Html(lib.GradeImage.imageTag(plan.grade))</a>
+            <a href="@routes.Incidents.show(org.key, plan.incidentId)">@Html(lib.GradeImage.imageTag(plan.grade))</a>
           }
         </td>
        </tr>
