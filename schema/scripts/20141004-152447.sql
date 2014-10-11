@@ -1,7 +1,7 @@
 alter table teams add organization_id bigint references organizations;
 create index on teams(organization_id);
 drop index teams_key_not_deleted_un_idx;
-create unique index teams_organization_id_key_un_idx on teams(organization_id, key);
+create unique index teams_organization_id_key_un_idx on teams(organization_id, key) where deleted_at is null;
 
 alter table incidents add organization_id bigint references organizations;
 create index on incidents(organization_id);
