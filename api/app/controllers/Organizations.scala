@@ -1,7 +1,8 @@
 package controllers
 
-import db.{OrganizationsDao, OrganizationForm, User}
+import db.{OrganizationsDao, User}
 import lib.Validation
+import com.gilt.quality.models.OrganizationForm
 import com.gilt.quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._

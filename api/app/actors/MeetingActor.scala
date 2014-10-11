@@ -1,7 +1,7 @@
 package actors
 
 import com.gilt.quality.models.{AgendaItemForm, Meeting, MeetingForm, Organization, Task}
-import db.{AgendaItemFullForm, AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, User}
+import db.{FullAgendaItemForm, AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, User}
 import org.joda.time.DateTime
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
@@ -82,7 +82,7 @@ class MeetingActor extends Actor {
                 case None => {
                   AgendaItemsDao.create(
                     User.Actor,
-                    AgendaItemFullForm(
+                    FullAgendaItemForm(
                       meeting,
                       AgendaItemForm(
                         incidentId = incidentId,

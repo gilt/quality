@@ -1,21 +1,12 @@
 package db
 
-import com.gilt.quality.models.{Error, Organization}
+import com.gilt.quality.models.{Error, Organization, OrganizationForm}
 import anorm._
 import lib.{UrlKey, Validation}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import scala.annotation.tailrec
-
-case class OrganizationForm(
-  name: String,
-  key: Option[String] = None
-)
-
-object OrganizationForm {
-  implicit val organizationFormReads = Json.reads[OrganizationForm]
-}
 
 object OrganizationsDao {
 

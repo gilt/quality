@@ -1,6 +1,7 @@
 package controllers
 
 import com.gilt.quality.models._
+import db._
 import java.util.UUID
 import org.joda.time.DateTime
 
@@ -17,6 +18,51 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
 
   val client = new com.gilt.quality.Client(s"http://localhost:$port")
 
+  def createOrganization(
+    form: OrganizationForm = createOrganizationForm()
+  ): Organization = {
+    await(client.organizations.post(form))
+  }
+
+  def createOrganizationForm() = OrganizationForm(
+    name = "Org " + UUID.randomUUID.toString
+  )
+
+  def createTeam(
+    org: Organization = createOrganization(),
+    form: TeamForm = createTeamForm()
+  ): Team = {
+    await(client.teams.post(form))
+  }
+
+  def createTeamForm(
+    org: Organization = createOrganization()
+  ) = TeamForm(key = "team-" + UUID.randomUUID.toString)
+
+  def createIncident(
+    form: IncidentForm = createIncidentForm()
+  ): Incident = {
+    await(
+      client.incidents.post(
+        teamKey = None,
+        severity = form.severity,
+        summary = form.summary,
+        description = form.description,
+        tags = form.tags.getOrElse(Seq.empty)
+      )
+    )
+  }
+
+  def createIncidentForm(
+    org: Organization = createOrganization()
+  ) = IncidentForm(
+    team_key = None,
+    severity = Severity.Low.toString,
+    summary = "Test",
+    description = None,
+    tags = None
+  )
+
   def createMeeting(
     form: MeetingForm = createMeetingForm()
   ): Meeting = {
@@ -26,6 +72,25 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   def createMeetingForm() = {
     MeetingForm(
       scheduledAt = (new DateTime()).plus(1)
+    )
+  }
+
+  def createAgendaItem(
+    meeting: Meeting = createMeeting(),
+    form: AgendaItemForm = createAgendaItemForm()
+  ): AgendaItem = {
+    await(
+      client.agendaItems.post(
+        meetingId = meeting.id,
+        agendaItemForm = form
+      )
+    )
+  }
+
+  def createAgendaItemForm() = {
+    AgendaItemForm(
+      incidentId = createIncident().id,
+      task = Task.ReviewTeam
     )
   }
 

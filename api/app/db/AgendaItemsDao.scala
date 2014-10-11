@@ -1,13 +1,14 @@
 package db
 
-import com.gilt.quality.models.{AgendaItem, AgendaItemForm, IncidentSummary, Meeting, Severity, Task}
+import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Error, IncidentSummary, Meeting, Severity, Task}
+import lib.Validation
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class AgendaItemFullForm(
+case class FullAgendaItemForm(
   meeting: Meeting,
   form: AgendaItemForm
 )
@@ -38,7 +39,14 @@ object AgendaItemsDao {
        and deleted_at is null
   """
 
-  def create(user: User, fullForm: AgendaItemFullForm): AgendaItem = {
+  def validate(fullForm: FullAgendaItemForm): Seq[Error] = {
+    fullForm.form.task match {
+      case Task.UNDEFINED(key) => Validation.error(s"Invalid task[$key]")
+      case _ => Seq.empty
+    }
+  }
+
+  def create(user: User, fullForm: FullAgendaItemForm): AgendaItem = {
     val id: Long = DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(
         'meeting_id -> fullForm.meeting.id,

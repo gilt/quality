@@ -110,6 +110,6 @@ object Util {
     meeting: Meeting = createMeeting(),
     form: AgendaItemForm = createAgendaItemForm()
   ): AgendaItem = {
-    AgendaItemsDao.create(user, AgendaItemFullForm(meeting, form))
+    AgendaItemsDao.create(user, FullAgendaItemForm(meeting, form))
   }
 }
