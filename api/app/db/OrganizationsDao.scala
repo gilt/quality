@@ -10,7 +10,8 @@ import scala.annotation.tailrec
 
 object OrganizationsDao {
 
-  private val MinNameLength = 4
+  val MinNameLength = 4
+  val MinKeyLength = 4
 
   private val BaseQuery = """
     select organizations.id, organizations.name, organizations.key
@@ -45,7 +46,9 @@ object OrganizationsDao {
       case None => Seq.empty
       case Some(key) => {
         val generated = UrlKey.generate(key)
-        if (key == generated) {
+        if (key.length < MinKeyLength) {
+          Seq(s"Key must be at least $MinKeyLength characters")
+        } else if (key == generated) {
           Seq.empty
         } else {
           Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
@@ -58,7 +61,7 @@ object OrganizationsDao {
 
   def create(createdBy: User, form: OrganizationForm): Organization = {
     val errors = validate(form)
-    require(errors.isEmpty, errors.map(_.message).mkString("\n"))
+    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
     val key = form.key.getOrElse(generateKey(form.name))
 
