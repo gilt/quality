@@ -48,8 +48,6 @@ object Plans extends Controller {
       case s: JsSuccess[PlanForm] => {
         IncidentsDao.findByOrganizationAndId(request.org, s.get.incidentId) match {
           case None => {
-            println("ORG - " + request.org.key)
-            println("NO INCDIENT - " + s.get.incidentId.toString)
             NotFound
           }
           case Some(incident) => {
@@ -81,9 +79,12 @@ object Plans extends Controller {
             Conflict(Json.toJson(Validation.invalidJson(e)))
           }
           case s: JsSuccess[PlanForm] => {
+            println("org: " + org)
+            println("plan: " + plan)
             IncidentsDao.findByOrganizationAndId(request.org, plan.incidentId) match {
               case None => NotFound
               case Some(incident) => {
+                println("form: " +s.get)
                 val form = FullPlanForm(request.org, incident, s.get)
                 form.validate match {
                   case Nil => {

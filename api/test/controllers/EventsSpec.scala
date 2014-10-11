@@ -22,7 +22,7 @@ class EventsSpec extends BaseSpec {
     events.map(_.model) must be(Seq(Model.Incident, Model.Incident))
     events.head.action must be(Action.Deleted)
 
-    val plan = createPlan(org, PlanForm(incidentId = incident2.id, body = "test"))
+    val plan = createPlan(org, Some(PlanForm(incidentId = incident2.id, body = "test")))
     await(client.events.getByOrg(org.key)).head.model must be(Model.Plan)
 
     await(client.plans.putGradeByOrgAndId(org.key, plan.id, 100))

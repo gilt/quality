@@ -1,6 +1,7 @@
 package db
 
 import com.gilt.quality.models.{Error, Incident, Organization, Plan, PlanForm}
+import lib.Validation
 import anorm._
 import anorm.ParameterValue._
 import AnormHelper._
@@ -16,8 +17,11 @@ case class FullPlanForm(
 ) {
 
   def validate(): Seq[Error] = {
-    // Nothing to validate for now
-    Seq.empty
+    if (form.body.trim.isEmpty) {
+      Validation.error("Plan body cannot be empty")
+    } else {
+      Seq.empty
+    }
   }
 
 }
@@ -46,8 +50,7 @@ object PlansDao {
 
   private val UpdateQuery = """
     update plans
-       set incident_id = {incident_id},
-           body = {body},
+       set body = {body},
            updated_at = now(),
            updated_by_guid = {user_guid}::uuid
      where id = {id}
