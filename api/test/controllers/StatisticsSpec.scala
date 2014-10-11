@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.quality.models.{Incident, Plan, PlanForm, Team}
+import com.gilt.quality.models.{Incident, Organization, Plan, PlanForm, Team}
 import com.gilt.quality.error.ErrorsResponse
 import java.util.UUID
 import org.joda.time.DateTime
@@ -14,23 +14,9 @@ class StatisticsSpec extends BaseSpec {
 
   lazy val org = createOrganization()
 
-  def createIncidentForTeam(team: Team): Incident = {
-    createIncident(
-      org = org,
-      form = Some(createIncidentForm(org).copy(teamKey = Some(team.key)))
-    )
-  }
-
-  def createPlanForTeam(team: Team): Plan = {
-    createPlan(
-      org = org,
-      form = Some(
-        PlanForm(
-          incidentId = createIncidentForTeam(team).id,
-          body = "Test"
-        )
-      )
-    )
+  def createPlanForTeam(org: Organization, team: Team): Plan = {
+    val incident = createIncidentForTeam(org, team)
+    createPlanForIncident(org, incident)
   }
 
   def verifyStats(
@@ -65,19 +51,19 @@ class StatisticsSpec extends BaseSpec {
   "GET /:org/statistics" in new WithServer {
     val team = createTeam(org)
 
-    val plan1 = createPlanForTeam(team)
+    val plan1 = createPlanForTeam(org, team)
     gradePlan(org, plan1, 100)
     verifyStats(team, 1, 100, 1, 0, 1)
 
-    val plan2 = createPlanForTeam(team)
+    val plan2 = createPlanForTeam(org, team)
     verifyStats(team, 1, 100, 2, 0, 2)
     gradePlan(org, plan2, 20)
     verifyStats(team, 2, 100, 2, 0, 2)
 
-    val openIncident = createIncidentForTeam(team)
+    val openIncident = createIncidentForTeam(org, team)
     verifyStats(team, 2, 100, 3, 1, 2)
 
-    val plan3 = createPlanForTeam(team)
+    val plan3 = createPlanForTeam(org, team)
     verifyStats(team, 2, 100, 4, 1, 3)
   }
 

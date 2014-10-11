@@ -820,7 +820,7 @@ package com.gilt.quality {
         val payload = play.api.libs.json.Json.toJson(incidentForm)
 
         _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/incidents/${id}", body = Some(payload)).map {
-          case r if r.status == 209 => r.json.as[com.gilt.quality.models.Incident]
+          case r if r.status == 200 => r.json.as[com.gilt.quality.models.Incident]
           case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }

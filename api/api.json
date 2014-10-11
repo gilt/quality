@@ -380,7 +380,7 @@
                     "description": "Updates an incident.",
                     "body": { "type": "incident_form" },
                     "responses": {
-                        "209": { "type": "incident" },
+                        "200": { "type": "incident" },
                         "409": { "type": "[error]" }
                     }
                 },

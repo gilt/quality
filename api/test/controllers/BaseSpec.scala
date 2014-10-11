@@ -124,4 +124,23 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     )
   }
 
+  def createIncidentForTeam(org: Organization, team: Team): Incident = {
+    createIncident(
+      org = org,
+      form = Some(createIncidentForm(org).copy(teamKey = Some(team.key)))
+    )
+  }
+
+  def createPlanForIncident(org: Organization, incident: Incident): Plan = {
+    createPlan(
+      org = org,
+      form = Some(
+        PlanForm(
+          incidentId = incident.id,
+          body = "Test"
+        )
+      )
+    )
+  }
+
 }
