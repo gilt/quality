@@ -9,7 +9,7 @@
     <li><a href="@routes.Meetings.postDeleteById(org.key, meeting.id)" class="delete" data-confirm="Are you sure to delete this meeting?">Delete</a></li>
   </ul>
 
-  <h3>Agenda Items</h3>
+  <h3>Agenda</h3>
   @if(agendaItems.isEmpty) {
     <em>No agenda items found</em>
   } else {
@@ -19,14 +19,32 @@
         <tr>
           <th>Task</th>
           <th>Incident</th>
+          <th>Created</th>
+          <th>Severity</th>
+          <th>Plan</th>
+          <th>Team</th>
           <th>Summary</th>
         </tr>
       </thead>
       <tbody>
         @agendaItems.items.map { item =>
          <tr>
-           <td>@item.task.toString</td>
+           <td>@item.task</td>
            <td><a href="@routes.Incidents.show(org.key, item.incident.id)">@item.incident.id</a></td>
+           <td>@_root_.org.joda.time.format.DateTimeFormat.shortDate.print(item.incident.createdAt)</td>
+           <td>@item.incident.severity</td>
+           <td>
+             @if(item.incident.plan.isEmpty) {
+               - 
+             } else {
+               @if(item.incident.plan.get.grade.isEmpty) {
+                 Uploaded
+               } else {
+                 @Html(lib.GradeImage.imageTag(item.incident.plan.get.grade.get))
+               }
+             }
+           </td>
+           <td>@item.incident.team.map(_.key).getOrElse("")</td>
            <td>@item.incident.summary</td>
          </tr>
        }
