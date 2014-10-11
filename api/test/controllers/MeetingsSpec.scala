@@ -11,7 +11,7 @@ class MeetingsSpec extends BaseSpec {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "create a meeting" in new WithServer {
+  "POST /meetings" in new WithServer {
     val scheduledAt = (new DateTime()).plus(3)
     val meeting = createMeeting(MeetingForm(scheduledAt = scheduledAt))
     meeting.scheduledAt must be(scheduledAt)

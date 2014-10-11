@@ -26,6 +26,21 @@ class AgendaItemsSpec extends BaseSpec {
     item.task must be(Task.ReviewTeam)
   }
 
+  "POST /meetings/:meeting_id/agenda_items validates task" in new WithServer {
+    val meeting = createMeeting()
+    val incident = createIncident()
+
+    intercept[ErrorsResponse] {
+      createAgendaItem(
+        meeting = meeting,
+        form = AgendaItemForm(
+          incidentId = incident.id,
+          task = Task.UNDEFINED("foo")
+        )
+      )
+    }.errors.map(_.message) must be (Seq("Invalid task[foo]"))
+  }
+
   "GET /meetings/:meeting_id/agenda_items filters by meeting, agenda item" in new WithServer {
     val meeting = createMeeting()
     val item1 = createAgendaItem(meeting = meeting)
@@ -46,6 +61,23 @@ class AgendaItemsSpec extends BaseSpec {
     await(client.agendaItems.get(meetingId = meeting.id, limit = Some(1))).map(_.id).sorted must be(Seq(item1.id))
     await(client.agendaItems.get(meetingId = meeting.id, limit = Some(1), offset = Some(1))).map(_.id).sorted must be(Seq(item2.id))
     await(client.agendaItems.get(meetingId = meeting.id, limit = Some(1), offset = Some(2))).map(_.id).sorted must be(Seq.empty)
+  }
+
+  "GET /meetings/:meeting_id/agenda_items/:id" in new WithServer {
+    val meeting = createMeeting()
+    val item = createAgendaItem(meeting = meeting)
+
+    await(client.agendaItems.getById(meeting.id, item.id)).map(_.id) must be(Some(item.id))
+    await(client.agendaItems.getById(meeting.id, -1)) must be(None)
+  }
+
+  "DELETE /meetings/:meeting_id/agenda_items/:id" in new WithServer {
+    val meeting = createMeeting()
+    val item = createAgendaItem(meeting = meeting)
+
+    await(client.agendaItems.getById(meeting.id, item.id)).map(_.id) must be(Some(item.id))
+    await(client.agendaItems.deleteById(meeting.id, item.id)) must be(Some(()))
+    await(client.agendaItems.getById(meeting.id, item.id)) must be(None)
   }
 
 }

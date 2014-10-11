@@ -225,7 +225,8 @@
 		    "method": "POST",
                     "body": { "type": "organization_form" },
                     "responses": {
-                        "201": { "type": "organization" }
+                        "201": { "type": "organization" },
+                        "409": { "type": "[error]" }
                     }
                 },
 
@@ -490,7 +491,8 @@
 		    "method": "POST",
 		    "body": { "type": "meeting_form" },
                     "responses": {
-                        "201": { "type": "meeting" }
+                        "201": { "type": "meeting" },
+                        "409": { "type": "[error]" }
                     }
                 },
 
@@ -541,7 +543,8 @@
 		    ],
 		    "body": { "type": "agenda_item_form" },
                     "responses": {
-                        "201": { "type": "agenda_item" }
+                        "201": { "type": "agenda_item" },
+                        "409": { "type": "[error]" }
                     }
                 },
 

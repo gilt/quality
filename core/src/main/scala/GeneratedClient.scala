@@ -661,6 +661,7 @@ package com.gilt.quality {
 
         _executeRequest("POST", s"/meetings/${meetingId}/agenda_items", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.AgendaItem]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -835,6 +836,7 @@ package com.gilt.quality {
 
         _executeRequest("POST", s"/meetings", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.Meeting]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -885,6 +887,7 @@ package com.gilt.quality {
 
         _executeRequest("POST", s"/organizations", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.Organization]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
