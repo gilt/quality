@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{Error, Incident, Organization, Plan, Severity, Team}
+import com.gilt.quality.models.{Error, Incident, IncidentForm, Organization, Plan, Severity, Team}
 import com.gilt.quality.models.json._
 import lib.Validation
 
@@ -9,43 +9,41 @@ import anorm.ParameterValue._
 import AnormHelper._
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
 import org.joda.time.DateTime
 
 case class FullIncidentForm(
   org: Organization,
   form: IncidentForm
 ) {
+  lazy val orgId = OrganizationsDao.lookupId(org.key).getOrElse {
+    sys.error(s"Could not find organizations with key[${org.key}]")
+  }
+
   lazy val teamId: Option[Long] = {
-    form.team_key.flatMap { key =>
+    form.teamKey.flatMap { key =>
       TeamsDao.lookupId(org, key)
     }
   }
 
   lazy val validate: Seq[Error] = {
-    form.team_key match {
+    val keyErrors = form.teamKey match {
       case None => Seq.empty
       case Some(key) => {
         teamId match {
-          case None => Validation.error(s"Team '$key' not found")
+          case None => Seq(s"Team[$key] not found")
           case Some(_) => Seq.empty
         }
       }
     }
+
+    val severityErrors = form.severity match {
+      case Severity.UNDEFINED(value) => Seq(s"Invalid severity[$value]")
+      case _ => Seq.empty
+    }
+
+    Validation.errors(keyErrors ++ severityErrors)
   }
 
-}
-
-case class IncidentForm(
-  team_key: Option[String],
-  severity: String,
-  summary: String,
-  description: Option[String] = None,
-  tags: Option[Seq[String]] = None
-)
-
-object IncidentForm {
-  implicit val readsIncidentForm = Json.reads[IncidentForm]
 }
 
 object IncidentsDao {
@@ -99,26 +97,21 @@ object IncidentsDao {
   }
 
   def create(user: User, fullForm: FullIncidentForm): Incident = {
-    assert(fullForm.validate.isEmpty, fullForm.validate.map(_.message).mkString(" "))
-
-    val orgId = OrganizationsDao.lookupId(fullForm.org.key).getOrElse {
-      sys.error(s"Could not find organizations with key[${fullForm.org.key}]")
-    }
+    val errors = fullForm.validate
+    assert(errors.isEmpty, errors.map(_.message).mkString(" "))
 
     val id: Long = DB.withTransaction { implicit c =>
       val id = SQL(InsertQuery).on(
-        'organization_id -> orgId,
+        'organization_id -> fullForm.orgId,
         'team_id -> fullForm.teamId,
-        'severity -> fullForm.form.severity,
+        'severity -> fullForm.form.severity.toString,
         'summary -> fullForm.form.summary,
         'description -> fullForm.form.description,
         'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
 
-      fullForm.form.tags.foreach { tags =>
-        IncidentTagsDao.doUpdate(c, user, id, Seq.empty, tags)
-      }
+      IncidentTagsDao.doUpdate(c, user, id, Seq.empty, fullForm.form.tags)
 
       id
     }
@@ -141,13 +134,13 @@ object IncidentsDao {
       SQL(UpdateQuery).on(
         'id -> incident.id,
         'team_id -> fullForm.teamId,
-        'severity -> fullForm.form.severity,
+        'severity -> fullForm.form.severity.toString,
         'summary -> fullForm.form.summary,
         'description -> fullForm.form.description,
         'user_guid -> user.guid
       ).executeUpdate()
 
-      IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, fullForm.form.tags.getOrElse(Seq.empty))
+      IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, fullForm.form.tags)
     }
 
     global.Actors.mainActor ! actors.IncidentMessage.SyncOne(incident.id)
@@ -244,9 +237,9 @@ object IncidentsDao {
             key = row[String]("organization_key"),
             name = row[String]("organization_name")
           ),
-          team = row[Option[String]]("team_key").map { team_key =>
+          team = row[Option[String]]("team_key").map { teamKey =>
             Team(
-              key = team_key,
+              key = teamKey,
               organization = Organization(
                 key = row[String]("organization_key"),
                 name = row[String]("organization_name")

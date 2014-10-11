@@ -58,6 +58,14 @@ package com.gilt.quality.models {
     createdAt: _root_.org.joda.time.DateTime
   )
 
+  case class IncidentForm(
+    teamKey: scala.Option[String] = None,
+    severity: com.gilt.quality.models.Severity,
+    summary: String,
+    description: scala.Option[String] = None,
+    tags: scala.collection.Seq[String] = Nil
+  )
+
   case class IncidentSummary(
     id: Long,
     severity: com.gilt.quality.models.Severity,
@@ -456,6 +464,26 @@ package com.gilt.quality.models {
       )(unlift(Incident.unapply _))
     }
 
+    implicit def jsonReadsQualityIncidentForm: play.api.libs.json.Reads[IncidentForm] = {
+      (
+        (__ \ "team_key").readNullable[String] and
+        (__ \ "severity").read[com.gilt.quality.models.Severity] and
+        (__ \ "summary").read[String] and
+        (__ \ "description").readNullable[String] and
+        (__ \ "tags").readNullable[scala.collection.Seq[String]].map(_.getOrElse(Nil))
+      )(IncidentForm.apply _)
+    }
+
+    implicit def jsonWritesQualityIncidentForm: play.api.libs.json.Writes[IncidentForm] = {
+      (
+        (__ \ "team_key").write[scala.Option[String]] and
+        (__ \ "severity").write[com.gilt.quality.models.Severity] and
+        (__ \ "summary").write[String] and
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "tags").write[scala.collection.Seq[String]]
+      )(unlift(IncidentForm.unapply _))
+    }
+
     implicit def jsonReadsQualityIncidentSummary: play.api.libs.json.Reads[IncidentSummary] = {
       (
         (__ \ "id").read[Long] and
@@ -747,20 +775,8 @@ package com.gilt.quality {
         }
       }
 
-      override def post(
-        teamKey: scala.Option[String] = None,
-        severity: String,
-        summary: String,
-        description: scala.Option[String] = None,
-        tags: scala.collection.Seq[String] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident] = {
-        val payload = play.api.libs.json.Json.obj(
-          "team_key" -> play.api.libs.json.Json.toJson(teamKey),
-          "severity" -> play.api.libs.json.Json.toJson(severity),
-          "summary" -> play.api.libs.json.Json.toJson(summary),
-          "description" -> play.api.libs.json.Json.toJson(description),
-          "tags" -> play.api.libs.json.Json.toJson(tags)
-        )
+      override def post(incidentForm: com.gilt.quality.models.IncidentForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident] = {
+        val payload = play.api.libs.json.Json.toJson(incidentForm)
 
         _executeRequest("POST", s"/incidents", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.Incident]
@@ -769,21 +785,10 @@ package com.gilt.quality {
         }
       }
 
-      override def putById(
-        id: Long,
-        teamKey: scala.Option[String] = None,
-        severity: String,
-        summary: String,
-        description: scala.Option[String] = None,
-        tags: scala.collection.Seq[String] = Nil
+      override def putById(incidentForm: com.gilt.quality.models.IncidentForm, 
+        id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident] = {
-        val payload = play.api.libs.json.Json.obj(
-          "team_key" -> play.api.libs.json.Json.toJson(teamKey),
-          "severity" -> play.api.libs.json.Json.toJson(severity),
-          "summary" -> play.api.libs.json.Json.toJson(summary),
-          "description" -> play.api.libs.json.Json.toJson(description),
-          "tags" -> play.api.libs.json.Json.toJson(tags)
-        )
+        val payload = play.api.libs.json.Json.toJson(incidentForm)
 
         _executeRequest("PUT", s"/incidents/${id}", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.Incident]
@@ -1188,24 +1193,13 @@ package com.gilt.quality {
     /**
      * Create a new incident.
      */
-    def post(
-      teamKey: scala.Option[String] = None,
-      severity: String,
-      summary: String,
-      description: scala.Option[String] = None,
-      tags: scala.collection.Seq[String] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident]
+    def post(incidentForm: com.gilt.quality.models.IncidentForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident]
 
     /**
      * Updates an incident.
      */
-    def putById(
-      id: Long,
-      teamKey: scala.Option[String] = None,
-      severity: String,
-      summary: String,
-      description: scala.Option[String] = None,
-      tags: scala.collection.Seq[String] = Nil
+    def putById(incidentForm: com.gilt.quality.models.IncidentForm, 
+      id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident]
 
     def deleteById(

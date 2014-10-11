@@ -1,11 +1,11 @@
 package controllers
 
-import com.gilt.quality.models.{Error, Incident, Plan}
+import com.gilt.quality.models.{Error, Incident, IncidentForm, Plan}
 import com.gilt.quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{FullIncidentForm, IncidentsDao, IncidentForm, OrganizationsDao, User}
+import db.{FullIncidentForm, IncidentsDao, OrganizationsDao, User}
 
 object Incidents extends Controller {
 
@@ -19,7 +19,8 @@ object Incidents extends Controller {
     has_plan: Option[Boolean],
     has_grade: Option[Boolean],
     limit: Int = 25,
-    offset: Int = 0) = Action { request =>
+    offset: Int = 0
+  ) = Action { request =>
     val matches = IncidentsDao.findAll(
       orgKey = Some(org.key),
       id = id,
