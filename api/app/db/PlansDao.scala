@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{ Error, Plan }
+import com.gilt.quality.models.{Error, Incident, Organization, Plan, PlanForm}
 import anorm._
 import anorm.ParameterValue._
 import AnormHelper._
@@ -9,17 +9,17 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-case class PlanForm(incident_id: Long, body: String, grade: Option[Int] = None) {
+case class FullPlanForm(
+  org: Organization,
+  incident: Incident,
+  form: PlanForm
+) {
 
-  // TODO
   def validate(): Seq[Error] = {
+    // Nothing to validate for now
     Seq.empty
   }
 
-}
-
-object PlanForm {
-  implicit val planFormReads = Json.reads[PlanForm]
 }
 
 object PlansDao {
@@ -53,32 +53,38 @@ object PlansDao {
      where id = {id}
   """
 
-  def create(user: User, form: PlanForm): Plan = {
+  def create(user: User, fullForm: FullPlanForm): Plan = {
+    val errors = fullForm.validate
+    assert(errors.isEmpty, errors.map(_.message).mkString(" "))
+
     val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'incident_id -> form.incident_id,
-        'body -> form.body,
+        'incident_id -> fullForm.incident.id,
+        'body -> fullForm.form.body,
         'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
     }
 
-    findById(id).getOrElse {
+    findByOrganizationAndId(fullForm.org, id).getOrElse {
       sys.error("Failed to create plan")
     }
   }
 
-  def update(user: User, plan: Plan, form: PlanForm): Plan = {
+  def update(user: User, plan: Plan, fullForm: FullPlanForm): Plan = {
+    val errors = fullForm.validate
+    assert(errors.isEmpty, errors.map(_.message).mkString(" "))
+    assert(plan.incidentId == fullForm.form.incidentId, s"Cannot change incident id for plan[${plan.id}]")
+
     DB.withConnection { implicit c =>
       SQL(UpdateQuery).on(
         'id -> plan.id,
-        'incident_id -> form.incident_id,
-        'body -> form.body,
+        'body -> fullForm.form.body,
         'user_guid -> user.guid
       ).executeUpdate()
     }
 
-    findById(plan.id).getOrElse {
+    findByOrganizationAndId(fullForm.org, plan.id).getOrElse {
       sys.error("Failed to update plan")
     }
   }
@@ -87,15 +93,21 @@ object PlansDao {
     SoftDelete.delete("plans", deletedBy, plan.id)
   }
 
-  def findById(id: Long): Option[Plan] = {
-    findAll(id = Some(id), limit = 1).headOption
+  def findByOrganizationAndId(
+    org: Organization,
+    id: Long
+  ): Option[Plan] = {
+    findAll(orgKey = org.key, id = Some(id), limit = 1).headOption
   }
 
-  def findAll(id: Option[Long] = None,
-              incidentId: Option[Long] = None,
-              teamKey: Option[String] = None,
-              limit: Int = 50,
-              offset: Int = 0): Seq[Plan] = {
+  def findAll(
+    orgKey: String,
+    id: Option[Long] = None,
+    incidentId: Option[Long] = None,
+    teamKey: Option[String] = None,
+    limit: Int = 50,
+    offset: Int = 0
+  ): Seq[Plan] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and plans.id = {id}" },

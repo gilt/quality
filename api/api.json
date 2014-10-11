@@ -144,6 +144,13 @@
             ]
         },
 
+	"plan_form": {
+            "fields": [
+                { "name": "incident_id", "type": "long" },
+                { "name": "body", "type": "string" }
+            ]
+	},
+
         "error": {
             "fields": [
                 { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
@@ -387,6 +394,7 @@
         },
 
 	"plan": {
+	    "path": "/:org/plans",
 	    "operations": [
 		{
 		    "method": "GET",
@@ -406,11 +414,7 @@
 		{
 		    "method": "POST",
                     "description": "Create a plan.",
-                    "parameters": [
-                        { "name": "incident_id", "type": "long" },
-                        { "name": "body", "type": "string" },
-                        { "name": "grade", "type": "integer", "required": false }
-                    ],
+		    "body": { "type": "plan_form" },
                     "responses": {
                         "201": { "type": "plan" },
                         "409": { "type": "[error]" }
@@ -421,11 +425,7 @@
 		    "method": "PUT",
                     "description": "Update a plan.",
 		    "path": "/:id",
-                    "parameters": [
-                        { "name": "incident_id", "type": "long" },
-                        { "name": "body", "type": "string" },
-                        { "name": "grade", "type": "integer", "required": false }
-                    ],
+		    "body": { "type": "plan_form" },
                     "responses": {
                         "200": { "type": "plan" },
                         "409": { "type": "[error]" }

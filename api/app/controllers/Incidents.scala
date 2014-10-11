@@ -21,7 +21,7 @@ object Incidents extends Controller {
     offset: Int = 0
   ) = OrgAction { request =>
     val matches = IncidentsDao.findAll(
-      orgKey = Some(request.org.key),
+      org = Some(request.org),
       id = id,
       teamKey = team_key,
       hasTeam = has_team,

@@ -113,6 +113,11 @@ package com.gilt.quality.models {
     createdAt: _root_.org.joda.time.DateTime
   )
 
+  case class PlanForm(
+    incidentId: Long,
+    body: String
+  )
+
   /**
    * Statistics on each team's quality metrics, number of issues
    */
@@ -572,6 +577,20 @@ package com.gilt.quality.models {
       )(unlift(Plan.unapply _))
     }
 
+    implicit def jsonReadsQualityPlanForm: play.api.libs.json.Reads[PlanForm] = {
+      (
+        (__ \ "incident_id").read[Long] and
+        (__ \ "body").read[String]
+      )(PlanForm.apply _)
+    }
+
+    implicit def jsonWritesQualityPlanForm: play.api.libs.json.Writes[PlanForm] = {
+      (
+        (__ \ "incident_id").write[Long] and
+        (__ \ "body").write[String]
+      )(unlift(PlanForm.unapply _))
+    }
+
     implicit def jsonReadsQualityStatistic: play.api.libs.json.Reads[Statistic] = {
       (
         (__ \ "team").read[com.gilt.quality.models.Team] and
@@ -925,7 +944,8 @@ package com.gilt.quality {
     }
 
     object Plans extends Plans {
-      override def get(
+      override def getByOrg(
+        org: String,
         id: scala.Option[Long] = None,
         incidentId: scala.Option[Long] = None,
         teamKey: scala.Option[String] = None,
@@ -940,50 +960,39 @@ package com.gilt.quality {
           offset.map("offset" -> _.toString)
         ).flatten
 
-        _executeRequest("GET", s"/plans", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Plan]]
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def post(
-        incidentId: Long,
-        body: String,
-        grade: scala.Option[Int] = None
+      override def postByOrg(planForm: com.gilt.quality.models.PlanForm, 
+        org: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan] = {
-        val payload = play.api.libs.json.Json.obj(
-          "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
-          "body" -> play.api.libs.json.Json.toJson(body),
-          "grade" -> play.api.libs.json.Json.toJson(grade)
-        )
+        val payload = play.api.libs.json.Json.toJson(planForm)
 
-        _executeRequest("POST", s"/plans", body = Some(payload)).map {
+        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.Plan]
           case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def putById(
-        id: Long,
-        incidentId: Long,
-        body: String,
-        grade: scala.Option[Int] = None
+      override def putByOrgAndId(planForm: com.gilt.quality.models.PlanForm, 
+        org: String,
+        id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan] = {
-        val payload = play.api.libs.json.Json.obj(
-          "incident_id" -> play.api.libs.json.Json.toJson(incidentId),
-          "body" -> play.api.libs.json.Json.toJson(body),
-          "grade" -> play.api.libs.json.Json.toJson(grade)
-        )
+        val payload = play.api.libs.json.Json.toJson(planForm)
 
-        _executeRequest("PUT", s"/plans/${id}", body = Some(payload)).map {
+        _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans/${id}", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.quality.models.Plan]
           case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def putGradeById(
+      override def putGradeByOrgAndId(
+        org: String,
         id: Long,
         grade: Int
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan] = {
@@ -991,27 +1000,29 @@ package com.gilt.quality {
           "grade" -> play.api.libs.json.Json.toJson(grade)
         )
 
-        _executeRequest("PUT", s"/plans/${id}/grade", body = Some(payload)).map {
+        _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans/${id}/grade", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.quality.models.Plan]
           case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def getById(
+      override def getByOrgAndId(
+        org: String,
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Plan]] = {
-        _executeRequest("GET", s"/plans/${id}").map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans/${id}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.Plan])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def deleteById(
+      override def deleteByOrgAndId(
+        org: String,
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
-        _executeRequest("DELETE", s"/plans/${id}").map {
+        _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
@@ -1295,7 +1306,8 @@ package com.gilt.quality {
     /**
      * Search all plans. Results are always paginated.
      */
-    def get(
+    def getByOrg(
+      org: String,
       id: scala.Option[Long] = None,
       incidentId: scala.Option[Long] = None,
       teamKey: scala.Option[String] = None,
@@ -1306,26 +1318,23 @@ package com.gilt.quality {
     /**
      * Create a plan.
      */
-    def post(
-      incidentId: Long,
-      body: String,
-      grade: scala.Option[Int] = None
+    def postByOrg(planForm: com.gilt.quality.models.PlanForm, 
+      org: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan]
 
     /**
      * Update a plan.
      */
-    def putById(
-      id: Long,
-      incidentId: Long,
-      body: String,
-      grade: scala.Option[Int] = None
+    def putByOrgAndId(planForm: com.gilt.quality.models.PlanForm, 
+      org: String,
+      id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan]
 
     /**
      * Update the grade assigned to a plan.
      */
-    def putGradeById(
+    def putGradeByOrgAndId(
+      org: String,
       id: Long,
       grade: Int
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan]
@@ -1333,14 +1342,16 @@ package com.gilt.quality {
     /**
      * Get a single plan.
      */
-    def getById(
+    def getByOrgAndId(
+      org: String,
       id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Plan]]
 
     /**
      * Delete a plan.
      */
-    def deleteById(
+    def deleteByOrgAndId(
+      org: String,
       id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }

@@ -118,7 +118,7 @@ object IncidentsDao {
 
     global.Actors.mainActor ! actors.IncidentMessage.SyncOne(id)
 
-    findById(id).getOrElse {
+    findByOrganizationAndId(fullForm.org, id).getOrElse {
       sys.error("Failed to create incident")
     }
   }
@@ -145,7 +145,7 @@ object IncidentsDao {
 
     global.Actors.mainActor ! actors.IncidentMessage.SyncOne(incident.id)
 
-    findById(incident.id).getOrElse {
+    findByOrganizationAndId(fullForm.org, incident.id).getOrElse {
       sys.error("Failed to update incident")
     }
   }
@@ -154,9 +154,7 @@ object IncidentsDao {
     SoftDelete.delete("incidents", deletedBy, incident.id)
   }
 
-  def findById(
-    id: Long
-  ): Option[Incident] = {
+  def findById(id: Long): Option[Incident] = {
     findAll(id = Some(id), limit = 1).headOption.map { i => findDetails(i) }
   }
 
@@ -164,7 +162,7 @@ object IncidentsDao {
     org: Organization,
     id: Long
   ): Option[Incident] = {
-    findAll(orgKey = Some(org.key), id = Some(id), limit = 1).headOption.map { i => findDetails(i) }
+    findAll(org = Some(org), id = Some(id), limit = 1).headOption.map { i => findDetails(i) }
   }
 
   private def findDetails(incident: Incident): Incident = {
@@ -172,7 +170,7 @@ object IncidentsDao {
   }
 
   def findAll(
-    orgKey: Option[String] = None,
+    org: Option[Organization] = None,
     id: Option[Long] = None,
     teamKey: Option[String] = None,
     hasTeam: Option[Boolean] = None,
@@ -182,9 +180,20 @@ object IncidentsDao {
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Incident] = {
+    val orgId = org match {
+      case None => None
+      case Some(o) => {
+        Some(
+          OrganizationsDao.lookupId(o.key).getOrElse {
+            sys.error("Organization ID not found for key[${org.key}]")
+          }
+        )
+      }
+    }
+
     val sql = Seq(
       Some(BaseQuery.trim),
-      orgKey.map { v => "and incidents.organization_id = (select id from organizations where deleted_at is null and key = {org_key})" },
+      org.map { v => "and organizations.id = {organization_id}" },
       id.map { v => "and incidents.id = {id}" },
       teamKey.map { v => "and incidents.team_id = (select id from teams where deleted_at is null and key = lower(trim({team_key})))" },
       hasTeam.map { v =>
@@ -211,7 +220,7 @@ object IncidentsDao {
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      orgKey.map { v => NamedParameter("org_key", toParameterValue(v)) },
+      orgId.map { v => NamedParameter("organization_id", toParameterValue(v)) },
       id.map { v => NamedParameter("id", toParameterValue(v)) },
       teamKey.map { v => NamedParameter("team_key", toParameterValue(v)) },
       severity.map { v => NamedParameter("severity", toParameterValue(severity)) }

@@ -13,6 +13,10 @@ case class FullTeamForm(
   form: TeamForm
 ) {
 
+  lazy val orgId = OrganizationsDao.lookupId(org.key).getOrElse {
+    sys.error(s"Could not find organizations with key[${org.key}]")
+  }
+
   lazy val validate: Seq[Error] = {
     val keyErrors = TeamsDao.findByKey(org, form.key) match {
       case Some(team) => {
@@ -60,15 +64,12 @@ object TeamsDao {
   """
 
   def create(user: User, fullForm: FullTeamForm): Team = {
-    assert(fullForm.validate.isEmpty, fullForm.validate.map(_.message).mkString(" "))
-
-    val orgId = OrganizationsDao.lookupId(fullForm.org.key).getOrElse {
-      sys.error(s"Could not find organizations with key[${fullForm.org.key}]")
-    }
+    val errors = fullForm.validate
+    assert(errors.isEmpty, errors.map(_.message).mkString(" "))
 
     val id: Long = DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'organization_id -> orgId,
+        'organization_id -> fullForm.orgId,
         'key -> fullForm.form.key.trim.toLowerCase,
         'user_guid -> user.guid,
         'user_guid -> user.guid

@@ -56,6 +56,21 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     tags = Seq.empty
   )
 
+  def createPlan(
+    org: Organization,
+    form: PlanForm = createPlanForm()
+  ): Plan = {
+    await(client.plans.postByOrg(org = org.key, planForm = form))
+  }
+
+  def createPlanForm(
+    org: Organization = createOrganization(),
+    incident: Option[Incident] = None
+  ) = PlanForm(
+    incidentId = incident.getOrElse(createIncident(org)).id,
+    body = "Test plan"
+  )
+
   def createMeeting(
     org: Organization,
     form: MeetingForm = createMeetingForm()

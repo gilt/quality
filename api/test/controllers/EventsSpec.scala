@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.quality.models.{Action, Event, Model}
+import com.gilt.quality.models.{Action, Event, Model, PlanForm}
 
 import play.api.test._
 import play.api.test.Helpers._
@@ -22,8 +22,11 @@ class EventsSpec extends BaseSpec {
     events.map(_.model) must be(Seq(Model.Incident, Model.Incident))
     events.head.action must be(Action.Deleted)
 
-    //createPlan()
-    //await(client.events.getByOrg(org.key)).head.model must be(Model.Plan)
+    val plan = createPlan(org, PlanForm(incidentId = incident2.id, body = "test"))
+    await(client.events.getByOrg(org.key)).head.model must be(Model.Plan)
+
+    await(client.plans.putGradeByOrgAndId(org.key, plan.id, 100))
+    await(client.events.getByOrg(org.key)).head.model must be(Model.Rating)
   }
 
 }

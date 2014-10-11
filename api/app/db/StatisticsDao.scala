@@ -62,7 +62,7 @@ object StatisticsDao {
           totalIncidents = row[Long]("total_incidents"),
           totalOpenIncidents = row[Long]("total_open_incidents"),
           totalPlans = row[Long]("total_plans"),
-          plans = PlansDao.findAll(teamKey = Some(row[String]("team_key")))
+          plans = PlansDao.findAll(orgKey = orgKey, teamKey = Some(row[String]("team_key")))
         )
       }.toSeq
     }
