@@ -47,6 +47,9 @@ object AgendaItemsDao {
   }
 
   def create(user: User, fullForm: FullAgendaItemForm): AgendaItem = {
+    val errors = validate(fullForm)
+    assert(errors.isEmpty, errors.map(_.message))
+
     val id: Long = DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(
         'meeting_id -> fullForm.meeting.id,
