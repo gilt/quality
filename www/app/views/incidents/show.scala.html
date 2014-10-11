@@ -3,14 +3,14 @@
   plan: Option[com.gilt.quality.models.Plan]
 )(implicit flash: Flash)
 
-@main(org, title = s"#${incident.id}: ${incident.summary}") {
+@main(org = Some(org), title = s"#${incident.id}: ${incident.summary}") {
 
   <ul>
     <li>Team: 
         @if(incident.team.isEmpty) {
           <em>None</em>
         } else {
-          <a href="@routes.Teams.show(incident.team.get.key)">@incident.team.get.key</a>
+          <a href="@routes.Teams.show(org.key, incident.team.get.key)">@incident.team.get.key</a>
         }
     </li>
     <li>Severity: @incident.severity</li>
@@ -21,9 +21,9 @@
         @Html(incident.tags.mkString("<ul><li>", "</li><li>", "</li></ul>"))
       }
     </li>
-    <li>Created: @org.joda.time.format.DateTimeFormat.longDateTime.print(incident.createdAt)</li>
-    <li><a href="@routes.Incidents.edit(incident.id)">Edit</a> |
-        <a href="@routes.Incidents.postDeleteById(incident.id)" class="delete" data-confirm="Are you sure to delete this incident?">Delete</a>
+    <li>Created: @_root_.org.joda.time.format.DateTimeFormat.longDateTime.print(incident.createdAt)</li>
+    <li><a href="@routes.Incidents.edit(org.key, incident.id)">Edit</a> |
+        <a href="@routes.Incidents.postDeleteById(org.key, incident.id)" class="delete" data-confirm="Are you sure to delete this incident?">Delete</a>
     </li>
   </ul>
 
@@ -37,29 +37,29 @@
 
   @if(plan.isEmpty) {
     <p><em>No plan</em></p>
-    (<a href="@routes.Plans.uploadByIncidentId(incident.id)">Create</a>)
+    (<a href="@routes.Plans.uploadByIncidentId(org.key, incident.id)">Create</a>)
   } else {
     @if(plan.get.grade.isEmpty) {
       Rate this plan:
-      <a href="@routes.Plans.postGrade(plan.get.id, lib.GradeImage.Good)" class="postForm">Good</a> |
-      <a href="@routes.Plans.postGrade(plan.get.id, lib.GradeImage.Bad)" class="postForm">Bad</a>
+      <a href="@routes.Plans.postGrade(org.key, plan.get.id, lib.GradeImage.Good)" class="postForm">Good</a> |
+      <a href="@routes.Plans.postGrade(org.key, plan.get.id, lib.GradeImage.Bad)" class="postForm">Bad</a>
     } else {
       @Html(lib.GradeImage.imageTag(plan.get.grade.get))
       (<a href="#" onClick="$('#changeGrade').show()">change</a>)
       <div id="changeGrade" style="display: none">
         Rate this plan:
-        <a href="@routes.Plans.postGrade(plan.get.id, lib.GradeImage.Good)" class="postForm">Good</a> |
-        <a href="@routes.Plans.postGrade(plan.get.id, lib.GradeImage.Bad)" class="postForm">Bad</a>
+        <a href="@routes.Plans.postGrade(org.key, plan.get.id, lib.GradeImage.Good)" class="postForm">Good</a> |
+        <a href="@routes.Plans.postGrade(org.key, plan.get.id, lib.GradeImage.Bad)" class="postForm">Bad</a>
       </div>
     }
 
     <div class="markdown">
       @Html(util.Markdown.toHtml(plan.get.body))
     </div>
-    <p><em>Created: @org.joda.time.format.DateTimeFormat.longDateTime.print(plan.get.createdAt)</em></p>
+    <p><em>Created: @_root_.org.joda.time.format.DateTimeFormat.longDateTime.print(plan.get.createdAt)</em></p>
     <p>
-      <a href="@routes.Plans.uploadByIncidentId(incident.id)">Edit</a> |
-      <a href="@routes.Plans.postDeleteById(plan.get.id, incident.id)" class="delete" data-confirm="Are you sure to delete this plan?">Delete</a>
+      <a href="@routes.Plans.uploadByIncidentId(org.key, incident.id)">Edit</a> |
+      <a href="@routes.Plans.postDeleteById(org.key, plan.get.id, incident.id)" class="delete" data-confirm="Are you sure to delete this plan?">Delete</a>
     </p>
   }
 

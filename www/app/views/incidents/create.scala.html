@@ -4,7 +4,7 @@
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(org, title = s"Create Incident", errorMessage = errorMessage) {
+@main(org = Some(org), title = s"Create Incident", errorMessage = errorMessage) {
 
   <div class="container">
 

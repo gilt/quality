@@ -3,13 +3,13 @@
   teams: Seq[com.gilt.quality.models.Team],
   form: Form[controllers.Incidents.UiForm])(implicit flash: Flash)
 
-@main(org, title = s"Edit Incident ${incident.id}") {
+@main(org = Some(org), title = s"Edit Incident ${incident.id}") {
 
   <div class="container">
 
-    @helper.form(action = routes.Incidents.postEdit(incident.id)) {
+    @helper.form(action = routes.Incidents.postEdit(org.key, incident.id)) {
 
-      @incidentForm(form, routes.Incidents.show(incident.id), teams)
+      @incidentForm(form, routes.Incidents.show(org.key, incident.id), teams)
 
     }
 

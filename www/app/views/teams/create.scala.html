@@ -3,13 +3,13 @@
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(org, title = s"Create Team", errorMessage = errorMessage) {
+@main(org = Some(org), title = s"Create Team", errorMessage = errorMessage) {
 
   <div class="container">
 
-    @helper.form(action = routes.Teams.postCreate) {
+    @helper.form(action = routes.Teams.postCreate(org.key)) {
 
-      @teamForm(form, routes.Teams.index())
+      @teamForm(form, routes.Teams.index(org.key))
 
     }
 

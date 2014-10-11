@@ -1,4 +1,5 @@
-@(incidents: Seq[com.gilt.quality.models.Incident],
+@(org: com.gilt.quality.models.Organization,
+  incidents: Seq[com.gilt.quality.models.Incident],
   showTeam: Boolean = true)
 
 <table class="table table-hover table-condensed">
@@ -16,7 +17,7 @@
     @incidents.map { incident =>
      <tr>
        <td><a href="@routes.Incidents.show(org.key, incident.id)">@incident.id</a></td>
-       <td>@org.joda.time.format.DateTimeFormat.shortDate.print(incident.createdAt)</td>
+       <td>@_root_.org.joda.time.format.DateTimeFormat.shortDate.print(incident.createdAt)</td>
        <td>@incident.severity</td>
        <td>
          @if(incident.plan.isEmpty) {

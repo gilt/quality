@@ -4,7 +4,7 @@
   teams: Seq[com.gilt.quality.models.Team]
 )(implicit flash: Flash)
 
-@main(org, title = "Perfect Day Incidents", section = Some("incidents")) {
+@main(org = Some(org), title = "Perfect Day Incidents", section = Some("incidents")) {
 
   <div class="pull-right">
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(org.key)">Add incident</a>
@@ -23,7 +23,7 @@
   @if(incidents.isEmpty) {
     <em>No incidents found</em>
   } else {
-    @incidentsTable(incidents.items)
+    @incidentsTable(org, incidents.items)
   
     @if(incidents.hasPrevious || incidents.hasNext) {
       <ul class="pager">

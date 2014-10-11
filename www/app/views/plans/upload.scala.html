@@ -4,9 +4,9 @@
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(org, title = s"Upload Prevention Plan for Incident ${incident.id}", errorMessage = errorMessage) {
+@main(org = Some(org), title = s"Upload Prevention Plan for Incident ${incident.id}", errorMessage = errorMessage) {
 
-  @helper.form(action = routes.Plans.postUploadByIncidentId(incident.id)) {
+  @helper.form(action = routes.Plans.postUploadByIncidentId(org.key, incident.id)) {
     <fieldset>
       @helper.input(field = form("body"), '_label -> "Plan to Prevent Recurrence", '_error -> form.error("body")) { (id, name, value, args) =>
         <textarea name="@name" id="@id" @toHtmlArgs(args) rows="25" cols="80">@value</textarea>
@@ -16,7 +16,7 @@
 
     <div class="actions">
       <button class="btn btn-large btn-primary" type="submit">Submit</button>
-      <a href="@routes.Incidents.show(incident.id)" class="btn">Cancel</a>
+      <a href="@routes.Incidents.show(org.key, incident.id)" class="btn">Cancel</a>
     </div>
   }
 
