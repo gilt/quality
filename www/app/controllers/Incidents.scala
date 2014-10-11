@@ -59,11 +59,12 @@ object Incidents extends Controller {
     for {
       incident <- Api.instance.incidents.getByOrgAndId(org, id)
       plans <- Api.instance.Plans.getByOrg(org, incidentId = Some(id))
+      meetings <- Api.instance.Meetings.getByOrg(org, incidentId = Some(id))
     } yield {
       incident match {
         case None => Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $id not found")
         case Some(i) => {
-          Ok(views.html.incidents.show(request.org, i, plans.headOption))
+          Ok(views.html.incidents.show(request.org, i, plans.headOption, meetings))
         }
       }
     }

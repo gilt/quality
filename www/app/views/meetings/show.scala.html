@@ -28,4 +28,22 @@
     }
   }
 
+  <h3>Incidents pending plan review</h3>
+  @if(reviewPlans.isEmpty) {
+    <em>None</em>
+  } else {
+    @views.html.incidents.incidentsTable(org, reviewPlans.items.map(_.incident))
+  
+    @if(reviewPlans.hasPrevious || reviewPlans.hasNext) {
+      <ul class="pager">
+        @if(reviewPlans.hasPrevious) {
+          <li><a href="@routes.Meetings.show(org.key, meeting.id, reviewTeams.page, reviewPlans.page - 1)">Previous</a></li>
+        }
+        @if(reviewPlans.hasNext) {
+          <li><a href="@routes.Meetings.show(org.key, meeting.id, reviewTeams.page, reviewPlans.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
 }
