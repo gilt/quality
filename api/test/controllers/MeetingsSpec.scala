@@ -1,5 +1,6 @@
 package controllers
 
+import actors.Database
 import com.gilt.quality.models.{Meeting, MeetingForm}
 import com.gilt.quality.error.ErrorsResponse
 import java.util.UUID
@@ -13,7 +14,7 @@ class MeetingsSpec extends BaseSpec {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   lazy val org = createOrganization()
-
+/*
   "POST /:org/meetings" in new WithServer {
     val scheduledAt = (new DateTime()).plus(3)
     val meeting = createMeeting(org, MeetingForm(scheduledAt = scheduledAt))
@@ -39,6 +40,19 @@ class MeetingsSpec extends BaseSpec {
     val meeting = createMeeting(org)
     await(client.meetings.getByOrgAndId(org.key, meeting.id)) must be(Some(meeting))
     await(client.meetings.getByOrgAndId(org.key, -1)) must be(None)
+  }
+ */
+
+  "GET /:org/meetings for an incident" in new WithServer {
+    val meeting1 = createMeeting(org)
+    val meeting2 = createMeeting(org)
+    val incident = createIncident(org)
+
+    Database.ensureOrganizationHasUpcomingMeetings(org)
+    Database.assignIncident(incident.id)
+
+    val meetings = await(client.meetings.getByOrg(org.key, incidentId = Some(incident.id)))
+    meetings.size must be(1)
   }
 
 }

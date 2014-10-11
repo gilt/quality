@@ -80,7 +80,7 @@ class PlansSpec extends BaseSpec {
     val team = createTeam(org)
     val incident = createIncident(
       org = org,
-      form = Some(createIncidentForm(org).copy(teamKey = Some(team.key)))
+      form = Some(createIncidentForm().copy(teamKey = Some(team.key)))
     )
 
     val plan = createPlan(

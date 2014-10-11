@@ -842,11 +842,13 @@ package com.gilt.quality {
       override def getByOrg(
         org: String,
         id: scala.Option[Long] = None,
+        incidentId: scala.Option[Long] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Meeting]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
+          incidentId.map("incident_id" -> _.toString),
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
@@ -1258,6 +1260,7 @@ package com.gilt.quality {
     def getByOrg(
       org: String,
       id: scala.Option[Long] = None,
+      incidentId: scala.Option[Long] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Meeting]]

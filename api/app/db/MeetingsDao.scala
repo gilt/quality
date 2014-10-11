@@ -59,12 +59,13 @@ object MeetingsDao {
   }
 
   def findByOrganizationAndId(org: Organization, id: Long): Option[Meeting] = {
-    findAll(id = Some(id), limit = 1).headOption
+    findAll(org = Some(org), id = Some(id), limit = 1).headOption
   }
 
   def findAll(
-    orgKey: Option[String] = None,
+    org: Option[Organization] = None,
     id: Option[Long] = None,
+    incidentId: Option[Long] = None,
     scheduledAt: Option[DateTime] = None,
     isUpcoming: Option[Boolean] = None,
     limit: Int = 50,
@@ -72,8 +73,9 @@ object MeetingsDao {
   ): Seq[Meeting] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      orgKey.map { v => "and meetings.organization_id = (select id from organizations where deleted_at is null and key = {org_key})" },
+      org.map { v => "and meetings.organization_id = (select id from organizations where deleted_at is null and key = {org_key})" },
       id.map { v => "and meetings.id = {id}" },
+      incidentId.map { v => "and meetings.id in (select meeting_id from agenda_items where deleted_at is null and incident_id = {incident_id})" },
       scheduledAt.map { v => "and date_trunc('minute', meetings.scheduled_at) = date_trunc('minute', {scheduled_at}::timestamptz)" },
       isUpcoming.map { v =>
         v match {
@@ -85,9 +87,11 @@ object MeetingsDao {
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
+
     val bind = Seq(
-      orgKey.map { v => NamedParameter("org_key", toParameterValue(v)) },
+      org.map { v => NamedParameter("org_key", toParameterValue(v.key)) },
       id.map { v => NamedParameter("id", toParameterValue(v)) },
+      incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
       scheduledAt.map { v => NamedParameter("scheduled_at", toParameterValue(v)) }
     ).flatten
 

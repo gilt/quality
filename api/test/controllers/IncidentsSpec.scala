@@ -39,7 +39,7 @@ class IncidentsSpec extends BaseSpec {
     intercept[ErrorsResponse] {
       createIncident(
         org = org,
-        form = Some(createIncidentForm(org).copy(teamKey = Some(teamKey)))
+        form = Some(createIncidentForm().copy(teamKey = Some(teamKey)))
       )
     }.errors.map(_.message) must be (Seq(s"Team[$teamKey] not found"))
   }
@@ -48,7 +48,7 @@ class IncidentsSpec extends BaseSpec {
     intercept[ErrorsResponse] {
       createIncident(
         org = org,
-        form = Some(createIncidentForm(org).copy(severity = Severity.UNDEFINED("foo")))
+        form = Some(createIncidentForm().copy(severity = Severity.UNDEFINED("foo")))
       )
     }.errors.map(_.message) must be (Seq("Invalid severity[foo]"))
   }

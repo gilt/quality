@@ -46,14 +46,12 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     await(
       client.incidents.postByOrg(
         org = org.key,
-        incidentForm = form.getOrElse(createIncidentForm(org))
+        incidentForm = form.getOrElse(createIncidentForm())
       )
     )
   }
 
-  def createIncidentForm(
-    org: Organization = createOrganization()
-  ) = IncidentForm(
+  def createIncidentForm() = IncidentForm(
     teamKey = None,
     severity = Severity.Low,
     summary = "Test",
@@ -127,7 +125,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   def createIncidentForTeam(org: Organization, team: Team): Incident = {
     createIncident(
       org = org,
-      form = Some(createIncidentForm(org).copy(teamKey = Some(team.key)))
+      form = Some(createIncidentForm().copy(teamKey = Some(team.key)))
     )
   }
 

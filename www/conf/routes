@@ -24,7 +24,7 @@ GET     /:org/teams/:key                                          controllers.Te
 POST    /:org/teams/delete/:key                                   controllers.Teams.postDeleteByKey(org: String, key: String)
 
 GET     /:org/meetings/                                           controllers.Meetings.index(org: String, page: Int ?= 0)
-GET     /:org/meetings/:id                                        controllers.Meetings.show(org: String, id: Long, agendaItemsPage: Int ?= 0)
+GET     /:org/meetings/:id                                        controllers.Meetings.show(org: String, id: Long, reviewTeamsPage: Int ?= 0, reviewPlansPage: Int ?= 0)
 POST    /:org/meetings/delete/:id                                 controllers.Meetings.postDeleteById(org: String, id: Long)
 
 # Map static resources from the /public folder to the /assets URL path

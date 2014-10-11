@@ -14,12 +14,14 @@ object Meetings extends Controller {
   def getByOrg(
     org: String,
     id: Option[Long],
+    incidentId: Option[Long],
     limit: Int = 25,
     offset: Int = 0
   ) = OrgAction { request =>
     val meetings = MeetingsDao.findAll(
-      orgKey = Some(org),
+      org = Some(request.org),
       id = id,
+      incidentId = incidentId,
       limit = limit,
       offset = offset
     )
@@ -31,6 +33,7 @@ object Meetings extends Controller {
     org: String,
     id: Long
   ) = OrgAction { request =>
+    println("ORG: " + request.org)
     MeetingsDao.findByOrganizationAndId(request.org, id) match {
       case None => NotFound
       case Some(m: Meeting) => Ok(Json.toJson(m))
