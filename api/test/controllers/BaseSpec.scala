@@ -81,6 +81,16 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     body = "Test plan"
   )
 
+  def createPlanWithGrade(
+    org: Organization,
+    form: Option[PlanForm] = None,
+    grade: Int = 100
+  ): Plan = {
+    val plan = createPlan(org, form)
+    await(client.plans.putGradeByOrgAndId(org.key, plan.id, 100))
+    await(client.plans.getByOrgAndId(org.key, plan.id)).get
+  }
+
   def createMeeting(
     org: Organization,
     form: MeetingForm = createMeetingForm()
