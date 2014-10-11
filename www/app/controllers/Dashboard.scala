@@ -13,10 +13,10 @@ object Dashboard extends Controller {
   val OneDayInHours = 24
   val OneWeekInHours = OneDayInHours * 7
 
-  def index(page: Int = 0) = Action.async { implicit request =>
+  def index(org: String) = Action.async { implicit request =>
     for {
-      stats <- Api.instance.Statistics.get(numberHours = Some(OneWeekInHours))
-      events <- Api.instance.Events.get(numberHours = Some(OneDayInHours), limit = Some(10))
+      stats <- Api.instance.Statistics.getByOrg(org, numberHours = Some(OneWeekInHours))
+      events <- Api.instance.Events.getByOrg(org, numberHours = Some(OneDayInHours), limit = Some(10))
     } yield {
       Ok(views.html.dashboard.index(stats, events))
     }

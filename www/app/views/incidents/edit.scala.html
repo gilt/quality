@@ -1,6 +1,6 @@
 @(incident: com.gilt.quality.models.Incident,
   teams: Seq[com.gilt.quality.models.Team],
-  form: Form[controllers.Incidents.IncidentForm])(implicit flash: Flash)
+  form: Form[controllers.Incidents.UiForm])(implicit flash: Flash)
 
 @main(title = s"Edit Incident ${incident.id}") {
 

@@ -18,10 +18,15 @@ object Teams extends Controller {
 
   case class Filters(key: Option[String])
 
-  def index(key: Option[String] = None, page: Int = 0) = Action.async { implicit request =>
+  def index(
+    org: String,
+    key: Option[String] = None,
+    page: Int = 0
+  ) = Action.async { implicit request =>
     val filters = Filters(key = lib.Filters.toOption(key))
     for {
-      teams <- Api.instance.teams.get(
+      teams <- Api.instance.teams.getByOrg(
+        org = org,
         key = filters.key,
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(page * Pagination.DefaultLimit)
@@ -31,11 +36,16 @@ object Teams extends Controller {
     }
   }
 
-  def show(key: String, incidentsPage: Int = 0) = Action.async { implicit request =>
+  def show(
+    org: String,
+    key: String,
+    incidentsPage: Int = 0
+  ) = Action.async { implicit request =>
     for {
-      team <- Api.instance.teams.getByKey(key)
-      stats <- Api.instance.Statistics.get(teamKey = Some(key), numberHours = Some(Dashboard.OneWeekInHours * 12))
-      incidents <- Api.instance.incidents.get(
+      team <- Api.instance.teams.getByOrgAndKey(org, key)
+      stats <- Api.instance.Statistics.getByOrg(org = org, teamKey = Some(key), numberHours = Some(Dashboard.OneWeekInHours * 12))
+      incidents <- Api.instance.incidents.getByOrg(
+        org = org,
         teamKey = Some(key),
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(incidentsPage * Pagination.DefaultLimit)
@@ -43,7 +53,7 @@ object Teams extends Controller {
     } yield {
       team match {
         case None => {
-          Redirect(routes.Teams.index()).flashing("warning" -> s"Team $key not found")
+          Redirect(routes.Teams.index(org)).flashing("warning" -> s"Team $key not found")
         }
         case Some(team: Team) => {
           Ok(views.html.teams.show(team, stats.headOption, PaginatedCollection(incidentsPage, incidents)))
@@ -52,11 +62,11 @@ object Teams extends Controller {
     }
   }
 
-  def create() = Action { implicit request =>
+  def create(org: String) = Action { implicit request =>
     Ok(views.html.teams.create(teamForm))
   }
 
-  def postCreate() = Action.async { implicit request =>
+  def postCreate(org: String) = Action.async { implicit request =>
     val boundForm = teamForm.bindFromRequest
     boundForm.fold (
 
@@ -68,8 +78,8 @@ object Teams extends Controller {
         val form = com.gilt.quality.models.TeamForm(
           key = teamForm.key
         )
-        Api.instance.teams.post(form).map { team =>
-          Redirect(routes.Teams.show(team.key)).flashing("success" -> "Team created")
+        Api.instance.teams.postByOrg(org = org, teamForm = form).map { team =>
+          Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
         }.recover {
           case response: com.gilt.quality.error.ErrorsResponse => {
             Ok(views.html.teams.create(boundForm, Some(response.errors.map(_.message).mkString(", "))))
@@ -80,11 +90,14 @@ object Teams extends Controller {
     )
   }
 
-  def postDeleteByKey(key: String) = Action.async { implicit request =>
+  def postDeleteByKey(
+    org: String,
+    key: String
+  ) = Action.async { implicit request =>
     for {
-      result <- Api.instance.teams.deleteByKey(key)
+      result <- Api.instance.teams.deleteByOrgAndKey(org, key)
     } yield {
-      Redirect(routes.Teams.index()).flashing("success" -> s"Team $key deleted")
+      Redirect(routes.Teams.index(org)).flashing("success" -> s"Team $key deleted")
     }
   }
 
