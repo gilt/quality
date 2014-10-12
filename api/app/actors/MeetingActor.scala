@@ -9,6 +9,7 @@ import play.api.Play.current
 object MeetingMessage {
   case object SyncMeetings
   case object SyncIncidents
+  case object SyncMeetingIncidents
   case class SyncIncident(incidentId: Long)
 }
 
@@ -22,6 +23,21 @@ class MeetingActor extends Actor {
     case MeetingMessage.SyncMeetings => {
       println("MeetingMessage.SyncMeetings")
       Database.ensureAllOrganizationHaveUpcomingMeetings()
+    }
+
+    /**
+      * Looks at incidents assigned to meeting that recently
+      * passed. Those incidents might not have been updated, so we
+      * trigger a sync on those incidents here.
+      * 
+      * This catches the use case of
+      *   - incident created, assigned to meeting
+      *   - reviewed in meeting but incident record not actually modified
+      *   - incident needs to get scheduled for next task in next meeting
+      */
+    case MeetingMessage.SyncMeetingIncidents => {
+      println("MeetingMessage.SyncMeetingIncidents")
+      Database.syncMeetingIncidents()
     }
 
     /**
@@ -39,11 +55,6 @@ class MeetingActor extends Actor {
     case MeetingMessage.SyncIncidents => {
       println("MeetingMessage.SyncIncidents")
 
-      // TODO: Also have to look at incidents involved in meetings
-      // that recently passed. This would catch the use case of
-      //  - incident created, assigned to meeting
-      //  - reviewed in meeting but incident record not actually modified
-      //  - incident needs to get scheduled for next task in next meeting
       IncidentsDao.findRecentlyModifiedIncidentIds.foreach { incidentId =>
         sender ! MeetingMessage.SyncIncident(incidentId)
       }

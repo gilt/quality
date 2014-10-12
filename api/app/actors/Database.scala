@@ -37,6 +37,45 @@ object Database {
     }
   }
 
+  def syncMeetingIncidents() {
+    val limit = 100
+    var offset = 0
+    var haveMore = true
+    while (haveMore) {
+      val meetings = MeetingsDao.findAll(
+        isUpcoming = Some(false),
+        scheduledWithinNHours = Some(12),
+        limit = limit,
+        offset = 0
+      )
+
+      offset += 1
+      haveMore = meetings.size >= limit
+      meetings.foreach { meeting =>
+        syncIncidentsForMeeting(meeting)
+      }
+    }
+  }
+
+  def syncIncidentsForMeeting(meeting: Meeting) {
+    val limit = 100
+    var offset = 0
+    var haveMore = true
+    while (haveMore) {
+      val incidents = IncidentsDao.findAll(
+        meetingId = Some(meeting.id),
+        limit = limit,
+        offset = 0
+      )
+
+      offset += 1
+      haveMore = incidents.size >= limit
+      incidents.foreach { incident =>
+        global.Actors.mainActor ! actors.MeetingMessage.SyncIncident(incident.id)
+      }
+    }
+  }
+
   def assignIncident(incidentId: Long) {
 
     IncidentsDao.findById(incidentId).map { incident =>

@@ -17,9 +17,6 @@ class MainActor extends Actor with ActorLogging {
   Akka.system.scheduler.schedule(0.seconds, 1.minutes, meetingActor, MeetingMessage.SyncMeetings)
   Akka.system.scheduler.schedule(30.seconds, 60.minutes, meetingActor, MeetingMessage.SyncIncidents)
 
-  // TODO: For local testing only
-  Akka.system.scheduler.schedule(1.seconds, 10.seconds, meetingActor, MeetingMessage.SyncIncident(685))
-
   def receive = akka.event.LoggingReceive {
     case MeetingMessage.SyncIncident(incidentId) => {
       println(s"MainActor: IncidentMessage.SyncOne($incidentId)")

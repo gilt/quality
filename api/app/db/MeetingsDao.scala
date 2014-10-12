@@ -67,6 +67,7 @@ object MeetingsDao {
     id: Option[Long] = None,
     incidentId: Option[Long] = None,
     scheduledAt: Option[DateTime] = None,
+    scheduledWithinNHours: Option[Int] = None,
     isUpcoming: Option[Boolean] = None,
     limit: Int = 50,
     offset: Int = 0
@@ -77,6 +78,7 @@ object MeetingsDao {
       id.map { v => "and meetings.id = {id}" },
       incidentId.map { v => "and meetings.id in (select meeting_id from agenda_items where deleted_at is null and incident_id = {incident_id})" },
       scheduledAt.map { v => "and date_trunc('minute', meetings.scheduled_at) = date_trunc('minute', {scheduled_at}::timestamptz)" },
+      scheduledWithinNHours.map { v => s"and meetings.scheduled_at between now() - interval '${v} hours' and now() + interval '${v} hours'" },
       isUpcoming.map { v =>
         v match {
           case true => "and meetings.scheduled_at > now()"
