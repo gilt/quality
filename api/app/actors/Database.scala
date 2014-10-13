@@ -20,7 +20,7 @@ object Database {
     * the future.
     */
   def ensureOrganizationHasUpcomingMeetings(org: Organization) {
-    MeetingSchedule.findByOrganization(org).map { schedule =>
+    MeetingSchedule.findByOrganization(org).foreach { schedule =>
       schedule.upcomingDates.foreach { date =>
         MeetingsDao.upsert(org, date)
       }

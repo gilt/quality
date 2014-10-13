@@ -2,12 +2,31 @@ package actors
 
 import com.gilt.quality.models.Task
 import db.{FullIncidentForm, IncidentsDao, MeetingsDao, User, Util}
+import org.joda.time.DateTime
 import java.util.UUID
 import play.api.test._
 import play.api.test.Helpers._
 import org.scalatest.{FunSpec, ShouldMatchers}
 
 class DatabaseSpec extends FunSpec with ShouldMatchers {
+
+  it("ensureOrganizationHasUpcomingMeetings") {
+    val org = Util.createOrganization()
+    Database.ensureOrganizationHasUpcomingMeetings(org)
+    val meetings = MeetingsDao.findAll(org = Some(org))
+    meetings.size >= 2 should be(true)
+  }
+
+  it("bestNextMeetingForOrg") {
+    val now = new DateTime()
+    val org = Util.createOrganization()
+    Database.ensureOrganizationHasUpcomingMeetings(org)
+    val meeting = Database.bestNextMeetingForOrg(org).getOrElse {
+      sys.error("No meetings created")
+    }
+    meeting.scheduledAt.isAfter(now) should be(true)
+    meeting.scheduledAt.isBefore(now.plusDays(8)) should be(true)
+  }
 
   it("nextTask is reviewTeam even if an incident is created with a team") {
     val org = Util.createOrganization()
