@@ -1,6 +1,0 @@
-modify db directory to use generated models from core package
-UI to see/create teams
-Dashboard to include
- - all teams and happy/unhappy faces
- - stream of latest incidents
- - stream of latest reports
