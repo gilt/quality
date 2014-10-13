@@ -34,18 +34,14 @@ object Database {
 
   private[actors] def syncMeetings() {
     Pager.eachPage[Meeting] { offset =>
-      recentlyEndedMeetings(offset)
+      MeetingsDao.findAll(
+        isUpcoming = Some(false),
+        scheduledWithinNHours = Some(12),
+        offset = offset
+      )
     } { meeting =>
       syncMeeting(meeting)
     }
-  }
-
-  private[actors] def recentlyEndedMeetings(offset: Int = 0): Seq[Meeting] = {
-    MeetingsDao.findAll(
-      isUpcoming = Some(false),
-      scheduledWithinNHours = Some(12),
-      offset = offset
-    )
   }
 
   /**
@@ -55,18 +51,14 @@ object Database {
     */
   private[actors] def syncMeeting(meeting: Meeting) {
     Pager.eachPage[Incident] { offset =>
-      meetingIncidents(meeting, offset)
+      IncidentsDao.findAll(
+        meetingId = Some(meeting.id),
+        limit = 100,
+        offset = offset
+      )
     } { incident =>
       global.Actors.mainActor ! actors.MeetingMessage.SyncIncident(incident.id)
     }
-  }
-
-  private[actors] def meetingIncidents(meeting: Meeting, offset: Int = 0): Seq[Incident] = {
-    IncidentsDao.findAll(
-      meetingId = Some(meeting.id),
-      limit = 100,
-      offset = offset
-    )
   }
 
   private[actors] def nextTask(incident: Incident): Option[Task] = {

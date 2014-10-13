@@ -25,14 +25,10 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
 
     val meetingNextWeek = MeetingsDao.upsert(org, now.plusWeeks(1))
 
-    val endedMeetings = Database.recentlyEndedMeetings()
-    endedMeetings.find(_.id == meetingLastHour.id) should be(Some(meetingLastHour))
-    endedMeetings.find(_.scheduledAt.isAfter(now)) should be(None)
-
-    Database.meetingIncidents(meetingLastHour).map(_.id) should be(Seq(incident.id))
-
     Database.nextTask(incident) should be(Some(Task.ReviewTeam))
     Database.syncMeeting(meetingLastHour)
+
+    Thread.sleep(2000)
 
     MeetingsDao.findAll(
       isUpcoming = Some(true),
