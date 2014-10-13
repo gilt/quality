@@ -36,6 +36,9 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
     val team = Util.createTeam()
     val incidentWithTeam = IncidentsDao.update(User.Default, incident, FullIncidentForm(org, form.copy(teamKey = Some(team.key))))
     Database.nextTask(incidentWithTeam) should be(Some(Task.ReviewPlan))
+
+    MeetingsDao.upsertAgendaItem(meeting, incident, Task.ReviewPlan)
+    Database.nextTask(incidentWithTeam) should be(None)
   }
 
 }
