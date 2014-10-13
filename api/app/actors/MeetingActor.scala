@@ -7,8 +7,9 @@ import akka.actor._
 import play.api.Play.current
 
 object MeetingMessage {
-  case object SyncMeetings
+  case object SyncOrganizationMeetings
   case object SyncIncidents
+  case object SyncMeetings
   case class SyncIncident(incidentId: Long)
 }
 
@@ -19,9 +20,30 @@ class MeetingActor extends Actor {
     /**
       * Creates upcoming meetings for all organizations.
       */
+    case MeetingMessage.SyncOrganizationMeetings => {
+      try {
+        Database.ensureAllOrganizationHaveUpcomingMeetings()
+      } catch {
+        case e: Throwable => println("ERROR: " + e)
+      }
+    }
+
+    /**
+      * Looks at incidents assigned to meeting that recently
+      * passed. Those incidents might not have been updated, so we
+      * trigger a sync on those incidents here.
+      * 
+      * This catches the use case of
+      *   - incident created, assigned to meeting
+      *   - reviewed in meeting but incident record not actually modified
+      *   - incident needs to get scheduled for next task in next meeting
+      */
     case MeetingMessage.SyncMeetings => {
-      println("MeetingMessage.SyncMeetings")
-      Database.ensureAllOrganizationHaveUpcomingMeetings()
+      try {
+        Database.syncMeetings()
+      } catch {
+        case e: Throwable => println("ERROR: " + e)
+      }
     }
 
     /**
@@ -32,18 +54,14 @@ class MeetingActor extends Actor {
       *  b. OR this incident has already been in a meeting for all Tasks
       */
     case MeetingMessage.SyncIncident(incidentId) => {
-      println(s"MeetingMessage.SyncIncident($incidentId)")
-      Database.assignIncident(incidentId)
+      try {
+        Database.assignIncident(incidentId)
+      } catch {
+        case e: Throwable => println("ERROR: " + e)
+      }
     }
 
     case MeetingMessage.SyncIncidents => {
-      println("MeetingMessage.SyncIncidents")
-
-      // TODO: Also have to look at incidents involved in meetings
-      // that recently passed. This would catch the use case of
-      //  - incident created, assigned to meeting
-      //  - reviewed in meeting but incident record not actually modified
-      //  - incident needs to get scheduled for next task in next meeting
       IncidentsDao.findRecentlyModifiedIncidentIds.foreach { incidentId =>
         sender ! MeetingMessage.SyncIncident(incidentId)
       }

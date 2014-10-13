@@ -18,7 +18,7 @@ object Teams extends Controller {
     offset: Int = 0
   ) = OrgAction { request =>
     val matches = TeamsDao.findAll(
-      orgKey = request.org.key,
+      request.org,
       key = key,
       limit = limit,
       offset = offset

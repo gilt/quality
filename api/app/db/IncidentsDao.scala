@@ -172,6 +172,7 @@ object IncidentsDao {
   def findAll(
     org: Option[Organization] = None,
     id: Option[Long] = None,
+    meetingId: Option[Long] = None,
     teamKey: Option[String] = None,
     hasTeam: Option[Boolean] = None,
     hasPlan: Option[Boolean] = None,
@@ -195,6 +196,7 @@ object IncidentsDao {
       Some(BaseQuery.trim),
       org.map { v => "and organizations.id = {organization_id}" },
       id.map { v => "and incidents.id = {id}" },
+      meetingId.map { v => "and incidents.id in (select incident_id from agenda_items where deleted_at is null and meeting_id = {meeting_id})" },
       teamKey.map { v => "and incidents.team_id = (select id from teams where deleted_at is null and key = lower(trim({team_key})))" },
       hasTeam.map { v =>
         v match {
@@ -222,6 +224,7 @@ object IncidentsDao {
     val bind = Seq(
       orgId.map { v => NamedParameter("organization_id", toParameterValue(v)) },
       id.map { v => NamedParameter("id", toParameterValue(v)) },
+      meetingId.map { v => NamedParameter("meeting_id", toParameterValue(v)) },
       teamKey.map { v => NamedParameter("team_key", toParameterValue(v)) },
       severity.map { v => NamedParameter("severity", toParameterValue(severity)) }
     ).flatten

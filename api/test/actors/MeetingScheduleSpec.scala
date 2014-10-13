@@ -1,7 +1,5 @@
 package actors
 
-import com.gilt.quality.models.OrganizationForm
-import db.{OrganizationsDao, User}
 import org.joda.time.{DateTime, DateTimeConstants}
 
 import java.util.UUID
@@ -16,7 +14,6 @@ class MeetingScheduleSpec extends FunSpec with ShouldMatchers {
     val nextDates = MeetingSchedule(DayOfWeek.Thursday, 12, 0).upcomingDates
     nextDates.size should be(2)
     nextDates.find(_.isBefore(now)) should be(None)
-    nextDates.foreach { d =>println(d) }
     nextDates.foreach { d =>
       d.getDayOfWeek() should be(DateTimeConstants.THURSDAY)
       d.getHourOfDay() should be(12)
@@ -63,10 +60,4 @@ class MeetingScheduleSpec extends FunSpec with ShouldMatchers {
     }.getMessage should be("requirement failed: Invalid beginningHourUTC[-1]")
   }
 
-  it("orgs have meeting schedules") {
-    running(FakeApplication()) {
-      val org = OrganizationsDao.create(User.Default, OrganizationForm(name = UUID.randomUUID.toString))
-      MeetingSchedule.findByOrganization(org) should be(Some(MeetingSchedule.DefaultMeetingSchedule))
-    }
-  }
 }

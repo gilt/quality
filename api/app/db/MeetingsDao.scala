@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{AgendaItem, Meeting, MeetingForm, Organization, Task}
+import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Incident, Meeting, MeetingForm, Organization, Task}
 import org.joda.time.DateTime
 import anorm._
 import anorm.ParameterValue._
@@ -62,11 +62,77 @@ object MeetingsDao {
     findAll(org = Some(org), id = Some(id), limit = 1).headOption
   }
 
+  def upsert(
+    org: Organization,
+    scheduledAt: DateTime
+  ): Meeting = {
+    MeetingsDao.findAll(
+      org = Some(org),
+      scheduledAt = Some(scheduledAt),
+      limit = 1
+    ).headOption.getOrElse {
+      MeetingsDao.create(
+        User.Actor,
+        FullMeetingForm(
+          org,
+          MeetingForm(
+            scheduledAt = scheduledAt
+          )
+        )
+      )
+    }
+  }
+
+  // TODO: upsert is on meeting/incident... incident can only be in
+  // one meeting at a time, but method signature doesn't indicate
+  // this.
+  def upsertAgendaItem(
+    meeting: Meeting,
+    incident: Incident,
+    task: Task
+  ): AgendaItem = {
+    // TODO: Need to use row level locks or move to db
+    AgendaItemsDao.findAll(
+      meetingId = Some(meeting.id),
+      incidentId = Some(incident.id),
+      limit = 1
+    ).headOption.getOrElse {
+      try {
+        AgendaItemsDao.create(
+          User.Actor,
+          FullAgendaItemForm(
+            meeting,
+            AgendaItemForm(
+              incidentId = incident.id,
+              task = task
+            )
+          )
+        )
+      } catch {
+        case e: org.postgresql.util.PSQLException => {
+          if (e.getMessage.startsWith("""ERROR: duplicate key value violates unique constraint "agenda_items_meeting_id_incident_id_idx"""")) {
+            AgendaItemsDao.findAll(
+              meetingId = Some(meeting.id),
+              incidentId = Some(incident.id),
+              limit = 1
+            ).headOption.getOrElse {
+              throw e
+            }
+          } else {
+            throw e
+          }
+        }
+        case e: Throwable => throw e
+      }
+    }
+  }
+
   def findAll(
     org: Option[Organization] = None,
     id: Option[Long] = None,
     incidentId: Option[Long] = None,
     scheduledAt: Option[DateTime] = None,
+    scheduledWithinNHours: Option[Int] = None,
     isUpcoming: Option[Boolean] = None,
     limit: Int = 50,
     offset: Int = 0
@@ -77,6 +143,7 @@ object MeetingsDao {
       id.map { v => "and meetings.id = {id}" },
       incidentId.map { v => "and meetings.id in (select meeting_id from agenda_items where deleted_at is null and incident_id = {incident_id})" },
       scheduledAt.map { v => "and date_trunc('minute', meetings.scheduled_at) = date_trunc('minute', {scheduled_at}::timestamptz)" },
+      scheduledWithinNHours.map { v => s"and meetings.scheduled_at between now() - interval '${v} hours' and now() + interval '${v} hours'" },
       isUpcoming.map { v =>
         v match {
           case true => "and meetings.scheduled_at > now()"

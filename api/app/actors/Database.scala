@@ -1,87 +1,115 @@
 package actors
 
-import com.gilt.quality.models.{AgendaItemForm, Meeting, MeetingForm, Organization, Task}
-import db.{FullAgendaItemForm, AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, User}
+import com.gilt.quality.models.{Incident, Meeting, MeetingForm, Organization, Task}
+import db.{AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, Pager, User}
 import org.joda.time.DateTime
 
 object Database {
 
   val AllTasks = Seq(Task.ReviewTeam, Task.ReviewPlan)
 
-  def ensureAllOrganizationHaveUpcomingMeetings() {
-    OrganizationsDao.findAll().foreach { org =>
-      ensureOrganizationHasUpcomingMeetings(org)
+  private[actors] def ensureAllOrganizationHaveUpcomingMeetings() {
+    Pager.eachPage[Organization] { offset =>
+      OrganizationsDao.findAll(
+        limit = 100,
+        offset = offset
+      )
+    } {
+      ensureOrganizationHasUpcomingMeetings(_)
     }
   }
 
+  /**
+    * Given an organization, if the organization is using the meetings
+    * module, ensures that there are at least 2 meetings scheduled in
+    * the future.
+    */
   def ensureOrganizationHasUpcomingMeetings(org: Organization) {
-    MeetingSchedule.findByOrganization(org).map { schedule =>
+    MeetingSchedule.findByOrganization(org).foreach { schedule =>
       schedule.upcomingDates.foreach { date =>
-        MeetingsDao.findAll(
-          org = Some(org),
-          scheduledAt = Some(date),
-          limit = 1
-        ).headOption.getOrElse {
-          println(s" -- scheduling org[${org.key}] meeting for $date")
-          MeetingsDao.create(
-            User.Actor,
-            FullMeetingForm(
-              org,
-              MeetingForm(
-                scheduledAt = date
-              )
-            )
-          )
+        MeetingsDao.upsert(org, date)
+      }
+    }
+  }
+
+  private[actors] def syncMeetings() {
+    Pager.eachPage[Meeting] { offset =>
+      MeetingsDao.findAll(
+        isUpcoming = Some(false),
+        scheduledWithinNHours = Some(12),
+        offset = offset
+      )
+    } { meeting =>
+      syncMeeting(meeting, incident =>
+        global.Actors.mainActor ! actors.MeetingMessage.SyncIncident(incident.id)
+      )
+    }
+  }
+
+  /**
+    * Given a meeting, creates a SyncIncident message for each
+    * incident in that meeting. This provides an easy way to
+    * recalculate next steps for any incident in this meeting.
+    */
+  private[actors] def syncMeeting(
+    meeting: Meeting,
+    f: Incident => Unit
+  ) {
+    Pager.eachPage[Incident] { offset =>
+      IncidentsDao.findAll(
+        meetingId = Some(meeting.id),
+        limit = 100,
+        offset = offset
+      )
+    } {
+      f(_)
+    }
+  }
+
+  private[actors] def nextTask(incident: Incident): Option[Task] = {
+    val incidentTasks = AgendaItemsDao.findAll(
+      incidentId = Some(incident.id)
+    ).map(_.task).toSet
+
+    AllTasks.find { t =>
+      t match {
+        case Task.ReviewTeam => {
+          // If the incident does not have a team or the review
+          // team task has never been a meeting for this incident,
+          // then return true
+          incident.team.isEmpty || !incidentTasks.contains(t)
+        }
+        case Task.ReviewPlan => {
+          // We specifically allow empty plans - that just means a
+          // team did not complete a plan. For this task, just
+          // check if the incident has been in a meeting to review
+          // its plan.
+          !incidentTasks.contains(t)
+        }
+        case Task.UNDEFINED(_) => {
+          !incidentTasks.contains(t)
         }
       }
     }
   }
 
+  /**
+    * Assigns this incident to an upcoming meeting if needed.
+    */
   def assignIncident(incidentId: Long) {
-
     IncidentsDao.findById(incidentId).map { incident =>
-      // Only assign incidents for organizations w/ meetings
-      // enabled. These orgs will always have upcoming meetings
-      // (managed by the EnsureUpcoming message above)
-      bestNextMeetingForOrg(incident.organization).map { meeting =>
-        val incidentTasks = AgendaItemsDao.findAll(
-          incidentId = Some(incidentId)
-        ).map(_.task)
-
-        AllTasks.find { t => !incidentTasks.contains(t) } match {
-          case None => {
-            // All tasks completed or scheduled
-          }
-          case Some(task) => {
-            AgendaItemsDao.findAll(
-              meetingId = Some(meeting.id),
-              incidentId = Some(incidentId),
-              limit = 1
-            ).headOption match {
-              case None => {
-                println("Creating agenda item for incideint " + incidentId)
-                AgendaItemsDao.create(
-                  User.Actor,
-                  FullAgendaItemForm(
-                    meeting,
-                    AgendaItemForm(
-                      incidentId = incidentId,
-                      task = task
-                    )
-                  )
-                )
-              }
-              case Some(_) => {
-                // Incident already part of this next meeting
-              }
-            }
-          }
+      nextTask(incident).map { task =>
+        // Only assign incidents for organizations w/ meetings
+        // enabled. These orgs will always have upcoming meetings
+        // (managed by the EnsureUpcoming message above)
+        bestNextMeetingForOrg(incident.organization).map { meeting =>
+          MeetingsDao.upsertAgendaItem(meeting, incident, task)
         }
       }
     }
   }
 
-  def bestNextMeetingForOrg(org: Organization): Option[Meeting] = {
+  private[actors] def bestNextMeetingForOrg(org: Organization): Option[Meeting] = {
     val twelveHoursFromNow = (new DateTime()).plus(3600*12*1000l)
     MeetingsDao.findAll(
       org = Some(org),

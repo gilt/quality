@@ -33,7 +33,6 @@ object Meetings extends Controller {
     org: String,
     id: Long
   ) = OrgAction { request =>
-    println("ORG: " + request.org)
     MeetingsDao.findByOrganizationAndId(request.org, id) match {
       case None => NotFound
       case Some(m: Meeting) => Ok(Json.toJson(m))

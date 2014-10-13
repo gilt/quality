@@ -14,7 +14,7 @@ class MeetingsSpec extends BaseSpec {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   lazy val org = createOrganization()
-/*
+
   "POST /:org/meetings" in new WithServer {
     val scheduledAt = (new DateTime()).plus(3)
     val meeting = createMeeting(org, MeetingForm(scheduledAt = scheduledAt))
@@ -41,7 +41,6 @@ class MeetingsSpec extends BaseSpec {
     await(client.meetings.getByOrgAndId(org.key, meeting.id)) must be(Some(meeting))
     await(client.meetings.getByOrgAndId(org.key, -1)) must be(None)
   }
- */
 
   "GET /:org/meetings for an incident" in new WithServer {
     val meeting1 = createMeeting(org)

@@ -89,7 +89,7 @@ object TeamsDao {
     org: Organization,
     key: String
   ): Option[Team] = {
-    findAll(orgKey = org.key, key = Some(key), limit = 1).headOption
+    findAll(org, key = Some(key), limit = 1).headOption
   }
 
   def lookupId(
@@ -107,7 +107,7 @@ object TeamsDao {
   }
 
   def findAll(
-    orgKey: String,
+    org: Organization,
     key: Option[String] = None,
     limit: Int = 50,
     offset: Int = 0
@@ -121,7 +121,7 @@ object TeamsDao {
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      Some(NamedParameter("org_key", toParameterValue(orgKey))),
+      Some(NamedParameter("org_key", toParameterValue(org.key))),
       key.map { v => NamedParameter("key", toParameterValue(v.trim.toLowerCase)) }
     ).flatten
 
