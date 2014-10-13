@@ -1,7 +1,7 @@
 package actors
 
-import com.gilt.quality.models.{AgendaItemForm, Incident, Meeting, MeetingForm, Organization, Task}
-import db.{FullAgendaItemForm, AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, User}
+import com.gilt.quality.models.{Incident, Meeting, MeetingForm, Organization, Task}
+import db.{AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, User}
 import org.joda.time.DateTime
 
 object Database {
@@ -14,25 +14,10 @@ object Database {
     }
   }
 
-  private[actors] def ensureOrganizationHasUpcomingMeetings(org: Organization) {
+  def ensureOrganizationHasUpcomingMeetings(org: Organization) {
     MeetingSchedule.findByOrganization(org).map { schedule =>
       schedule.upcomingDates.foreach { date =>
-        MeetingsDao.findAll(
-          org = Some(org),
-          scheduledAt = Some(date),
-          limit = 1
-        ).headOption.getOrElse {
-          println(s" -- scheduling org[${org.key}] meeting for $date")
-          MeetingsDao.create(
-            User.Actor,
-            FullMeetingForm(
-              org,
-              MeetingForm(
-                scheduledAt = date
-              )
-            )
-          )
-        }
+        MeetingsDao.upsert(org, date)
       }
     }
   }
@@ -111,40 +96,16 @@ object Database {
   /**
     * Assigns this incident to an upcoming meeting if needed.
     */
-  private[actors] def assignIncident(incidentId: Long) {
+  def assignIncident(incidentId: Long) {
     IncidentsDao.findById(incidentId).map { incident =>
       nextTask(incident).map { task =>
         // Only assign incidents for organizations w/ meetings
         // enabled. These orgs will always have upcoming meetings
         // (managed by the EnsureUpcoming message above)
         bestNextMeetingForOrg(incident.organization).map { meeting =>
-          upsertIncidentInMeeting(meeting, incident, task)
+          MeetingsDao.upsertAgendaItem(meeting, incident, task)
         }
       }
-    }
-  }
-
-  private[actors] def upsertIncidentInMeeting(
-    meeting: Meeting,
-    incident: Incident,
-    task: Task
-  ) {
-    AgendaItemsDao.findAll(
-      meetingId = Some(meeting.id),
-      incidentId = Some(incident.id),
-      limit = 1
-    ).headOption.getOrElse {
-      println("Creating agenda item for incident " + incident.id)
-      AgendaItemsDao.create(
-        User.Actor,
-        FullAgendaItemForm(
-          meeting,
-          AgendaItemForm(
-            incidentId = incident.id,
-            task = task
-          )
-        )
-      )
     }
   }
 

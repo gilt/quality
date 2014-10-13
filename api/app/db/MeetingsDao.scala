@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{AgendaItem, Meeting, MeetingForm, Organization, Task}
+import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Incident, Meeting, MeetingForm, Organization, Task}
 import org.joda.time.DateTime
 import anorm._
 import anorm.ParameterValue._
@@ -60,6 +60,50 @@ object MeetingsDao {
 
   def findByOrganizationAndId(org: Organization, id: Long): Option[Meeting] = {
     findAll(org = Some(org), id = Some(id), limit = 1).headOption
+  }
+
+  def upsert(
+    org: Organization,
+    scheduledAt: DateTime
+  ): Meeting = {
+    MeetingsDao.findAll(
+      org = Some(org),
+      scheduledAt = Some(scheduledAt),
+      limit = 1
+    ).headOption.getOrElse {
+      MeetingsDao.create(
+        User.Actor,
+        FullMeetingForm(
+          org,
+          MeetingForm(
+            scheduledAt = scheduledAt
+          )
+        )
+      )
+    }
+  }
+
+  def upsertAgendaItem(
+    meeting: Meeting,
+    incident: Incident,
+    task: Task
+  ) {
+    AgendaItemsDao.findAll(
+      meetingId = Some(meeting.id),
+      incidentId = Some(incident.id),
+      limit = 1
+    ).headOption.getOrElse {
+      AgendaItemsDao.create(
+        User.Actor,
+        FullAgendaItemForm(
+          meeting,
+          AgendaItemForm(
+            incidentId = incident.id,
+            task = task
+          )
+        )
+      )
+    }
   }
 
   def findAll(
