@@ -145,7 +145,7 @@ object Plans extends Controller {
                 },
                 1000.millis
               )
-              Redirect(routes.Incidents.show(org, incident.id)).flashing("warning" -> s"Incident $incidentId has a plan")
+              Redirect(routes.Incidents.show(org, incident.id)).flashing("success" -> s"Default plan created and marked as Bad")
             }
             case Some(plan) => {
               Redirect(routes.Incidents.show(org, incident.id)).flashing("warning" -> s"Incident $incidentId has a plan")
