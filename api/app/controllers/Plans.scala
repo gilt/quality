@@ -79,12 +79,9 @@ object Plans extends Controller {
             Conflict(Json.toJson(Validation.invalidJson(e)))
           }
           case s: JsSuccess[PlanForm] => {
-            println("org: " + org)
-            println("plan: " + plan)
             IncidentsDao.findByOrganizationAndId(request.org, plan.incidentId) match {
               case None => NotFound
               case Some(incident) => {
-                println("form: " +s.get)
                 val form = FullPlanForm(request.org, incident, s.get)
                 form.validate match {
                   case Nil => {

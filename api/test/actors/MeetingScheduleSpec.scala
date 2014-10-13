@@ -16,7 +16,6 @@ class MeetingScheduleSpec extends FunSpec with ShouldMatchers {
     val nextDates = MeetingSchedule(DayOfWeek.Thursday, 12, 0).upcomingDates
     nextDates.size should be(2)
     nextDates.find(_.isBefore(now)) should be(None)
-    nextDates.foreach { d =>println(d) }
     nextDates.foreach { d =>
       d.getDayOfWeek() should be(DateTimeConstants.THURSDAY)
       d.getHourOfDay() should be(12)

@@ -17,31 +17,27 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
     val lastHour = now.plusHours(-1)
     val org = Util.createOrganization()
     val meetingLastHour = MeetingsDao.upsert(org, lastHour)
+    val meetingTomorrow = MeetingsDao.upsert(org, now.plusDays(1))
 
     val incident = Util.createIncident(org)
 
     MeetingsDao.upsertAgendaItem(meetingLastHour, incident, Task.ReviewTeam)
 
-    MeetingsDao.findAll(
-      incidentId = Some(incident.id)
-    ).filter (_.id != meetingLastHour.id).foreach { mtg =>
-      println("SOFT DELETING MEETING: " + mtg)
-      MeetingsDao.softDelete(User.Default, mtg)
-    }
-
     val meetingNextWeek = MeetingsDao.upsert(org, now.plusWeeks(1))
 
-    Database.syncMeetings()
+    val endedMeetings = Database.recentlyEndedMeetings()
+    endedMeetings.find(_.id == meetingLastHour.id) should be(Some(meetingLastHour))
+    endedMeetings.find(_.scheduledAt.isAfter(now)) should be(None)
 
-    val meetingIds = MeetingsDao.findAll(
+    Database.meetingIncidents(meetingLastHour).map(_.id) should be(Seq(incident.id))
+
+    Database.nextTask(incident) should be(Some(Task.ReviewTeam))
+    Database.syncMeeting(meetingLastHour)
+
+    MeetingsDao.findAll(
       isUpcoming = Some(true),
       incidentId = Some(incident.id)
-    ).map(_.id)
-
-    println("MEETING IDS: " + meetingIds)
-
-    // Probably this will be meetingNextWeek but there is no guarantee
-    meetingIds.isEmpty should be(false)
+    ).map(_.id).isEmpty should be(false)
   }
 
   it("ensureAllOrganizationHaveUpcomingMeetings") {

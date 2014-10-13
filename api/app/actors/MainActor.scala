@@ -20,11 +20,11 @@ class MainActor(name: String) extends Actor with ActorLogging {
 
   def receive = akka.event.LoggingReceive {
     case MeetingMessage.SyncIncident(incidentId) => {
-      println(s"MainActor: IncidentMessage.SyncOne($incidentId)")
+      println(s"MainActor: Received MeetingMessage.SyncIncident($incidentId)")
       meetingActor ! MeetingMessage.SyncIncident(incidentId)
     }
     case m: Any => {
-      println("Main actor got a messages: " + m)
+      println("Main actor got an unhandled message: " + m)
     }
   }
 }
