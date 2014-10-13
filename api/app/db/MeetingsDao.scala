@@ -94,7 +94,6 @@ object MeetingsDao {
     AgendaItemsDao.findAll(
       meetingId = Some(meeting.id),
       incidentId = Some(incident.id),
-      task = Some(task),
       limit = 1
     ).headOption.getOrElse {
       AgendaItemsDao.create(

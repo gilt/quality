@@ -9,6 +9,8 @@ import java.util.UUID
 
 class MeetingsDaoSpec extends FunSpec with Matchers {
 
+  new play.core.StaticApplication(new java.io.File("."))
+
   it("upsert") {
     val org = Util.createOrganization()
     val date = new DateTime()

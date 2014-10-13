@@ -10,11 +10,26 @@ import org.scalatest.{FunSpec, ShouldMatchers}
 
 class DatabaseSpec extends FunSpec with ShouldMatchers {
 
+  new play.core.StaticApplication(new java.io.File("."))
+
+  it("ensureAllOrganizationHaveUpcomingMeetings") {
+    val orgs = Seq(Util.createOrganization(), Util.createOrganization())
+    Database.ensureAllOrganizationHaveUpcomingMeetings()
+    orgs.foreach { org =>
+      MeetingsDao.findAll(
+        isUpcoming = Some(true),
+        org = Some(org)
+      ).size >= 2 should be(true)
+    }
+  }
+
   it("ensureOrganizationHasUpcomingMeetings") {
     val org = Util.createOrganization()
     Database.ensureOrganizationHasUpcomingMeetings(org)
-    val meetings = MeetingsDao.findAll(org = Some(org))
-    meetings.size >= 2 should be(true)
+    MeetingsDao.findAll(
+      org = Some(org),
+      isUpcoming = Some(true)
+    ).size >= 2 should be(true)
   }
 
   it("bestNextMeetingForOrg") {

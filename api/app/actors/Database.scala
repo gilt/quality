@@ -74,8 +74,7 @@ object Database {
   private[actors] def nextTask(incident: Incident): Option[Task] = {
     val incidentTasks = AgendaItemsDao.findAll(
       incidentId = Some(incident.id)
-    ).map(_.task)
-    println("incidentTasks: " + incidentTasks.mkString(", "))
+    ).map(_.task).toSet
 
     AllTasks.find { t =>
       t match {
