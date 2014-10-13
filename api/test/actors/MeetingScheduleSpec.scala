@@ -1,7 +1,7 @@
 package actors
 
 import com.gilt.quality.models.OrganizationForm
-import db.{OrganizationsDao, User}
+import db.{OrganizationsDao, User, Util}
 import org.joda.time.{DateTime, DateTimeConstants}
 
 import java.util.UUID
@@ -63,9 +63,7 @@ class MeetingScheduleSpec extends FunSpec with ShouldMatchers {
   }
 
   it("orgs have meeting schedules") {
-    running(FakeApplication()) {
-      val org = OrganizationsDao.create(User.Default, OrganizationForm(name = UUID.randomUUID.toString))
-      MeetingSchedule.findByOrganization(org) should be(Some(MeetingSchedule.DefaultMeetingSchedule))
-    }
+    val org = Util.createOrganization()
+    MeetingSchedule.findByOrganization(org) should be(Some(MeetingSchedule.DefaultMeetingSchedule))
   }
 }
