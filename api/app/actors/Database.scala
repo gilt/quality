@@ -75,6 +75,7 @@ object Database {
     val incidentTasks = AgendaItemsDao.findAll(
       incidentId = Some(incident.id)
     ).map(_.task)
+    println("incidentTasks: " + incidentTasks.mkString(", "))
 
     AllTasks.find { t =>
       t match {

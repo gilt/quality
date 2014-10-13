@@ -83,6 +83,9 @@ object MeetingsDao {
     }
   }
 
+  // TODO: upsert is on meeting/incident... incident can only be in
+  // one meeting at a time, but method signature doesn't indicate
+  // this.
   def upsertAgendaItem(
     meeting: Meeting,
     incident: Incident,
@@ -91,6 +94,7 @@ object MeetingsDao {
     AgendaItemsDao.findAll(
       meetingId = Some(meeting.id),
       incidentId = Some(incident.id),
+      task = Some(task),
       limit = 1
     ).headOption.getOrElse {
       AgendaItemsDao.create(
