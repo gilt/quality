@@ -14,9 +14,9 @@ class MainActor extends Actor with ActorLogging {
 
   val meetingActor = Akka.system.actorOf(Props[MeetingActor], name = "meetingActor")
 
-  Akka.system.scheduler.schedule(0.seconds, 1.minutes, meetingActor, MeetingMessage.SyncOrganizationMeetings)
-  Akka.system.scheduler.schedule(15.seconds, 1.minutes, meetingActor, MeetingMessage.SyncMeetings)
-  Akka.system.scheduler.schedule(30.seconds, 15.minutes, meetingActor, MeetingMessage.SyncIncidents)
+  Akka.system.scheduler.schedule(15.seconds, 1.minutes, meetingActor, MeetingMessage.SyncOrganizationMeetings)
+  Akka.system.scheduler.schedule(20.seconds, 1.minutes, meetingActor, MeetingMessage.SyncMeetings)
+  Akka.system.scheduler.schedule(25.seconds, 15.minutes, meetingActor, MeetingMessage.SyncIncidents)
 
   def receive = akka.event.LoggingReceive {
     case MeetingMessage.SyncIncident(incidentId) => {

@@ -9,8 +9,13 @@ object Database {
   val AllTasks = Seq(Task.ReviewTeam, Task.ReviewPlan)
 
   private[actors] def ensureAllOrganizationHaveUpcomingMeetings() {
-    OrganizationsDao.findAll().foreach { org =>
-      ensureOrganizationHasUpcomingMeetings(org)
+    Pager.eachPage[Organization] { offset =>
+      OrganizationsDao.findAll(
+        limit = 100,
+        offset = offset
+      )
+    } {
+      ensureOrganizationHasUpcomingMeetings(_)
     }
   }
 
