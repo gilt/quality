@@ -97,16 +97,33 @@ object MeetingsDao {
       incidentId = Some(incident.id),
       limit = 1
     ).headOption.getOrElse {
-      AgendaItemsDao.create(
-        User.Actor,
-        FullAgendaItemForm(
-          meeting,
-          AgendaItemForm(
-            incidentId = incident.id,
-            task = task
+      try {
+        AgendaItemsDao.create(
+          User.Actor,
+          FullAgendaItemForm(
+            meeting,
+            AgendaItemForm(
+              incidentId = incident.id,
+              task = task
+            )
           )
         )
-      )
+      } catch {
+        case e: org.postgresql.util.PSQLException => {
+          if (e.getMessage.startsWith("""ERROR: duplicate key value violates unique constraint "agenda_items_meeting_id_incident_id_idx"""")) {
+            AgendaItemsDao.findAll(
+              meetingId = Some(meeting.id),
+              incidentId = Some(incident.id),
+              limit = 1
+            ).headOption.getOrElse {
+              throw e
+            }
+          } else {
+            throw e
+          }
+        }
+        case e: Throwable => throw e
+      }
     }
   }
 
