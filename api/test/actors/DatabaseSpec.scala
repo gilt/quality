@@ -4,13 +4,34 @@ import com.gilt.quality.models.Task
 import db.{FullIncidentForm, IncidentsDao, MeetingsDao, User, Util}
 import org.joda.time.DateTime
 import java.util.UUID
-import play.api.test._
 import play.api.test.Helpers._
 import org.scalatest.{FunSpec, ShouldMatchers}
+import akka.actor.{ActorSystem, Props}
+import akka.testkit.{TestActorRef, TestProbe}
 
 class DatabaseSpec extends FunSpec with ShouldMatchers {
 
   new play.core.StaticApplication(new java.io.File("."))
+
+  it("syncMeetings") {
+    //implicit val system = ActorSystem("DatabaseSpecActorSystem")
+    //val actorRef = TestActorRef(Props(new MainActor("test")))
+    //expectMsg(MeetingMessage.SyncIncident(1))
+    val lastWeek = (new DateTime()).plusWeeks(-1)
+    val nextWeek = (new DateTime()).plusWeeks(1)
+    val org = Util.createOrganization()
+    val meetingLastWeek = MeetingsDao.upsert(org, lastWeek)
+    val meetingNextWeek = MeetingsDao.upsert(org, nextWeek)
+
+    val incident = Util.createIncident(org)
+
+    MeetingsDao.upsertAgendaItem(meetingLastWeek, incident, Task.ReviewTeam)
+
+    Database.syncMeetings()
+    val meetingIds2 = MeetingsDao.findAll(incidentId = Some(incident.id)).map(_.id)
+    meetingIds2.contains(meetingLastWeek.id) should be(true)
+    meetingIds2.contains(meetingNextWeek.id) should be(true)
+  }
 
   it("ensureAllOrganizationHaveUpcomingMeetings") {
     val orgs = Seq(Util.createOrganization(), Util.createOrganization())
@@ -45,7 +66,7 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
 
   it("nextTask is reviewTeam even if an incident is created with a team") {
     val org = Util.createOrganization()
-    val team = Util.createTeam()
+    val team = Util.createTeam(org)
     val form = Util.createIncidentForm().copy(teamKey = Some(team.key))
     val incident = Util.createIncident(org, form)
     Database.nextTask(incident) should be(Some(Task.ReviewTeam))
@@ -69,7 +90,7 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
     Database.nextTask(incident) should be(Some(Task.ReviewTeam))
 
     // Once we have a team assigned, next task is review plan
-    val team = Util.createTeam()
+    val team = Util.createTeam(org)
     val incidentWithTeam = IncidentsDao.update(User.Default, incident, FullIncidentForm(org, form.copy(teamKey = Some(team.key))))
     Database.nextTask(incidentWithTeam) should be(Some(Task.ReviewPlan))
 

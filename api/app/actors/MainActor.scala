@@ -6,13 +6,13 @@ import akka.actor._
 import play.api.Play.current
 
 object MainActor {
-  def props() = Props(new MainActor)
+  def props() = Props(new MainActor("main"))
 }
 
-class MainActor extends Actor with ActorLogging {
+class MainActor(name: String) extends Actor with ActorLogging {
   import scala.concurrent.duration._
 
-  val meetingActor = Akka.system.actorOf(Props[MeetingActor], name = "meetingActor")
+  val meetingActor = Akka.system.actorOf(Props[MeetingActor], name = s"$name:meetingActor")
 
   Akka.system.scheduler.schedule(15.seconds, 1.minutes, meetingActor, MeetingMessage.SyncOrganizationMeetings)
   Akka.system.scheduler.schedule(20.seconds, 1.minutes, meetingActor, MeetingMessage.SyncMeetings)
