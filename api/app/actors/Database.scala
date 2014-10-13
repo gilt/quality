@@ -14,6 +14,11 @@ object Database {
     }
   }
 
+  /**
+    * Given an organization, if the organization is using the meetings
+    * module, ensures that there are at least 2 meetings scheduled in
+    * the future.
+    */
   def ensureOrganizationHasUpcomingMeetings(org: Organization) {
     MeetingSchedule.findByOrganization(org).map { schedule =>
       schedule.upcomingDates.foreach { date =>
