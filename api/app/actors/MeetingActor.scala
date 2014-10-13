@@ -21,7 +21,11 @@ class MeetingActor extends Actor {
       * Creates upcoming meetings for all organizations.
       */
     case MeetingMessage.SyncOrganizationMeetings => {
-      Database.ensureAllOrganizationHaveUpcomingMeetings()
+      try {
+        Database.ensureAllOrganizationHaveUpcomingMeetings()
+      } catch {
+        case e: Throwable => println("ERROR: " + e)
+      }
     }
 
     /**
@@ -35,7 +39,11 @@ class MeetingActor extends Actor {
       *   - incident needs to get scheduled for next task in next meeting
       */
     case MeetingMessage.SyncMeetings => {
-      Database.syncMeetings()
+      try {
+        Database.syncMeetings()
+      } catch {
+        case e: Throwable => println("ERROR: " + e)
+      }
     }
 
     /**
@@ -46,7 +54,11 @@ class MeetingActor extends Actor {
       *  b. OR this incident has already been in a meeting for all Tasks
       */
     case MeetingMessage.SyncIncident(incidentId) => {
-      Database.assignIncident(incidentId)
+      try {
+        Database.assignIncident(incidentId)
+      } catch {
+        case e: Throwable => println("ERROR: " + e)
+      }
     }
 
     case MeetingMessage.SyncIncidents => {
