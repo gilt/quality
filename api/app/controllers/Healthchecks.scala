@@ -1,6 +1,6 @@
 package controllers
 
-import db.OrganizationsDao
+//import db.OrganizationsDao
 import com.gilt.quality.models.Healthcheck
 import com.gilt.quality.models.json._
 import play.api._
@@ -15,7 +15,7 @@ object Healthchecks extends Controller {
    *  Verifies we can communicate with the database
    */
   def get() = Action { request =>
-    OrganizationsDao.findAll(limit = 1)
+    //OrganizationsDao.findAll(limit = 1)
     Ok(Healthy)
   }
 
