@@ -1,7 +1,7 @@
 package actors
 
 import com.gilt.quality.models.{Incident, Meeting, MeetingForm, Organization, Task}
-import db.{AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, User}
+import db.{AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, Pager, User}
 import org.joda.time.DateTime
 
 object Database {
@@ -28,20 +28,14 @@ object Database {
   }
 
   private[actors] def syncMeetings() {
-    val limit = 100
-    var offset = 0
-    var haveMore = true
-    while (haveMore) {
-      val meetings = MeetingsDao.findAll(
+    Pager.eachPage[Meeting] { offset =>
+      MeetingsDao.findAll(
         isUpcoming = Some(false),
         scheduledWithinNHours = Some(12),
-        limit = limit,
         offset = offset
       )
-
-      offset += 1
-      haveMore = meetings.size >= limit
-      meetings.foreach { syncMeetingIncidents(_) }
+    } {
+      syncMeetingIncidents(_)
     }
   }
 
@@ -51,21 +45,14 @@ object Database {
     * recalculate next steps for any incident in this meeting.
     */
   private[actors] def syncMeetingIncidents(meeting: Meeting) {
-    val limit = 100
-    var offset = 0
-    var haveMore = true
-    while (haveMore) {
-      val incidents = IncidentsDao.findAll(
+    Pager.eachPage[Incident] { offset =>
+      IncidentsDao.findAll(
         meetingId = Some(meeting.id),
-        limit = limit,
+        limit = 100,
         offset = offset
       )
-
-      offset += 1
-      haveMore = incidents.size >= limit
-      incidents.foreach { incident =>
-        global.Actors.mainActor ! actors.MeetingMessage.SyncIncident(incident.id)
-      }
+    } { incident =>
+      global.Actors.mainActor ! actors.MeetingMessage.SyncIncident(incident.id)
     }
   }
 
