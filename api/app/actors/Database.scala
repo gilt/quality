@@ -27,7 +27,7 @@ object Database {
     }
   }
 
-  private[actors] def syncMeetingIncidents() {
+  private[actors] def syncMeetings() {
     val limit = 100
     var offset = 0
     var haveMore = true
@@ -36,14 +36,12 @@ object Database {
         isUpcoming = Some(false),
         scheduledWithinNHours = Some(12),
         limit = limit,
-        offset = 0
+        offset = offset
       )
 
       offset += 1
       haveMore = meetings.size >= limit
-      meetings.foreach { meeting =>
-        syncIncidentsForMeeting(meeting)
-      }
+      meetings.foreach { syncMeetingIncidents(_) }
     }
   }
 
@@ -52,7 +50,7 @@ object Database {
     * incident in that meeting. This provides an easy way to
     * recalculate next steps for any incident in this meeting.
     */
-  private[actors] def syncIncidentsForMeeting(meeting: Meeting) {
+  private[actors] def syncMeetingIncidents(meeting: Meeting) {
     val limit = 100
     var offset = 0
     var haveMore = true
@@ -60,7 +58,7 @@ object Database {
       val incidents = IncidentsDao.findAll(
         meetingId = Some(meeting.id),
         limit = limit,
-        offset = 0
+        offset = offset
       )
 
       offset += 1

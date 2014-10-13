@@ -7,9 +7,9 @@ import akka.actor._
 import play.api.Play.current
 
 object MeetingMessage {
-  case object SyncMeetings
+  case object SyncOrganizationMeetings
   case object SyncIncidents
-  case object SyncMeetingIncidents
+  case object SyncMeetings
   case class SyncIncident(incidentId: Long)
 }
 
@@ -20,8 +20,8 @@ class MeetingActor extends Actor {
     /**
       * Creates upcoming meetings for all organizations.
       */
-    case MeetingMessage.SyncMeetings => {
-      println("MeetingMessage.SyncMeetings")
+    case MeetingMessage.SyncOrganizationMeetings => {
+      println("MeetingMessage.SyncOrganizationMeetings")
       Database.ensureAllOrganizationHaveUpcomingMeetings()
     }
 
@@ -35,9 +35,9 @@ class MeetingActor extends Actor {
       *   - reviewed in meeting but incident record not actually modified
       *   - incident needs to get scheduled for next task in next meeting
       */
-    case MeetingMessage.SyncMeetingIncidents => {
-      println("MeetingMessage.SyncMeetingIncidents")
-      Database.syncMeetingIncidents()
+    case MeetingMessage.SyncMeetings => {
+      println("MeetingMessage.SyncMeetings")
+      Database.syncMeetings()
     }
 
     /**
