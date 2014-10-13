@@ -11,6 +11,8 @@ import org.scalatest.{FunSpec, ShouldMatchers}
 
 class MeetingScheduleSpec extends FunSpec with ShouldMatchers {
 
+  new play.core.StaticApplication(new java.io.File("."))
+
   it("upcomingDates on thursdays at noon") {
     val now = new DateTime()
     val nextDates = MeetingSchedule(DayOfWeek.Thursday, 12, 0).upcomingDates
