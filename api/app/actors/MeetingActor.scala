@@ -21,7 +21,6 @@ class MeetingActor extends Actor {
       * Creates upcoming meetings for all organizations.
       */
     case MeetingMessage.SyncOrganizationMeetings => {
-      println("MeetingMessage.SyncOrganizationMeetings")
       Database.ensureAllOrganizationHaveUpcomingMeetings()
     }
 
@@ -36,7 +35,6 @@ class MeetingActor extends Actor {
       *   - incident needs to get scheduled for next task in next meeting
       */
     case MeetingMessage.SyncMeetings => {
-      println("MeetingMessage.SyncMeetings")
       Database.syncMeetings()
     }
 
@@ -48,13 +46,10 @@ class MeetingActor extends Actor {
       *  b. OR this incident has already been in a meeting for all Tasks
       */
     case MeetingMessage.SyncIncident(incidentId) => {
-      println(s"MeetingMessage.SyncIncident($incidentId)")
       Database.assignIncident(incidentId)
     }
 
     case MeetingMessage.SyncIncidents => {
-      println("MeetingMessage.SyncIncidents")
-
       IncidentsDao.findRecentlyModifiedIncidentIds.foreach { incidentId =>
         sender ! MeetingMessage.SyncIncident(incidentId)
       }
