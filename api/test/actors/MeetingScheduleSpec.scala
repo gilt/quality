@@ -1,7 +1,5 @@
 package actors
 
-import com.gilt.quality.models.OrganizationForm
-import db.{OrganizationsDao, User, Util}
 import org.joda.time.{DateTime, DateTimeConstants}
 
 import java.util.UUID
@@ -10,8 +8,6 @@ import play.api.test.Helpers._
 import org.scalatest.{FunSpec, ShouldMatchers}
 
 class MeetingScheduleSpec extends FunSpec with ShouldMatchers {
-
-  new play.core.StaticApplication(new java.io.File("."))
 
   it("upcomingDates on thursdays at noon") {
     val now = new DateTime()
@@ -64,8 +60,4 @@ class MeetingScheduleSpec extends FunSpec with ShouldMatchers {
     }.getMessage should be("requirement failed: Invalid beginningHourUTC[-1]")
   }
 
-  it("orgs have meeting schedules") {
-    val org = Util.createOrganization()
-    MeetingSchedule.findByOrganization(org) should be(Some(MeetingSchedule.DefaultMeetingSchedule))
-  }
 }

@@ -60,9 +60,6 @@ case class MeetingSchedule(
 
 object MeetingSchedule {
 
-  val OneHour = 3600 * 1000l
-  val OneDay = OneHour * 24
-
   val DefaultMeetingSchedule = MeetingSchedule(DayOfWeek.Thursday, 15)
 
   def findByOrganization(org: Organization): Option[MeetingSchedule] = {
