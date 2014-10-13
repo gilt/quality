@@ -1,36 +1,47 @@
 package actors
 
 import com.gilt.quality.models.Task
-import db.{FullIncidentForm, IncidentsDao, MeetingsDao, User, Util}
+import db.{AgendaItemsDao, FullIncidentForm, IncidentsDao, MeetingsDao, User, Util}
 import org.joda.time.DateTime
 import java.util.UUID
 import play.api.test.Helpers._
 import org.scalatest.{FunSpec, ShouldMatchers}
-import akka.actor.{ActorSystem, Props}
-import akka.testkit.{TestActorRef, TestProbe}
 
 class DatabaseSpec extends FunSpec with ShouldMatchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
   it("syncMeetings") {
-    //implicit val system = ActorSystem("DatabaseSpecActorSystem")
-    //val actorRef = TestActorRef(Props(new MainActor("test")))
-    //expectMsg(MeetingMessage.SyncIncident(1))
-    val lastWeek = (new DateTime()).plusWeeks(-1)
-    val nextWeek = (new DateTime()).plusWeeks(1)
+    // Actors look for meetings that ended in past 12 hours
+    val now = new DateTime()
+    val lastHour = now.plusHours(-1)
     val org = Util.createOrganization()
-    val meetingLastWeek = MeetingsDao.upsert(org, lastWeek)
-    val meetingNextWeek = MeetingsDao.upsert(org, nextWeek)
+    val meetingLastHour = MeetingsDao.upsert(org, lastHour)
 
     val incident = Util.createIncident(org)
 
-    MeetingsDao.upsertAgendaItem(meetingLastWeek, incident, Task.ReviewTeam)
+    MeetingsDao.upsertAgendaItem(meetingLastHour, incident, Task.ReviewTeam)
+
+    MeetingsDao.findAll(
+      incidentId = Some(incident.id)
+    ).filter (_.id != meetingLastHour.id).foreach { mtg =>
+      println("SOFT DELETING MEETING: " + mtg)
+      MeetingsDao.softDelete(User.Default, mtg)
+    }
+
+    val meetingNextWeek = MeetingsDao.upsert(org, now.plusWeeks(1))
 
     Database.syncMeetings()
-    val meetingIds2 = MeetingsDao.findAll(incidentId = Some(incident.id)).map(_.id)
-    meetingIds2.contains(meetingLastWeek.id) should be(true)
-    meetingIds2.contains(meetingNextWeek.id) should be(true)
+
+    val meetingIds = MeetingsDao.findAll(
+      isUpcoming = Some(true),
+      incidentId = Some(incident.id)
+    ).map(_.id)
+
+    println("MEETING IDS: " + meetingIds)
+
+    // Probably this will be meetingNextWeek but there is no guarantee
+    meetingIds.isEmpty should be(false)
   }
 
   it("ensureAllOrganizationHaveUpcomingMeetings") {

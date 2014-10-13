@@ -91,6 +91,7 @@ object MeetingsDao {
     incident: Incident,
     task: Task
   ): AgendaItem = {
+    // TODO: Need to use row level locks or move to db
     AgendaItemsDao.findAll(
       meetingId = Some(meeting.id),
       incidentId = Some(incident.id),

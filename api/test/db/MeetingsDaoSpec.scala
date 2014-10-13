@@ -54,4 +54,31 @@ class MeetingsDaoSpec extends FunSpec with Matchers {
     item.incident.id should be(item2.incident.id)
   }
 
+  it("findAll scheduledWithinNHours") {
+    val org = Util.createOrganization()
+    val now = new DateTime()
+
+    val meeting13HoursAgo = MeetingsDao.upsert(org, now.plusHours(-13))
+    val meeting11HoursAgo = MeetingsDao.upsert(org, now.plusHours(-11))
+    val meetingNow = MeetingsDao.upsert(org, now)
+    val meeting11HoursFromNow = MeetingsDao.upsert(org, now.plusHours(11))
+    val meeting13HoursFromNow = MeetingsDao.upsert(org, now.plusHours(13))
+
+    MeetingsDao.findAll(
+      org = Some(org),
+      scheduledWithinNHours = Some(14)
+    ).map(_.id).sorted should be(Seq(meeting13HoursAgo.id, meeting11HoursAgo.id, meetingNow.id, meeting11HoursFromNow.id, meeting13HoursFromNow.id))
+
+    MeetingsDao.findAll(
+      org = Some(org),
+      scheduledWithinNHours = Some(12)
+    ).map(_.id).sorted should be(Seq(meeting11HoursAgo.id, meetingNow.id, meeting11HoursFromNow.id))
+
+    MeetingsDao.findAll(
+      org = Some(org),
+      scheduledWithinNHours = Some(1)
+    ).map(_.id).sorted should be(Seq(meetingNow.id))
+  }
+
+
 }
