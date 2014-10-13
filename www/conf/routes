@@ -14,6 +14,7 @@ GET     /:org/incidents/:id                                       controllers.In
 GET     /:org/plans/:id                                           controllers.Plans.getById(org: String, id: Long)
 GET     /:org/plans/uploadByIncidentId/:incident_id               controllers.Plans.uploadByIncidentId(org: String, incident_id: Long)
 POST    /:org/plans/uploadByIncidentId/:incident_id               controllers.Plans.postUploadByIncidentId(org: String, incident_id: Long)
+POST    /:org/plans/postNoPlan/:incident_id                       controllers.Plans.postNoPlan(org: String, incident_id: Long)
 POST    /:org/plans/deleteById/:id                                controllers.Plans.postDeleteById(org: String, id: Long, incident_id: Long)
 POST    /:org/plans/grade/:id                                     controllers.Plans.postGrade(org: String, id: Long, score: Int)
 

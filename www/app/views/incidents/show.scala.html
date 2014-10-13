@@ -38,7 +38,8 @@
 
   @if(plan.isEmpty) {
     <p><em>No plan</em></p>
-    (<a href="@routes.Plans.uploadByIncidentId(org.key, incident.id)">Create</a>)
+    (<a href="@routes.Plans.uploadByIncidentId(org.key, incident.id)">Create</a> |
+     <a href="@routes.Plans.postNoPlan(org.key, incident.id)" class="delete">Fail for Missing Plan</a>)
   } else {
     @if(plan.get.grade.isEmpty) {
       Rate this plan:
