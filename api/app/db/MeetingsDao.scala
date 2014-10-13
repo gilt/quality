@@ -87,7 +87,7 @@ object MeetingsDao {
     meeting: Meeting,
     incident: Incident,
     task: Task
-  ) {
+  ): AgendaItem = {
     AgendaItemsDao.findAll(
       meetingId = Some(meeting.id),
       incidentId = Some(incident.id),
