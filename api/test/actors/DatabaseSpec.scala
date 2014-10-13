@@ -14,31 +14,17 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
   it("syncMeetings") {
     // Actors look for meetings that ended in past 12 hours
     val now = new DateTime()
-    val lastHour = now.plusHours(-1)
     val org = Util.createOrganization()
-    val meetingLastHour = MeetingsDao.upsert(org, lastHour)
-    val meetingTomorrow = MeetingsDao.upsert(org, now.plusDays(1))
+    val meetingLastHour = MeetingsDao.upsert(org, now.plusHours(-1))
 
     val incident = Util.createIncident(org)
-
     MeetingsDao.upsertAgendaItem(meetingLastHour, incident, Task.ReviewTeam)
 
-    val meetingNextWeek = MeetingsDao.upsert(org, now.plusWeeks(1))
-
-    Database.nextTask(incident) should be(Some(Task.ReviewTeam))
-
-    Database.syncMeeting(meetingLastHour)
-
-    /*
-     * TODO: TEST not yet working. Actor system has been shut down when running full test suite.
-    Thread.sleep(100)
-
-
-    MeetingsDao.findAll(
-      isUpcoming = Some(true),
-      incidentId = Some(incident.id)
-    ).map(_.id).isEmpty should be(false)
-     */
+    var incidentIds = scala.collection.mutable.ListBuffer[Long]()
+    Database.syncMeeting(meetingLastHour, i =>
+      incidentIds.append(i.id)
+    )
+    incidentIds should be(Seq(incident.id))
   }
 
   it("ensureAllOrganizationHaveUpcomingMeetings") {
