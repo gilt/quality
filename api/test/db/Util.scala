@@ -1,7 +1,7 @@
 package db
 
 import actors.{MeetingSchedule, DayOfWeek}
-import com.gilt.quality.models.{Incident, IncidentForm, Meeting, Organization, OrganizationForm, Severity}
+import com.gilt.quality.models.{Incident, IncidentForm, Meeting, Organization, OrganizationForm, Severity, Team, TeamForm}
 import java.util.UUID
 
 object Util {
@@ -26,6 +26,17 @@ object Util {
 
     MeetingsDao.upsert(org, dateTime)
   }
+
+  def createTeam(
+    org: Organization = createOrganization(),
+    form: TeamForm = createTeamForm()
+  ): Team = {
+    TeamsDao.create(User.Default, FullTeamForm(org, form))
+  }
+
+  def createTeamForm() = TeamForm(
+    key = UUID.randomUUID.toString
+  )
 
   def createIncident(
     org: Organization = createOrganization(),
