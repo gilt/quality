@@ -45,7 +45,7 @@
       <a href="@routes.Plans.postGrade(org.key, plan.get.id, lib.GradeImage.Good)" class="postForm">Good</a> |
       <a href="@routes.Plans.postGrade(org.key, plan.get.id, lib.GradeImage.Bad)" class="postForm">Bad</a>
     } else {
-      @Html(lib.GradeImage.imageTag(plan.get.grade.get))
+      @Html(lib.GradeImage.imageTag(incident.team, plan.get.grade))
       (<a href="#" onClick="$('#changeGrade').show()">change</a>)
       <div id="changeGrade" style="display: none">
         Rate this plan:

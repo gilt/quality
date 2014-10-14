@@ -26,7 +26,7 @@
            @if(incident.plan.get.grade.isEmpty) {
              Uploaded
            } else {
-             @Html(lib.GradeImage.imageTag(incident.plan.get.grade.get))
+             @Html(lib.GradeImage.imageTag(incident.team, incident.plan.get.grade))
            }
          }
        </td>

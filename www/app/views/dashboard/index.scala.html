@@ -44,13 +44,13 @@
        <tr>
         <td>
           <a href="@routes.Teams.show(org.key, statistic.team.key)">@statistic.team.key</a><br />
-          Average Grade: @Html(lib.GradeImage.imageTag(statistic.averageGrade))<br/>
+          Average Grade: @Html(lib.GradeImage.imageTag(Some(statistic.team), statistic.averageGrade))<br/>
           Total Incidents: <a href="@routes.Incidents.index(org.key, team_key = Some(statistic.team.key))">@statistic.totalIncidents</a><br />
           Total Open Incidents: <a href="@routes.Incidents.index(org.key, team_key = Some(statistic.team.key), has_plan = Some("0"))">@statistic.totalOpenIncidents</a><br />
         </td>
         <td>
           @statistic.plans.map { plan =>
-            <a href="@routes.Incidents.show(org.key, plan.incidentId)">@Html(lib.GradeImage.imageTag(plan.grade))</a>
+            <a href="@routes.Incidents.show(org.key, plan.incidentId)">@Html(lib.GradeImage.imageTag(Some(statistic.team), plan.grade))</a>
           }
         </td>
        </tr>

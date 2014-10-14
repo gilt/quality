@@ -18,7 +18,7 @@
   @if(stats.isEmpty) {
     <em>None</em>
   } else {
-    <li>Average Grade: @Html(lib.GradeImage.imageTag(stats.get.averageGrade))</li>
+    <li>Average Grade: @Html(lib.GradeImage.imageTag(Some(team), stats.get.averageGrade))</li>
     <li>Total Incidents: <a href="@routes.Incidents.index(org.key, team_key = Some(team.key))">@stats.get.totalIncidents</a></li>
     <li>Total Open Incidents: <a href="@routes.Incidents.index(org.key, team_key = Some(team.key), has_plan = Some("0"))">@stats.get.totalOpenIncidents</a></li>
   }
