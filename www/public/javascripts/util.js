@@ -4,7 +4,7 @@ $(function(){
       event.preventDefault();
       var text = this.getAttribute('data-confirm')
       var href = this.getAttribute('href');
-      if (confirm(text)) {
+      if (text == null || confirm(text)) {
         $('<form method="post" action="' + href + '"></form>').appendTo('body').submit();
       }
     });

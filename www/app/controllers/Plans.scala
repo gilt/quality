@@ -1,7 +1,8 @@
 package controllers
 
 import client.Api
-import com.gilt.quality.models.{Error, Incident, Plan, PlanForm}
+import com.gilt.quality.models.{Error, Incident, Organization, Plan, PlanForm}
+import lib.GradeImage
 
 import play.api._
 import play.api.mvc._
@@ -13,6 +14,8 @@ import scala.concurrent.duration._
 object Plans extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
+
+  val PlanNotAvailable = "No plan available at time of review"
 
   def getById(
     org: String,
@@ -84,13 +87,7 @@ object Plans extends Controller {
 
                 case None => {
                   Await.result(
-                    Api.instance.plans.postByOrg(
-                      org = org,
-                      planForm = PlanForm(
-                        incidentId = incident.id,
-                        body = uiForm.body
-                      )
-                    ).map { plan =>
+                    createPlan(request.org, incident, uiForm.body).map { plan =>
                       Redirect(routes.Incidents.show(org, plan.incidentId)).flashing("success" -> "Plan created")
                     }.recover {
                       case response: com.gilt.quality.error.ErrorsResponse => {
@@ -129,6 +126,36 @@ object Plans extends Controller {
     }
   }
 
+  def postNoPlan(
+    org: String,
+    incidentId: Long
+  ) = OrgAction.async { implicit request =>
+    for {
+      incidentOption <- Api.instance.incidents.getByOrgAndId(org, incidentId)
+      plansResult <- Api.instance.plans.getByOrg(org, incidentId = Some(incidentId))
+    } yield {
+      incidentOption match {
+        case None => Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $incidentId not found")
+        case Some(incident: Incident) => {
+          plansResult.headOption match {
+            case None => {
+              Await.result(
+                createPlan(request.org, incident, PlanNotAvailable).flatMap { plan =>
+                  Api.instance.plans.putGradeByOrgAndId(org, plan.id, GradeImage.Bad)
+                },
+                1000.millis
+              )
+              Redirect(routes.Incidents.show(org, incident.id)).flashing("success" -> s"Default plan created and marked as Bad")
+            }
+            case Some(plan) => {
+              Redirect(routes.Incidents.show(org, incident.id)).flashing("warning" -> s"Incident $incidentId has a plan")
+            }
+          }
+        }
+      }
+    }
+  }
+
   def postGrade(
     org: String,
     id: Long,
@@ -155,5 +182,19 @@ object Plans extends Controller {
       "body" -> text
     )(UiForm.apply)(UiForm.unapply)
   )
+
+  private def createPlan(
+    org: Organization,
+    incident: Incident,
+    body: String
+  ): Future[Plan] = {
+    Api.instance.plans.postByOrg(
+      org = org.key,
+      planForm = PlanForm(
+        incidentId = incident.id,
+        body = body
+      )
+    )
+  }
 
 }
