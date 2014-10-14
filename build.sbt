@@ -37,16 +37,14 @@ lazy val www = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    version := "1.0-SNAPSHOT",
-    libraryDependencies ++= Seq(
-      "org.commonjava.googlecode.markdown4j" % "markdown4j" % "2.2-cj-1.0"
-    )
+    version := "1.0-SNAPSHOT"
   )
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("quality-" + _),
   libraryDependencies ++= Seq(
     ws,
+    "org.commonjava.googlecode.markdown4j" % "markdown4j" % "2.2-cj-1.0",
     "org.scalatestplus" %% "play" % "1.1.0" % "test",
     "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
   )

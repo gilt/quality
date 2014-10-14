@@ -30,7 +30,7 @@
 
   @incident.description.map { desc =>
     <div class="markdown">
-      @Html(util.Markdown.toHtml(desc))
+      @Html(core.Markdown.toHtml(desc))
     </div>
   }
 
@@ -56,7 +56,7 @@
     }
 
     <div class="markdown">
-      @Html(util.Markdown.toHtml(plan.get.body))
+      @Html(core.Markdown.toHtml(plan.get.body))
     </div>
     <p><em>Created: @_root_.org.joda.time.format.DateTimeFormat.longDateTime.print(plan.get.createdAt)</em></p>
     <p>

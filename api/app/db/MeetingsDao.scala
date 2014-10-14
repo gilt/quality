@@ -131,6 +131,7 @@ object MeetingsDao {
     org: Option[Organization] = None,
     id: Option[Long] = None,
     incidentId: Option[Long] = None,
+    agendaItemId: Option[Long] = None,
     scheduledAt: Option[DateTime] = None,
     scheduledWithinNHours: Option[Int] = None,
     isUpcoming: Option[Boolean] = None,

@@ -1,0 +1,30 @@
+@(org: com.gilt.quality.models.Organization,
+  meeting: com.gilt.quality.models.Meeting,
+  item: com.gilt.quality.models.AgendaItem,
+  host: String
+)
+
+  <ul>
+    <li>Team: 
+        @if(item.incident.team.isEmpty) {
+          <em>None</em>
+        } else {
+          <a href=@host/@org.key/item.incidents/@item.incident.id">@item.incident.team.get.key</a>
+        }
+    </li>
+    <li>Severity: @item.incident.severity</li>
+    <li>Tags:
+      @if(item.incident.tags.isEmpty) {
+        <em>N/A</em>
+      } else {
+        @Html(item.incident.tags.mkString("<ul><li>", "</li><li>", "</li></ul>"))
+      }
+    </li>
+    <li>Created: @_root_.org.joda.time.format.DateTimeFormat.longDateTime.print(item.incident.createdAt)</li>
+  </ul>
+
+  @item.incident.description.map { desc =>
+    <div class="markdown">
+      @Html(core.Markdown.toHtml(desc))
+    </div>
+  }
