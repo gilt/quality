@@ -54,4 +54,13 @@ class MeetingsSpec extends BaseSpec {
     meetings.size must be(1)
   }
 
+  "GET /:org/meetings for an agenda item" in new WithServer {
+    val meeting = createMeeting(org)
+    Database.ensureOrganizationHasUpcomingMeetings(org)
+    val item = createAgendaItem(org, Some(meeting))
+
+    await(client.meetings.getByOrg(org.key, agendaItemId = Some(item.id))).map(_.id) must be(Seq(meeting.id))
+    await(client.meetings.getByOrg(org.key, agendaItemId = Some(-1))).map(_.id) must be(Seq.empty)
+  }
+
 }

@@ -17,9 +17,12 @@ case class FullMeetingForm(
 object MeetingsDao {
 
   private val BaseQuery = """
-    select id, scheduled_at
+    select meetings.id, meetings.scheduled_at,
+           organizations.key as organization_key, 
+           organizations.name as organization_name
       from meetings
-     where deleted_at is null
+      join organizations on organizations.deleted_at is null and organizations.id = teams.organization_id
+     where meetings.deleted_at is null
   """
 
   private val InsertQuery = """
@@ -143,6 +146,7 @@ object MeetingsDao {
       org.map { v => "and meetings.organization_id = (select id from organizations where deleted_at is null and key = {org_key})" },
       id.map { v => "and meetings.id = {id}" },
       incidentId.map { v => "and meetings.id in (select meeting_id from agenda_items where deleted_at is null and incident_id = {incident_id})" },
+      agendaItemId.map { v => "and meetings.id in (select meeting_id from agenda_items where deleted_at is null and id = {agenda_item_id})" },
       scheduledAt.map { v => "and date_trunc('minute', meetings.scheduled_at) = date_trunc('minute', {scheduled_at}::timestamptz)" },
       scheduledWithinNHours.map { v => s"and meetings.scheduled_at between now() - interval '${v} hours' and now() + interval '${v} hours'" },
       isUpcoming.map { v =>
@@ -160,6 +164,7 @@ object MeetingsDao {
       org.map { v => NamedParameter("org_key", toParameterValue(v.key)) },
       id.map { v => NamedParameter("id", toParameterValue(v)) },
       incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
+      agendaItemId.map { v => NamedParameter("agenda_item_id", toParameterValue(v)) },
       scheduledAt.map { v => NamedParameter("scheduled_at", toParameterValue(v)) }
     ).flatten
 
@@ -167,7 +172,11 @@ object MeetingsDao {
       SQL(sql).on(bind: _*)().toList.map { row =>
         Meeting(
           id = row[Long]("id"),
-          scheduledAt = row[DateTime]("scheduled_at")
+          scheduledAt = row[DateTime]("scheduled_at"),
+          organization = Organization(
+            key = row[String]("organization_key"),
+            name = row[String]("organization_name")
+          )
         )
       }.toSeq
     }
