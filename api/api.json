@@ -85,15 +85,25 @@
             "description": "A team is the main actor in the system. Teams have a unique key and own incidents",
             "fields": [
                 { "name": "organization", "type": "organization", "description": "Organization to which this team belongs" },
-                { "name": "key", "type": "string", "description": "Unique identifier for this team" }
+                { "name": "key", "type": "string", "description": "Unique identifier for this team" },
+                { "name": "icons", "type": "icons", "description": "Set of icons used on the site for this team (e.g. smiley and frowney faces). Teams inherit a default set of icons if not otherwise provided." }
             ]
         },
 
         "team_form": {
             "fields": [
-                { "name": "key", "type": "string", "description": "Unique identifier for this team" }
+                { "name": "key", "type": "string", "description": "Unique identifier for this team" },
+                { "name": "icons", "type": "icons", "required": false }
             ]
         },
+
+	"icons": {
+            "description": "URLs to key icons used through the application",
+            "fields": [
+                { "name": "smiley", "type": "string", "description": "URL for the smiley icon" },
+                { "name": "frowney", "type": "string", "description": "URL for the frowny icon" }
+	    ]
+	},
 
         "statistic": {
             "description": "Statistics on each team's quality metrics, number of issues",
