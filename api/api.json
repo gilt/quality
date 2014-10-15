@@ -86,6 +86,7 @@
             "fields": [
                 { "name": "organization", "type": "organization", "description": "Organization to which this team belongs" },
                 { "name": "key", "type": "string", "description": "Unique identifier for this team" },
+                { "name": "email", "type": "string", "description": "Email address for members of this team. If provided, used to send updates on new incidents, meetings, etc.", "required": false },
                 { "name": "icons", "type": "icons", "description": "Set of icons used on the site for this team (e.g. smiley and frowney faces). Teams inherit a default set of icons if not otherwise provided." }
             ]
         },
