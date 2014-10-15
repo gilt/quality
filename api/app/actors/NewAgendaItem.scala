@@ -8,8 +8,8 @@ import play.api.Play.current
 
 object NewAgendaItem {
 
-  val qualityHost = current.configuration.getString("quality.host").getOrElse {
-    sys.error(s"configuration parameter[quality.host] is required")
+  val qualityWebHostname = current.configuration.getString("quality.webHostname").getOrElse {
+    sys.error(s"configuration parameter[quality.webHostname] is required")
   }
 
   private[actors] def newAgendaItem(agendaItemId: Long) {
@@ -36,7 +36,7 @@ object NewAgendaItem {
       item.incident.organization,
       meeting,
       item,
-      qualityHost
+      qualityWebHostname
     ).toString
 
 /*
