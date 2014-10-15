@@ -156,6 +156,11 @@ package com.gilt.quality.models {
     icons: scala.Option[com.gilt.quality.models.Icons] = None
   )
 
+  case class UpdateTeamForm(
+    email: scala.Option[String] = None,
+    icons: scala.Option[com.gilt.quality.models.Icons] = None
+  )
+
   /**
    * Used in the event system to indicate what happened.
    */
@@ -674,6 +679,20 @@ package com.gilt.quality.models {
         (__ \ "icons").write[scala.Option[com.gilt.quality.models.Icons]]
       )(unlift(TeamForm.unapply _))
     }
+
+    implicit def jsonReadsQualityUpdateTeamForm: play.api.libs.json.Reads[UpdateTeamForm] = {
+      (
+        (__ \ "email").readNullable[String] and
+        (__ \ "icons").readNullable[com.gilt.quality.models.Icons]
+      )(UpdateTeamForm.apply _)
+    }
+
+    implicit def jsonWritesQualityUpdateTeamForm: play.api.libs.json.Writes[UpdateTeamForm] = {
+      (
+        (__ \ "email").write[scala.Option[String]] and
+        (__ \ "icons").write[scala.Option[com.gilt.quality.models.Icons]]
+      )(unlift(UpdateTeamForm.unapply _))
+    }
   }
 }
 
@@ -1128,6 +1147,19 @@ package com.gilt.quality {
         }
       }
 
+      override def putByOrgAndKey(updateTeamForm: com.gilt.quality.models.UpdateTeamForm, 
+        org: String,
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team] = {
+        val payload = play.api.libs.json.Json.toJson(updateTeamForm)
+
+        _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload)).map {
+          case r if r.status == 200 => r.json.as[com.gilt.quality.models.Team]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
       override def deleteByOrgAndKey(
         org: String,
         key: String
@@ -1430,6 +1462,14 @@ package com.gilt.quality {
      */
     def postByOrg(teamForm: com.gilt.quality.models.TeamForm, 
       org: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team]
+
+    /**
+     * Update a team.
+     */
+    def putByOrgAndKey(updateTeamForm: com.gilt.quality.models.UpdateTeamForm, 
+      org: String,
+      key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team]
 
     def deleteByOrgAndKey(

@@ -27,4 +27,5 @@ GET        /:org/statistics                                controllers.Statistic
 GET        /:org/teams                                     controllers.Teams.getByOrg(org: String, key: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 GET        /:org/teams/:key                                controllers.Teams.getByOrgAndKey(org: String, key: String)
 POST       /:org/teams                                     controllers.Teams.postByOrg(org: String)
+PUT        /:org/teams/:key                                controllers.Teams.putByOrgAndKey(org: String, key: String)
 DELETE     /:org/teams/:key                                controllers.Teams.deleteByOrgAndKey(org: String, key: String)

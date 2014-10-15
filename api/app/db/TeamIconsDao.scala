@@ -21,11 +21,11 @@ private[db] object TeamIconsDao {
     ({team_id}, {name}, {url}, {user_guid}::uuid)
   """
 
-  private val DeleteByTeamKeyQuery = """
+  private val DeleteByTeamIdQuery = """
     update team_icons
        set deleted_by_guid = {deleted_by_guid}::uuid,
            deleted_at = now(), updated_at = now()
-     where team_id = (select id from teams where deleted_at is null and key = {team_key})
+     where team_id = {team_id}
        and deleted_at is null
   """
 
@@ -63,9 +63,9 @@ private[db] object TeamIconsDao {
   def softDelete(
     implicit conn: java.sql.Connection,
     deletedBy: User,
-    team: Team
+    teamId: Long
   ) {
-    SQL(DeleteByTeamKeyQuery).on('deleted_by_guid -> deletedBy.guid, 'team_key -> team.key).execute()
+    SQL(DeleteByTeamIdQuery).on('deleted_by_guid -> deletedBy.guid, 'team_id -> teamId).execute()
   }
 
 }

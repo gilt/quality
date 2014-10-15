@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.quality.models.{Team, TeamForm}
+import com.gilt.quality.models.{Team, TeamForm, UpdateTeamForm}
 import com.gilt.quality.models.json._
 
 import play.api.mvc._
@@ -51,6 +51,40 @@ object Teams extends Controller {
           }
           case errors => {
             Conflict(Json.toJson(errors))
+          }
+        }
+      }
+    }
+  }
+
+  def putByOrgAndKey(org: String, key: String) = OrgAction(parse.json) { request =>
+    TeamsDao.findByKey(request.org, key) match {
+      case None => NotFound
+      case Some(team) => {
+        request.body.validate[UpdateTeamForm] match {
+          case e: JsError => {
+            Conflict(Json.toJson(Validation.invalidJson(e)))
+          }
+          case s: JsSuccess[UpdateTeamForm] => {
+            val fullForm = FullTeamForm(
+              request.org,
+              TeamForm(
+                key = team.key,
+                email = s.get.email,
+                icons = s.get.icons
+              ),
+              Some(team)
+            )
+
+            fullForm.validate match {
+              case Nil => {
+                val updated = TeamsDao.update(request.user, team, fullForm)
+                Ok(Json.toJson(updated)).withHeaders(LOCATION -> routes.Teams.getByOrgAndKey(request.org.key, updated.key).url)
+              }
+              case errors => {
+                Conflict(Json.toJson(errors))
+              }
+            }
           }
         }
       }

@@ -10,7 +10,8 @@ import play.api.libs.json._
 
 case class FullTeamForm(
   org: Organization,
-  form: TeamForm
+  form: TeamForm,
+  existing: Option[Team] = None
 ) {
 
   lazy val orgId = OrganizationsDao.lookupId(org.key).getOrElse {
@@ -18,16 +19,24 @@ case class FullTeamForm(
   }
 
   lazy val validate: Seq[Error] = {
-    val keyErrors = TeamsDao.findByKey(org, form.key) match {
-      case Some(team) => {
-        Seq(s"Team with key[${form.key}] already exists")
+    val keyErrors = existing match {
+      case Some(t) => {
+        assert(t.key == form.key, "Form key must match team key for updates")
+        Seq.empty
       }
       case None => {
-        val generated = UrlKey.generate(form.key)
-        if (form.key == generated) {
-          Seq.empty
-        } else {
-          Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
+        TeamsDao.findByKey(org, form.key) match {
+          case Some(team) => {
+            Seq(s"Team with key[${form.key}] already exists")
+          }
+          case None => {
+            val generated = UrlKey.generate(form.key)
+            if (form.key == generated) {
+              Seq.empty
+            } else {
+              Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
+            }
+          }
         }
       }
     }
@@ -74,6 +83,13 @@ object TeamsDao {
     ({organization_id}, {key}, {email}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
+  private val UpdateQuery = """
+    update teams
+       set email = {email},
+           updated_by_guid = {user_guid}::uuid
+     where id = {id}
+  """
+
   private val LookupIdQuery = """
     select teams.id
       from teams
@@ -91,7 +107,6 @@ object TeamsDao {
         'organization_id -> fullForm.orgId,
         'key -> fullForm.form.key.trim.toLowerCase,
         'email -> fullForm.form.email.map(_.trim),
-        'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
 
@@ -104,6 +119,33 @@ object TeamsDao {
 
     findByKey(fullForm.org, fullForm.form.key).getOrElse {
       sys.error("Failed to create team")
+    }
+  }
+
+  def update(user: User, team: Team, fullForm: FullTeamForm): Team = {
+    val errors = fullForm.validate
+    assert(errors.isEmpty, errors.map(_.message).mkString(" "))
+
+    val id = lookupId(team.organization, team.key).getOrElse {
+      sys.error(s"Could not find team[${team.organization.key}/${team.key}] to update")
+    }
+
+    DB.withTransaction { implicit c =>
+      SQL(UpdateQuery).on(
+        'email -> fullForm.form.email.map(_.trim),
+        'user_guid -> user.guid,
+        'id -> id
+      ).execute()
+
+      TeamIconsDao.softDelete(c, user, id)
+
+      fullForm.form.icons.foreach { icons =>
+        TeamIconsDao.create(c, user, id, icons)
+      }
+    }
+
+    findByKey(team.organization, team.key).getOrElse {
+      sys.error("Failed to update team")
     }
   }
 

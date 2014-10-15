@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.quality.models.{Icons, Team, TeamForm}
+import com.gilt.quality.models.{Icons, Team, TeamForm, UpdateTeamForm}
 import com.gilt.quality.error.ErrorsResponse
 import db.Defaults
 import java.util.UUID
@@ -44,6 +44,45 @@ class TeamsSpec extends BaseSpec {
     )
 
     team.icons must be(icons)
+  }
+
+  "PUT /:org/teams updates icons" in new WithServer {
+    val icons = Icons(
+      smileyUrl = "http://localhost/s.jpg",
+      frownyUrl = "http://localhost/f.jpg"
+    )
+
+    val team = createTeam(org)
+    team.icons must be(Defaults.Icons)
+
+    val updated = await(
+      client.teams.putByOrgAndKey(
+        org = org.key,
+        key = team.key,
+        updateTeamForm = UpdateTeamForm(
+          icons = Some(icons)
+        )
+      )
+    )
+
+    updated.icons must be(icons)
+  }
+
+  "PUT /:org/teams updates email" in new WithServer {
+    val team = createTeam(org)
+    team.email must be(None)
+
+    val updated = await(
+      client.teams.putByOrgAndKey(
+        org = org.key,
+        key = team.key,
+        updateTeamForm = UpdateTeamForm(
+          email = Some("foo@gilt.com")
+        )
+      )
+    )
+
+    updated.email must be(Some("foo@gilt.com"))
   }
 
   "POST /:org/teams use default icons" in new WithServer {
