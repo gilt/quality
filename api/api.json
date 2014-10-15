@@ -93,7 +93,6 @@
         "team_form": {
             "fields": [
                 { "name": "key", "type": "string", "description": "Unique identifier for this team" },
-                { "name": "email", "type": "string", "required": false },
                 { "name": "icons", "type": "icons", "required": false }
             ]
         },
