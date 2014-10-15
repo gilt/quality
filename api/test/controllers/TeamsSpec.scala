@@ -2,6 +2,7 @@ package controllers
 
 import com.gilt.quality.models.{Icons, Team, TeamForm}
 import com.gilt.quality.error.ErrorsResponse
+import db.Defaults
 import java.util.UUID
 
 import play.api.test._
@@ -26,6 +27,27 @@ class TeamsSpec extends BaseSpec {
     intercept[ErrorsResponse] {
       createTeam(org, TeamForm(key = UUID.randomUUID.toString, email = Some("bad")))
     }.errors.map(_.message) must be (Seq("Email address is not valid"))
+  }
+
+  "POST /:org/teams w/ icons" in new WithServer {
+    val icons = Icons(
+      smileyUrl = "http://localhost/s.jpg",
+      frownyUrl = "http://localhost/f.jpg"
+    )
+
+    val team = createTeam(
+      org,
+      TeamForm(
+        key = UUID.randomUUID.toString, 
+        icons = Some(icons)
+      )
+    )
+
+    team.icons must be(icons)
+  }
+
+  "POST /:org/teams use default icons" in new WithServer {
+    createTeam(org).icons must be(Defaults.Icons)
   }
 
   "POST /:org/teams validates that key cannot be reused" in new WithServer {

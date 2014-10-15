@@ -8,13 +8,6 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-private[db] case class TeamIcon(name: String, url: String)
-private[db] object TeamIcon {
-  val Smiley = "smiley"
-  val Frowny = "frowny"
-}
-
-
 case class FullTeamForm(
   org: Organization,
   form: TeamForm
@@ -93,14 +86,20 @@ object TeamsDao {
     val errors = fullForm.validate
     assert(errors.isEmpty, errors.map(_.message).mkString(" "))
 
-    val id: Long = DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
+    val id: Long = DB.withTransaction { implicit c =>
+      val id = SQL(InsertQuery).on(
         'organization_id -> fullForm.orgId,
         'key -> fullForm.form.key.trim.toLowerCase,
         'email -> fullForm.form.email.map(_.trim),
         'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
+
+      fullForm.form.icons.foreach { icons =>
+        TeamIconsDao.create(c, user, id, icons)
+      }
+
+      id
     }
 
     findByKey(fullForm.org, fullForm.form.key).getOrElse {
@@ -174,8 +173,8 @@ object TeamsDao {
       key = row[String](s"${p}key"),
       email = row[Option[String]](s"${p}email"),
       icons = Icons(
-        smileyUrl = icons.find(_.name == TeamIcon.Smiley).map(_.url).getOrElse(Defaults.Icons.smileyUrl),
-        frownyUrl = icons.find(_.name == TeamIcon.Frowny).map(_.url).getOrElse(Defaults.Icons.frownyUrl)
+        smileyUrl = icons.find(_.name == TeamIconsDao.Smiley).map(_.url).getOrElse(Defaults.Icons.smileyUrl),
+        frownyUrl = icons.find(_.name == TeamIconsDao.Frowny).map(_.url).getOrElse(Defaults.Icons.frownyUrl)
       ),
       organization = OrganizationsDao.fromRow(row, Some("organization"))
     )
