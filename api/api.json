@@ -85,7 +85,8 @@
             "description": "A team is the main actor in the system. Teams have a unique key and own incidents",
             "fields": [
                 { "name": "organization", "type": "organization", "description": "Organization to which this team belongs" },
-                { "name": "key", "type": "string", "description": "Unique identifier for this team" }
+                { "name": "key", "type": "string", "description": "Unique identifier for this team" },
+                { "name": "email", "type": "string", "description": "Email address for members of this team. If provided, used to send updates on new incidents, meetings, etc.", "required": false }
             ]
         },
 
