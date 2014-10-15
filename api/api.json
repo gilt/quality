@@ -94,6 +94,7 @@
         "team_form": {
             "fields": [
                 { "name": "key", "type": "string", "description": "Unique identifier for this team" },
+                { "name": "email", "type": "string", "required": false },
                 { "name": "icons", "type": "icons", "required": false }
             ]
         },
@@ -101,8 +102,8 @@
 	"icons": {
             "description": "URLs to key icons used through the application",
             "fields": [
-                { "name": "smiley", "type": "string", "description": "URL for the smiley icon" },
-                { "name": "frowney", "type": "string", "description": "URL for the frowny icon" }
+                { "name": "smiley_url", "type": "string", "description": "URL for the smiley icon" },
+                { "name": "frowney_url", "type": "string", "description": "URL for the frowny icon" }
 	    ]
 	},
 

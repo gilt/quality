@@ -12,6 +12,7 @@ object StatisticsDao {
   private val BaseQuery = """
       select teams.id, 
           teams.key as team_key, 
+          teams.email as team_email,
           organizations.key as organization_key, 
           organizations.name as organization_name, 
           count(all_incidents.id) as total_incidents, 
@@ -52,6 +53,8 @@ object StatisticsDao {
         Statistic(
           team = Team(
             key = row[String]("team_key"),
+            email = row[Option[String]]("team_email"),
+            icons = Defaults.Icons,
             organization = Organization(
               key = row[String]("organization_key"),
               name = row[String]("organization_name")

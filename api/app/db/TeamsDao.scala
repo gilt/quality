@@ -32,7 +32,15 @@ case class FullTeamForm(
       }
     }
 
-    Validation.errors(keyErrors)
+    val emailErrors: Seq[String] = form.email.map { email =>
+      if (email.indexOf("@") <= 0) {
+        Seq("Email address is not valid")
+      } else {
+        Seq.empty
+      }
+    }.getOrElse(Seq.empty)
+
+    Validation.errors(keyErrors ++ emailErrors)
   }
 
 }
@@ -40,7 +48,7 @@ case class FullTeamForm(
 object TeamsDao {
 
   private val BaseQuery = """
-    select teams.key,
+    select teams.key, teams.email,
            organizations.key as organization_key, 
            organizations.name as organization_name
       from teams
@@ -50,9 +58,9 @@ object TeamsDao {
 
   private val InsertQuery = """
     insert into teams
-    (organization_id, key, created_by_guid, updated_by_guid)
+    (organization_id, key, email, created_by_guid, updated_by_guid)
     values
-    ({organization_id}, {key}, {user_guid}::uuid, {user_guid}::uuid)
+    ({organization_id}, {key}, {email}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
   private val LookupIdQuery = """
@@ -71,6 +79,7 @@ object TeamsDao {
       SQL(InsertQuery).on(
         'organization_id -> fullForm.orgId,
         'key -> fullForm.form.key.trim.toLowerCase,
+        'email -> fullForm.form.email.map(_.trim),
         'user_guid -> user.guid,
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
@@ -129,6 +138,8 @@ object TeamsDao {
       SQL(sql).on(bind: _*)().toList.map { row =>
         Team(
           key = row[String]("key"),
+          email = row[Option[String]]("email"),
+          icons = Defaults.Icons,
           organization = Organization(
             key = row[String]("organization_key"),
             name = row[String]("organization_name")

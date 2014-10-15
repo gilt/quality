@@ -44,6 +44,14 @@ package com.gilt.quality.models {
   )
 
   /**
+   * URLs to key icons used through the application
+   */
+  case class Icons(
+    smileyUrl: String,
+    frowneyUrl: String
+  )
+
+  /**
    * A bug or error that affected public or internal users in a negative way
    */
   case class Incident(
@@ -137,11 +145,15 @@ package com.gilt.quality.models {
    */
   case class Team(
     organization: com.gilt.quality.models.Organization,
-    key: String
+    key: String,
+    email: scala.Option[String] = None,
+    icons: com.gilt.quality.models.Icons
   )
 
   case class TeamForm(
-    key: String
+    key: String,
+    email: scala.Option[String] = None,
+    icons: scala.Option[com.gilt.quality.models.Icons] = None
   )
 
   /**
@@ -441,6 +453,20 @@ package com.gilt.quality.models {
       )
     }
 
+    implicit def jsonReadsQualityIcons: play.api.libs.json.Reads[Icons] = {
+      (
+        (__ \ "smiley_url").read[String] and
+        (__ \ "frowney_url").read[String]
+      )(Icons.apply _)
+    }
+
+    implicit def jsonWritesQualityIcons: play.api.libs.json.Writes[Icons] = {
+      (
+        (__ \ "smiley_url").write[String] and
+        (__ \ "frowney_url").write[String]
+      )(unlift(Icons.unapply _))
+    }
+
     implicit def jsonReadsQualityIncident: play.api.libs.json.Reads[Incident] = {
       (
         (__ \ "id").read[Long] and
@@ -618,25 +644,35 @@ package com.gilt.quality.models {
     implicit def jsonReadsQualityTeam: play.api.libs.json.Reads[Team] = {
       (
         (__ \ "organization").read[com.gilt.quality.models.Organization] and
-        (__ \ "key").read[String]
+        (__ \ "key").read[String] and
+        (__ \ "email").readNullable[String] and
+        (__ \ "icons").read[com.gilt.quality.models.Icons]
       )(Team.apply _)
     }
 
     implicit def jsonWritesQualityTeam: play.api.libs.json.Writes[Team] = {
       (
         (__ \ "organization").write[com.gilt.quality.models.Organization] and
-        (__ \ "key").write[String]
+        (__ \ "key").write[String] and
+        (__ \ "email").write[scala.Option[String]] and
+        (__ \ "icons").write[com.gilt.quality.models.Icons]
       )(unlift(Team.unapply _))
     }
 
     implicit def jsonReadsQualityTeamForm: play.api.libs.json.Reads[TeamForm] = {
-      (__ \ "key").read[String].map { x => new TeamForm(key = x) }
+      (
+        (__ \ "key").read[String] and
+        (__ \ "email").readNullable[String] and
+        (__ \ "icons").readNullable[com.gilt.quality.models.Icons]
+      )(TeamForm.apply _)
     }
 
-    implicit def jsonWritesQualityTeamForm: play.api.libs.json.Writes[TeamForm] = new play.api.libs.json.Writes[TeamForm] {
-      def writes(x: TeamForm) = play.api.libs.json.Json.obj(
-        "key" -> play.api.libs.json.Json.toJson(x.key)
-      )
+    implicit def jsonWritesQualityTeamForm: play.api.libs.json.Writes[TeamForm] = {
+      (
+        (__ \ "key").write[String] and
+        (__ \ "email").write[scala.Option[String]] and
+        (__ \ "icons").write[scala.Option[com.gilt.quality.models.Icons]]
+      )(unlift(TeamForm.unapply _))
     }
   }
 }
@@ -646,7 +682,7 @@ package com.gilt.quality {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
-    private val UserAgent = "apidoc:0.6.4 http://www.apidoc.me/gilt/code/quality/0.0.10-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.6 http://www.apidoc.me/gilt/code/quality/0.0.10-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.quality.client")
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")

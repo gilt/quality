@@ -22,6 +22,7 @@ object AgendaItemsDao {
            organizations.key as organization_key, 
            organizations.name as organization_name,
            teams.key as team_key,
+           teams.email as team_email,
            incidents.severity as incident_severity,
            incidents.summary as incident_summary,
            incidents.description as incident_description,
@@ -152,6 +153,8 @@ object AgendaItemsDao {
             team = row[Option[String]]("team_key").map { teamKey =>
               Team(
                 key = teamKey,
+                email = row[Option[String]]("team_email"),
+                icons = Defaults.Icons,
                 organization = Organization(
                   key = row[String]("organization_key"),
                   name = row[String]("organization_name")

@@ -53,6 +53,7 @@ object IncidentsDao {
            organizations.key as organization_key, 
            organizations.name as organization_name,
            teams.key as team_key,
+           teams.email as team_email,
            incidents.severity,
            incidents.summary,
            incidents.description,
@@ -252,6 +253,8 @@ object IncidentsDao {
           team = row[Option[String]]("team_key").map { teamKey =>
             Team(
               key = teamKey,
+              email = row[Option[String]]("team_email"),
+              icons = Defaults.Icons,
               organization = Organization(
                 key = row[String]("organization_key"),
                 name = row[String]("organization_name")

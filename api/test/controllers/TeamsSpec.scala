@@ -18,6 +18,16 @@ class TeamsSpec extends BaseSpec {
     team.key must be(key)
   }
 
+  "POST /:org/teams w/ email address" in new WithServer {
+    val email = UUID.randomUUID.toString + "@quality.mailinator.com"
+    val team = createTeam(org, TeamForm(key = UUID.randomUUID.toString, email = Some(email)))
+    team.email must be(Some(email))
+
+    intercept[ErrorsResponse] {
+      createTeam(org, TeamForm(key = UUID.randomUUID.toString, email = Some("bad")))
+    }.errors.map(_.message) must be (Seq("Email address is not valid"))
+  }
+
   "POST /:org/teams validates that key cannot be reused" in new WithServer {
     val team = createTeam(org)
 
