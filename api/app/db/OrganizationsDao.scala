@@ -127,12 +127,7 @@ object OrganizationsDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
-        Organization(
-          name = row[String]("name"),
-          key = row[String]("key")
-        )
-      }.toSeq
+      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
     }
   }
 
@@ -144,6 +139,17 @@ object OrganizationsDao {
       case None => key
       case Some(org) => generateKey(base, iteration + 1)
     }
+  }
+
+  private[db] def fromRow(
+    row: anorm.Row,
+    prefix: Option[String] = None
+  ): Organization = {
+    val p = prefix.map( _ + "_").getOrElse("")
+    Organization(
+      name = row[String](s"${p}name"),
+      key = row[String](s"${p}key")
+    )
   }
 
 }

@@ -51,15 +51,7 @@ object StatisticsDao {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         Statistic(
-          team = Team(
-            key = row[String]("team_key"),
-            email = row[Option[String]]("team_email"),
-            icons = Defaults.Icons,
-            organization = Organization(
-              key = row[String]("organization_key"),
-              name = row[String]("organization_name")
-            )
-          ),
+          team = TeamsDao.fromRow(row, Some("team")),
           totalGrades = row[Long]("total_grades"),
           averageGrade = row[Option[BigDecimal]]("average_grade").map{v => v.toInt},
           totalIncidents = row[Long]("total_incidents"),

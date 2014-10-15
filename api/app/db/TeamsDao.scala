@@ -1,12 +1,19 @@
 package db
 
-import com.gilt.quality.models.{Error, Organization, Team, TeamForm}
+import com.gilt.quality.models.{Error, Icons, Organization, Team, TeamForm}
 import lib.{UrlKey, Validation}
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
+
+private[db] case class TeamIcon(name: String, url: String)
+private[db] object TeamIcon {
+  val Smiley = "smiley"
+  val Frowny = "frowny"
+}
+
 
 case class FullTeamForm(
   org: Organization,
@@ -47,8 +54,19 @@ case class FullTeamForm(
 
 object TeamsDao {
 
-  private val BaseQuery = """
-    select teams.key, teams.email,
+  def select(prefix: Option[String] = None): String = {
+    val p = prefix.map( _ + "_").getOrElse("")
+    s"""
+      teams.key as ${p}key, teams.email as ${p}email,
+      array_to_json(array(select row_to_json(team_icons)
+                            from team_icons
+                           where team_icons.team_id = teams.id
+                             and team_icons.deleted_at is null))::varchar as ${p}icons
+    """.trim
+  }
+
+  private val BaseQuery = s"""
+    select ${select()},
            organizations.key as organization_key, 
            organizations.name as organization_name
       from teams
@@ -135,18 +153,32 @@ object TeamsDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
-        Team(
-          key = row[String]("key"),
-          email = row[Option[String]]("email"),
-          icons = Defaults.Icons,
-          organization = Organization(
-            key = row[String]("organization_key"),
-            name = row[String]("organization_name")
-          )
-        )
-      }.toSeq
+      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
     }
+  }
+
+  private[db] def fromRow(
+    row: anorm.Row,
+    prefix: Option[String] = None,
+    organizationPrefix: String = "organization"
+  ): Team = {
+    val p = prefix.map( _ + "_").getOrElse("")
+    val icons = Json.parse(row[String](s"${p}icons")).as[JsArray].value.map(_.as[JsObject]).map { json =>
+      TeamIcon(
+        name = (json \ "name").as[String],
+        url = (json \ "url").as[String]
+      )
+    }
+
+    Team(
+      key = row[String](s"${p}key"),
+      email = row[Option[String]](s"${p}email"),
+      icons = Icons(
+        smileyUrl = icons.find(_.name == TeamIcon.Smiley).map(_.url).getOrElse(Defaults.Icons.smileyUrl),
+        frownyUrl = icons.find(_.name == TeamIcon.Frowny).map(_.url).getOrElse(Defaults.Icons.frownyUrl)
+      ),
+      organization = OrganizationsDao.fromRow(row, Some("organization"))
+    )
   }
 
 }

@@ -48,7 +48,7 @@ package com.gilt.quality.models {
    */
   case class Icons(
     smileyUrl: String,
-    frowneyUrl: String
+    frownyUrl: String
   )
 
   /**
@@ -456,14 +456,14 @@ package com.gilt.quality.models {
     implicit def jsonReadsQualityIcons: play.api.libs.json.Reads[Icons] = {
       (
         (__ \ "smiley_url").read[String] and
-        (__ \ "frowney_url").read[String]
+        (__ \ "frowny_url").read[String]
       )(Icons.apply _)
     }
 
     implicit def jsonWritesQualityIcons: play.api.libs.json.Writes[Icons] = {
       (
         (__ \ "smiley_url").write[String] and
-        (__ \ "frowney_url").write[String]
+        (__ \ "frowny_url").write[String]
       )(unlift(Icons.unapply _))
     }
 

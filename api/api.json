@@ -103,7 +103,7 @@
             "description": "URLs to key icons used through the application",
             "fields": [
                 { "name": "smiley_url", "type": "string", "description": "URL for the smiley icon" },
-                { "name": "frowney_url", "type": "string", "description": "URL for the frowny icon" }
+                { "name": "frowny_url", "type": "string", "description": "URL for the frowny icon" }
 	    ]
 	},
 

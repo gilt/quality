@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.quality.models.{Team, TeamForm}
+import com.gilt.quality.models.{Icons, Team, TeamForm}
 import com.gilt.quality.error.ErrorsResponse
 import java.util.UUID
 

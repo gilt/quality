@@ -146,10 +146,7 @@ object AgendaItemsDao {
           task = Task(row[String]("task")),
           incident = Incident(
             id = incidentId,
-            organization = Organization(
-              key = row[String]("organization_key"),
-              name = row[String]("organization_name")
-            ),
+            organization = OrganizationsDao.fromRow(row, Some("organization")),
             team = row[Option[String]]("team_key").map { teamKey =>
               Team(
                 key = teamKey,
