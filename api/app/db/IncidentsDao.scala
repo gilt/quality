@@ -48,12 +48,11 @@ case class FullIncidentForm(
 
 object IncidentsDao {
 
-  private val BaseQuery = """
+  private val BaseQuery = s"""
     select incidents.id,
            organizations.key as organization_key, 
            organizations.name as organization_name,
-           teams.key as team_key,
-           teams.email as team_email,
+           ${TeamsDao.select(Some("team"))},
            incidents.severity,
            incidents.summary,
            incidents.description,

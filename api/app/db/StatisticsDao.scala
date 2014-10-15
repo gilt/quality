@@ -9,10 +9,8 @@ import play.api.libs.json._
 
 object StatisticsDao {
 
-  private val BaseQuery = """
-      select teams.id, 
-          teams.key as team_key, 
-          teams.email as team_email,
+  private val BaseQuery = s"""
+      select ${TeamsDao.select(Some("team"))},
           organizations.key as organization_key, 
           organizations.name as organization_name, 
           count(all_incidents.id) as total_incidents, 
