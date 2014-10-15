@@ -1,7 +1,8 @@
 package controllers
 
-import com.gilt.quality.models.{Team, TeamForm}
+import com.gilt.quality.models.{Icons, Team, TeamForm, UpdateTeamForm}
 import com.gilt.quality.error.ErrorsResponse
+import db.Defaults
 import java.util.UUID
 
 import play.api.test._
@@ -16,6 +17,76 @@ class TeamsSpec extends BaseSpec {
     val key = UUID.randomUUID.toString
     val team = createTeam(org, TeamForm(key = key))
     team.key must be(key)
+  }
+
+  "POST /:org/teams w/ email address" in new WithServer {
+    val email = UUID.randomUUID.toString + "@quality.mailinator.com"
+    val team = createTeam(org, TeamForm(key = UUID.randomUUID.toString, email = Some(email)))
+    team.email must be(Some(email))
+
+    intercept[ErrorsResponse] {
+      createTeam(org, TeamForm(key = UUID.randomUUID.toString, email = Some("bad")))
+    }.errors.map(_.message) must be (Seq("Email address is not valid"))
+  }
+
+  "POST /:org/teams w/ icons" in new WithServer {
+    val icons = Icons(
+      smileyUrl = "http://localhost/s.jpg",
+      frownyUrl = "http://localhost/f.jpg"
+    )
+
+    val team = createTeam(
+      org,
+      TeamForm(
+        key = UUID.randomUUID.toString, 
+        icons = Some(icons)
+      )
+    )
+
+    team.icons must be(icons)
+  }
+
+  "PUT /:org/teams updates icons" in new WithServer {
+    val icons = Icons(
+      smileyUrl = "http://localhost/s.jpg",
+      frownyUrl = "http://localhost/f.jpg"
+    )
+
+    val team = createTeam(org)
+    team.icons must be(Defaults.Icons)
+
+    val updated = await(
+      client.teams.putByOrgAndKey(
+        org = org.key,
+        key = team.key,
+        updateTeamForm = UpdateTeamForm(
+          icons = Some(icons)
+        )
+      )
+    )
+
+    updated.icons must be(icons)
+  }
+
+  "PUT /:org/teams updates email" in new WithServer {
+    val team = createTeam(org)
+    team.email must be(None)
+
+    val updated = await(
+      client.teams.putByOrgAndKey(
+        org = org.key,
+        key = team.key,
+        updateTeamForm = UpdateTeamForm(
+          email = Some("foo@gilt.com")
+        )
+      )
+    )
+
+    updated.email must be(Some("foo@gilt.com"))
+  }
+
+  "POST /:org/teams use default icons" in new WithServer {
+    createTeam(org).icons must be(Defaults.Icons)
   }
 
   "POST /:org/teams validates that key cannot be reused" in new WithServer {

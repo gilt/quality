@@ -48,11 +48,11 @@ case class FullIncidentForm(
 
 object IncidentsDao {
 
-  private val BaseQuery = """
+  private val BaseQuery = s"""
     select incidents.id,
            organizations.key as organization_key, 
            organizations.name as organization_name,
-           teams.key as team_key,
+           ${TeamsDao.select(Some("team"))},
            incidents.severity,
            incidents.summary,
            incidents.description,
@@ -245,19 +245,8 @@ object IncidentsDao {
 
         Incident(
           id = incidentId,
-          organization = Organization(
-            key = row[String]("organization_key"),
-            name = row[String]("organization_name")
-          ),
-          team = row[Option[String]]("team_key").map { teamKey =>
-            Team(
-              key = teamKey,
-              organization = Organization(
-                key = row[String]("organization_key"),
-                name = row[String]("organization_name")
-              )
-            )
-          },
+          organization = OrganizationsDao.fromRow(row, Some("organization")),
+          team = row[Option[String]]("team_key").map { _ => TeamsDao.fromRow(row, Some("team")) },
           severity = Severity(row[String]("severity")),
           summary = row[String]("summary"),
           description = row[Option[String]]("description"),

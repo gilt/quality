@@ -94,6 +94,14 @@
         "team_form": {
             "fields": [
                 { "name": "key", "type": "string", "description": "Unique identifier for this team" },
+                { "name": "email", "type": "string", "required": false },
+                { "name": "icons", "type": "icons", "required": false }
+            ]
+        },
+
+        "update_team_form": {
+            "fields": [
+                { "name": "email", "type": "string", "required": false },
                 { "name": "icons", "type": "icons", "required": false }
             ]
         },
@@ -101,8 +109,8 @@
 	"icons": {
             "description": "URLs to key icons used through the application",
             "fields": [
-                { "name": "smiley", "type": "string", "description": "URL for the smiley icon" },
-                { "name": "frowney", "type": "string", "description": "URL for the frowny icon" }
+                { "name": "smiley_url", "type": "string", "description": "URL for the smiley icon" },
+                { "name": "frowny_url", "type": "string", "description": "URL for the frowny icon" }
 	    ]
 	},
 
@@ -317,6 +325,17 @@
                     "body": { "type": "team_form" },
                     "responses": {
                         "201": { "type": "team" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "PUT",
+		    "path": "/:key",
+                    "description": "Update a team.",
+                    "body": { "type": "update_team_form" },
+                    "responses": {
+                        "200": { "type": "team" },
                         "409": { "type": "[error]" }
                     }
                 },

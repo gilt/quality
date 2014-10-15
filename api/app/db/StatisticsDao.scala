@@ -9,9 +9,8 @@ import play.api.libs.json._
 
 object StatisticsDao {
 
-  private val BaseQuery = """
-      select teams.id, 
-          teams.key as team_key, 
+  private val BaseQuery = s"""
+      select ${TeamsDao.select(Some("team"))},
           organizations.key as organization_key, 
           organizations.name as organization_name, 
           count(all_incidents.id) as total_incidents, 
@@ -50,13 +49,7 @@ object StatisticsDao {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         Statistic(
-          team = Team(
-            key = row[String]("team_key"),
-            organization = Organization(
-              key = row[String]("organization_key"),
-              name = row[String]("organization_name")
-            )
-          ),
+          team = TeamsDao.fromRow(row, Some("team")),
           totalGrades = row[Long]("total_grades"),
           averageGrade = row[Option[BigDecimal]]("average_grade").map{v => v.toInt},
           totalIncidents = row[Long]("total_incidents"),
