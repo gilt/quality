@@ -6,13 +6,13 @@ import lib.Email
 import core.mail.Person
 import play.api.Play.current
 
-object AgendaItemTeamChanged {
+object AgendaItemEvents {
 
   val qualityWebHostname = current.configuration.getString("quality.webHostname").getOrElse {
     sys.error(s"configuration parameter[quality.webHostname] is required")
   }
 
-  private[actors] def processEvent(agendaItemId: Long) {
+  private[actors] def processCreated(agendaItemId: Long) {
     AgendaItemsDao.findById(agendaItemId).map { item =>
       MeetingsDao.findAll(
         agendaItemId = Some(item.id),

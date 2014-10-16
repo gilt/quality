@@ -10,8 +10,11 @@ object MeetingMessage {
   case object SyncOrganizationMeetings
   case object SyncIncidents
   case object SyncMeetings
+  case class IncidentCreated(incidentId: Long)
+  case class IncidentUpdated(incidentId: Long)
+  case class IncidentTeamUpdated(incidentId: Long)
   case class SyncIncident(incidentId: Long)
-  case class AgendaItemTeamChanged(agendaItemId: Long)
+  case class AgendaItemCreated(agendaItemId: Long)
 }
 
 class MeetingActor extends Actor {
@@ -62,13 +65,20 @@ class MeetingActor extends Actor {
       }
     }
 
-    /**
-      * Notifies the team that they have an incident assigned to an
-      *  upcoming meeting.
-      */
-    case MeetingMessage.AgendaItemTeamChanged(agendaItemId: Long) => {
-      AgendaItemTeamChanged.processEvent(agendaItemId)
+    case MeetingMessage.IncidentCreated(incidentId: Long) => {
+      sender ! MeetingMessage.SyncIncident(incidentId)
+    }
 
+    case MeetingMessage.IncidentUpdated(incidentId: Long) => {
+      sender ! MeetingMessage.SyncIncident(incidentId)
+    }
+
+    case MeetingMessage.IncidentTeamUpdated(incidentId: Long) => {
+      // TODO
+    }
+
+    case MeetingMessage.AgendaItemCreated(agendaItemId: Long) => {
+      AgendaItemEvents.processCreated(agendaItemId)
     }
 
     case MeetingMessage.SyncIncidents => {

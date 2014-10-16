@@ -74,15 +74,11 @@ object AgendaItemsDao {
       ).executeInsert().getOrElse(sys.error("Missing id"))
     }
 
-    val item = findById(id).getOrElse {
+    global.Actors.mainActor ! actors.MeetingMessage.AgendaItemCreated(id)
+
+    findById(id).getOrElse {
       sys.error("Failed to create agenda item")
     }
-
-    item.incident.team.foreach { _ =>
-      global.Actors.mainActor ! actors.MeetingMessage.AgendaItemTeamChanged(item.id)
-    }
-
-    item
   }
 
   def softDelete(deletedBy: User, agendaItem: AgendaItem) {
