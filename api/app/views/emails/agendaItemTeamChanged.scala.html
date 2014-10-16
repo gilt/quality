@@ -1,0 +1,66 @@
+@(org: com.gilt.quality.models.Organization,
+  meeting: com.gilt.quality.models.Meeting,
+  item: com.gilt.quality.models.AgendaItem,
+  taskLabel: String,
+  host: String
+)
+
+<p>
+  Incident #@item.incident.id has been added to the agenda to
+  @taskLabel for the Perfect Day meeting scheduled for
+  @meeting.scheduledAt.
+</p>
+
+@if(item.task == com.gilt.quality.models.Task.ReviewTeam) {
+  <p>
+    Prior to the meeting, please review this incident to make sure
+    your team is the best team to create a plan for future
+    prevention. If you believe another team is better suited to handle
+    this incident, please come to the meeting to discuss a change in
+    team assignment.
+  </p>
+}
+
+@if(item.task == com.gilt.quality.models.Task.ReviewPlan) {
+  @if(item.incident.plan.isEmpty) {
+    <p>
+      Prior to the meeting, your team should upload a plan to prevent
+      the recurrence of this incident.
+    <p>
+  }
+  <p>
+    At the meeting, we will review the plan for the incident, brainstorming
+    together other steps we might be able to take. The group will then grade
+    the plan at which point the plan moves to your team backlog for
+    consideration.
+  <p>
+}
+
+[<a href=@host/@org.key/item.incidents/@item.incident.id">Incident #@item.incident.id</a>]
+
+<ul>
+  <li>Id: @item.incident.id</li>
+  <li>Summary: @item.incident.summary</li>
+  <li>Team: 
+      @if(item.incident.team.isEmpty) {
+        <em>Not yet assigned</em>
+      } else {
+        @item.incident.team.get.key
+      }
+  </li>
+  <li>Severity: @item.incident.severity</li>
+  <li>Tags:
+    @if(item.incident.tags.isEmpty) {
+      <em>N/A</em>
+    } else {
+      @Html(item.incident.tags.mkString("<ul><li>", "</li><li>", "</li></ul>"))
+    }
+  </li>
+  <li>Created: @_root_.org.joda.time.format.DateTimeFormat.longDateTime.print(item.incident.createdAt)</li>
+</ul>
+
+@item.incident.description.map { desc =>
+  <div class="markdown">
+    @Html(core.Markdown.toHtml(desc))
+  </div>
+}

@@ -11,7 +11,7 @@ object MeetingMessage {
   case object SyncIncidents
   case object SyncMeetings
   case class SyncIncident(incidentId: Long)
-  case class NewAgendaItem(agendaItemId: Long)
+  case class AgendaItemTeamChanged(agendaItemId: Long)
 }
 
 class MeetingActor extends Actor {
@@ -66,7 +66,8 @@ class MeetingActor extends Actor {
       * Notifies the team that they have an incident assigned to an
       *  upcoming meeting.
       */
-    case MeetingMessage.NewAgendaItem(agendaItemId: Long) => {
+    case MeetingMessage.AgendaItemTeamChanged(agendaItemId: Long) => {
+      AgendaItemTeamChanged.processEvent(agendaItemId)
 
     }
 
