@@ -80,11 +80,11 @@ object Database {
           incident.team.isEmpty || !incidentTasks.contains(t)
         }
         case Task.ReviewPlan => {
-          // We specifically allow empty plans - that just means a
-          // team did not complete a plan. For this task, just
-          // check if the incident has been in a meeting to review
-          // its plan.
-          !incidentTasks.contains(t)
+          // The result of the review plan stage is a grade for a plan
+          // for the incident. If there is no grade, or the incident
+          // has never had its plan reviewed, then the incident goes
+          // into the next meeting.
+          incident.plan.flatMap(_.grade).isEmpty || !incidentTasks.contains(t)
         }
         case Task.UNDEFINED(_) => {
           !incidentTasks.contains(t)

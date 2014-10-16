@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.quality.models.Task
+import com.gilt.quality.models.{PlanForm, Task}
 import db.{AgendaItemsDao, FullIncidentForm, IncidentsDao, MeetingsDao, User, Util}
 import org.joda.time.DateTime
 import java.util.UUID
@@ -10,7 +10,7 @@ import org.scalatest.{FunSpec, ShouldMatchers}
 class DatabaseSpec extends FunSpec with ShouldMatchers {
 
   new play.core.StaticApplication(new java.io.File("."))
-
+/*
   it("syncMeetings") {
     // Actors look for meetings that ended in past 12 hours
     val now = new DateTime()
@@ -65,6 +65,7 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
     val incident = Util.createIncident(org, form)
     Database.nextTask(incident) should be(Some(Task.ReviewTeam))
   }
+*/
 
   it("nextTask workflow") {
     val org = Util.createOrganization()
@@ -89,7 +90,25 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
     Database.nextTask(incidentWithTeam) should be(Some(Task.ReviewPlan))
 
     MeetingsDao.upsertAgendaItem(meeting2, incidentWithTeam, Task.ReviewPlan)
-    Database.nextTask(incidentWithTeam) should be(None)
+    Database.nextTask(incidentWithTeam) should be(Some(Task.ReviewPlan))
+
+    val plan = Util.createPlan(
+      org,
+      Some(
+        PlanForm(
+          incidentId = incidentWithTeam.id,
+          body = "test"
+        )
+      )
+    )
+
+    val incidentWithPlan = IncidentsDao.findById(incidentWithTeam.id).get
+    Database.nextTask(incidentWithPlan) should be(Some(Task.ReviewPlan))
+
+    Util.createGrade(plan, 100)
+
+    val incidentWithGradedPlan = IncidentsDao.findById(incidentWithTeam.id).get
+    Database.nextTask(incidentWithGradedPlan) should be(None)
   }
 
 }
