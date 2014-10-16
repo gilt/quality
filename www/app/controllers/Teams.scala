@@ -102,12 +102,18 @@ object Teams extends Controller {
   }
 
   case class TeamForm(
-    key: String
+    key: String,
+    email: Option[String],
+    smileyUrl: Option[String],
+    frownyUrl: Option[String]
   )
 
   private val teamForm = Form(
     mapping(
-      "key" -> nonEmptyText
+      "key" -> nonEmptyText,
+      "email" -> optional(text),
+      "smiley_url" -> optional(text),
+      "frowny_url" -> optional(text)
     )(TeamForm.apply)(TeamForm.unapply)
   )
 

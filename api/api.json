@@ -95,14 +95,16 @@
             "fields": [
                 { "name": "key", "type": "string", "description": "Unique identifier for this team" },
                 { "name": "email", "type": "string", "required": false },
-                { "name": "icons", "type": "icons", "required": false }
+                { "name": "smiley_url", "type": "string", "required": false },
+                { "name": "frowny_url", "type": "string", "required": false }
             ]
         },
 
         "update_team_form": {
             "fields": [
                 { "name": "email", "type": "string", "required": false },
-                { "name": "icons", "type": "icons", "required": false }
+                { "name": "smiley_url", "type": "string", "required": false },
+                { "name": "frowny_url", "type": "string", "required": false }
             ]
         },
 

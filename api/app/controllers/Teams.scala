@@ -71,7 +71,8 @@ object Teams extends Controller {
               TeamForm(
                 key = team.key,
                 email = s.get.email,
-                icons = s.get.icons
+                smileyUrl = s.get.smileyUrl,
+                frownyUrl = s.get.frownyUrl
               ),
               Some(team)
             )

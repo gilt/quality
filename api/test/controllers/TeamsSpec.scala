@@ -30,27 +30,25 @@ class TeamsSpec extends BaseSpec {
   }
 
   "POST /:org/teams w/ icons" in new WithServer {
-    val icons = Icons(
-      smileyUrl = "http://localhost/s.jpg",
-      frownyUrl = "http://localhost/f.jpg"
-    )
+    val smileyUrl = "http://localhost/s.jpg"
+    val frownyUrl = "http://localhost/f.jpg"
 
     val team = createTeam(
       org,
       TeamForm(
         key = UUID.randomUUID.toString, 
-        icons = Some(icons)
+        smileyUrl = Some(smileyUrl),
+        frownyUrl = Some(frownyUrl)
       )
     )
 
-    team.icons must be(icons)
+    team.icons.smileyUrl must be(smileyUrl)
+    team.icons.frownyUrl must be(frownyUrl)
   }
 
   "PUT /:org/teams updates icons" in new WithServer {
-    val icons = Icons(
-      smileyUrl = "http://localhost/s.jpg",
-      frownyUrl = "http://localhost/f.jpg"
-    )
+    val smileyUrl = "http://localhost/s.jpg"
+    val frownyUrl = "http://localhost/f.jpg"
 
     val team = createTeam(org)
     team.icons must be(Defaults.Icons)
@@ -60,12 +58,14 @@ class TeamsSpec extends BaseSpec {
         org = org.key,
         key = team.key,
         updateTeamForm = UpdateTeamForm(
-          icons = Some(icons)
+          smileyUrl = Some(smileyUrl),
+          frownyUrl = Some(frownyUrl)
         )
       )
     )
 
-    updated.icons must be(icons)
+    updated.icons.smileyUrl must be(smileyUrl)
+    updated.icons.frownyUrl must be(frownyUrl)
   }
 
   "PUT /:org/teams updates email" in new WithServer {

@@ -7,6 +7,27 @@
         '_label -> "Key",
         '_error -> form.error("key")
     )
+
+    @helper.inputText(
+        form("email"),
+        '_label -> "Email",
+        '_help -> "Optional email address. If provided, we will send relevant events to this email (e.g. a new incident assigned to this team)",
+        '_error -> form.error("email")
+    )
+
+    @helper.inputText(
+        form("smiley_url"),
+        '_label -> "Smiley Url",
+        '_help -> "Optional url to the icon to use for the smiley face in quality",
+        '_error -> form.error("smiley_url")
+    )
+
+    @helper.inputText(
+        form("frowny_url"),
+        '_label -> "Frowny Url",
+        '_help -> "Optional url to the icon to use for the frowny face in quality",
+        '_error -> form.error("frowny_url")
+    )
 </fieldset>
 
 <div class="actions">

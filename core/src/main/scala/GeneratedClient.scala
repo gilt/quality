@@ -153,12 +153,14 @@ package com.gilt.quality.models {
   case class TeamForm(
     key: String,
     email: scala.Option[String] = None,
-    icons: scala.Option[com.gilt.quality.models.Icons] = None
+    smileyUrl: scala.Option[String] = None,
+    frownyUrl: scala.Option[String] = None
   )
 
   case class UpdateTeamForm(
     email: scala.Option[String] = None,
-    icons: scala.Option[com.gilt.quality.models.Icons] = None
+    smileyUrl: scala.Option[String] = None,
+    frownyUrl: scala.Option[String] = None
   )
 
   /**
@@ -668,7 +670,8 @@ package com.gilt.quality.models {
       (
         (__ \ "key").read[String] and
         (__ \ "email").readNullable[String] and
-        (__ \ "icons").readNullable[com.gilt.quality.models.Icons]
+        (__ \ "smiley_url").readNullable[String] and
+        (__ \ "frowny_url").readNullable[String]
       )(TeamForm.apply _)
     }
 
@@ -676,21 +679,24 @@ package com.gilt.quality.models {
       (
         (__ \ "key").write[String] and
         (__ \ "email").write[scala.Option[String]] and
-        (__ \ "icons").write[scala.Option[com.gilt.quality.models.Icons]]
+        (__ \ "smiley_url").write[scala.Option[String]] and
+        (__ \ "frowny_url").write[scala.Option[String]]
       )(unlift(TeamForm.unapply _))
     }
 
     implicit def jsonReadsQualityUpdateTeamForm: play.api.libs.json.Reads[UpdateTeamForm] = {
       (
         (__ \ "email").readNullable[String] and
-        (__ \ "icons").readNullable[com.gilt.quality.models.Icons]
+        (__ \ "smiley_url").readNullable[String] and
+        (__ \ "frowny_url").readNullable[String]
       )(UpdateTeamForm.apply _)
     }
 
     implicit def jsonWritesQualityUpdateTeamForm: play.api.libs.json.Writes[UpdateTeamForm] = {
       (
         (__ \ "email").write[scala.Option[String]] and
-        (__ \ "icons").write[scala.Option[com.gilt.quality.models.Icons]]
+        (__ \ "smiley_url").write[scala.Option[String]] and
+        (__ \ "frowny_url").write[scala.Option[String]]
       )(unlift(UpdateTeamForm.unapply _))
     }
   }

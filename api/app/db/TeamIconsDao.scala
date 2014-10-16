@@ -33,23 +33,6 @@ private[db] object TeamIconsDao {
     implicit conn: java.sql.Connection,
     user: User, 
     teamId: Long,
-    icons: Icons
-  ) {
-
-    if (icons.smileyUrl != Defaults.Icons.smileyUrl) {
-      store(conn, user, teamId, TeamIcon(Smiley, icons.smileyUrl))
-    }
-
-    if (icons.frownyUrl != Defaults.Icons.frownyUrl) {
-      store(conn, user, teamId, TeamIcon(Frowny, icons.frownyUrl))
-    }
-
-  }
-
-  private[this] def store(
-    implicit conn: java.sql.Connection,
-    user: User, 
-    teamId: Long,
     teamIcon: TeamIcon
   ) {
     SQL(InsertQuery).on(

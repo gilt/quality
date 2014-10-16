@@ -110,9 +110,7 @@ object TeamsDao {
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
 
-      fullForm.form.icons.foreach { icons =>
-        TeamIconsDao.create(c, user, id, icons)
-      }
+      updateIcons(c, user, id, fullForm.form)
 
       id
     }
@@ -138,14 +136,30 @@ object TeamsDao {
       ).execute()
 
       TeamIconsDao.softDelete(c, user, id)
-
-      fullForm.form.icons.foreach { icons =>
-        TeamIconsDao.create(c, user, id, icons)
-      }
+      updateIcons(c, user, id, fullForm.form)
     }
 
     findByKey(team.organization, team.key).getOrElse {
       sys.error("Failed to update team")
+    }
+  }
+
+  private[this] def updateIcons(
+    implicit conn: java.sql.Connection,
+    user: User,
+    teamId: Long,
+    form: TeamForm
+  ) {
+    form.smileyUrl.foreach { url =>
+      if (url != Defaults.Icons.smileyUrl) {
+        TeamIconsDao.create(conn, user, teamId, TeamIcon(TeamIconsDao.Smiley, url))
+      }
+    }
+
+    form.frownyUrl.foreach { url =>
+      if (url != Defaults.Icons.frownyUrl) {
+        TeamIconsDao.create(conn, user, teamId, TeamIcon(TeamIconsDao.Frowny, url))
+      }
     }
   }
 
