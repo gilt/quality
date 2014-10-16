@@ -11,6 +11,13 @@
   </div>
 
   <ul>
+    <li>Email: @team.email.getOrElse("N/A")</li>
+    <li>Smiley Icon: @Html(lib.GradeImage.imageTag(Some(team), Some(lib.GradeImage.Good)))</li>
+    <li>Frowny Icon: @Html(lib.GradeImage.imageTag(Some(team), Some(lib.GradeImage.Bad)))</li>
+  </ul>
+
+
+  <ul>
     <li><a href="@routes.Teams.postDeleteByKey(org.key, team.key)" class="delete" data-confirm="Are you sure to delete this team?">Delete</a></li>
   </ul>
 

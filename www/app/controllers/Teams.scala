@@ -76,7 +76,10 @@ object Teams extends Controller {
 
       teamForm => {
         val form = com.gilt.quality.models.TeamForm(
-          key = teamForm.key
+          key = teamForm.key,
+          email = teamForm.email,
+          smileyUrl = teamForm.smileyUrl,
+          frownyUrl = teamForm.frownyUrl
         )
         Api.instance.teams.postByOrg(org = org, teamForm = form).map { team =>
           Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
