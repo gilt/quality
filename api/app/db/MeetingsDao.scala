@@ -21,7 +21,7 @@ object MeetingsDao {
            organizations.key as organization_key, 
            organizations.name as organization_name
       from meetings
-      join organizations on organizations.deleted_at is null and organizations.id = teams.organization_id
+      join organizations on organizations.deleted_at is null and organizations.id = meetings.organization_id
      where meetings.deleted_at is null
   """
 
