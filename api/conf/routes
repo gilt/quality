@@ -13,7 +13,7 @@ GET        /:org/incidents/:id                             controllers.Incidents
 POST       /:org/incidents                                 controllers.Incidents.postByOrg(org: String)
 PUT        /:org/incidents/:id                             controllers.Incidents.putByOrgAndId(org: String, id: Long)
 DELETE     /:org/incidents/:id                             controllers.Incidents.deleteByOrgAndId(org: String, id: Long)
-GET        /:org/meetings                                  controllers.Meetings.getByOrg(org: String, id: Option[Long], incident_id: Option[Long], limit: Int ?= 25, offset: Int ?= 0)
+GET        /:org/meetings                                  controllers.Meetings.getByOrg(org: String, id: Option[Long], incident_id: Option[Long], agenda_item_id: Option[Long], limit: Int ?= 25, offset: Int ?= 0)
 GET        /:org/meetings/:id                              controllers.Meetings.getByOrgAndId(org: String, id: Long)
 POST       /:org/meetings                                  controllers.Meetings.postByOrg(org: String)
 DELETE     /:org/meetings/:id                              controllers.Meetings.deleteByOrgAndId(org: String, id: Long)

@@ -89,6 +89,7 @@ package com.gilt.quality.models {
    */
   case class Meeting(
     id: Long,
+    organization: com.gilt.quality.models.Organization,
     scheduledAt: _root_.org.joda.time.DateTime
   )
 
@@ -541,6 +542,7 @@ package com.gilt.quality.models {
     implicit def jsonReadsQualityMeeting: play.api.libs.json.Reads[Meeting] = {
       (
         (__ \ "id").read[Long] and
+        (__ \ "organization").read[com.gilt.quality.models.Organization] and
         (__ \ "scheduled_at").read[_root_.org.joda.time.DateTime]
       )(Meeting.apply _)
     }
@@ -548,6 +550,7 @@ package com.gilt.quality.models {
     implicit def jsonWritesQualityMeeting: play.api.libs.json.Writes[Meeting] = {
       (
         (__ \ "id").write[Long] and
+        (__ \ "organization").write[com.gilt.quality.models.Organization] and
         (__ \ "scheduled_at").write[_root_.org.joda.time.DateTime]
       )(unlift(Meeting.unapply _))
     }
@@ -904,12 +907,14 @@ package com.gilt.quality {
         org: String,
         id: scala.Option[Long] = None,
         incidentId: scala.Option[Long] = None,
+        agendaItemId: scala.Option[Long] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Meeting]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
           incidentId.map("incident_id" -> _.toString),
+          agendaItemId.map("agenda_item_id" -> _.toString),
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
@@ -1335,6 +1340,7 @@ package com.gilt.quality {
       org: String,
       id: scala.Option[Long] = None,
       incidentId: scala.Option[Long] = None,
+      agendaItemId: scala.Option[Long] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Meeting]]

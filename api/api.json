@@ -183,6 +183,7 @@
 	    "description": "Meetings happen on a regular schedule (e.g. thursdays from 11-12 EST). As incidents are created, they are automatically assigned to the next meeting. Incidents can then be reviewed from the context of a meeting, facilitating online navigation. Incidents within a meeting can require one of two actions - team assignment or plan review.",
 	    "fields": [
 		{ "name": "id", "type": "long", "description": "Internal unique identifier for this meeting." },
+                { "name": "organization", "type": "organization", "description": "Organization to which this meeting belongs" },
 		{ "name": "scheduled_at", "type": "date-time-iso8601", "description": "The date and time for which this meeting is scheduled." }
 	    ]
 	},
@@ -504,6 +505,7 @@
                     "parameters": [
                         { "name": "id", "type": "long", "description": "Find meeting with this id. Exact match", "required": false },
                         { "name": "incident_id", "type": "long", "description": "Find meetings where this incident_id is on the agenda", "required": false },
+                        { "name": "agenda_item_id", "type": "long", "description": "Find meeting based on this agenda item", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],

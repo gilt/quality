@@ -116,7 +116,10 @@ object IncidentsDao {
       id
     }
 
-    global.Actors.mainActor ! actors.MeetingMessage.SyncIncident(id)
+    global.Actors.mainActor ! actors.MeetingMessage.IncidentCreated(id)
+    fullForm.teamId.map { _ =>
+        global.Actors.mainActor ! actors.MeetingMessage.IncidentTeamUpdated(id)
+    }
 
     findByOrganizationAndId(fullForm.org, id).getOrElse {
       sys.error("Failed to create incident")
@@ -143,7 +146,13 @@ object IncidentsDao {
       IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, fullForm.form.tags)
     }
 
-    global.Actors.mainActor ! actors.MeetingMessage.SyncIncident(incident.id)
+    global.Actors.mainActor ! actors.MeetingMessage.IncidentUpdated(incident.id)
+
+    if (incident.team.map(_.key) != fullForm.form.teamKey) {
+      fullForm.teamId.map { _ =>
+        global.Actors.mainActor ! actors.MeetingMessage.IncidentTeamUpdated(incident.id)
+      }
+    }
 
     findByOrganizationAndId(fullForm.org, incident.id).getOrElse {
       sys.error("Failed to update incident")

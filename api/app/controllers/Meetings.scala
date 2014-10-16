@@ -15,6 +15,7 @@ object Meetings extends Controller {
     org: String,
     id: Option[Long],
     incidentId: Option[Long],
+    agendaItemId: Option[Long],
     limit: Int = 25,
     offset: Int = 0
   ) = OrgAction { request =>
@@ -22,6 +23,7 @@ object Meetings extends Controller {
       org = Some(request.org),
       id = id,
       incidentId = incidentId,
+      agendaItemId = agendaItemId,
       limit = limit,
       offset = offset
     )

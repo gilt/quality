@@ -1,4 +1,4 @@
-package util
+package core
 
 import org.scalatest.{ FunSpec, Matchers }
 import play.api.test._

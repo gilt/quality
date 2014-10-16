@@ -1,4 +1,4 @@
-package util
+package core
 
 import org.markdown4j.Markdown4jProcessor
 
