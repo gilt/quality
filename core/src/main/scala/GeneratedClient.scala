@@ -710,11 +710,7 @@ package com.gilt.quality {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
-<<<<<<< HEAD
     private val UserAgent = "apidoc:0.6.6 http://www.apidoc.me/gilt/code/quality/0.0.10-dev/play_2_3_client"
-=======
-    private val UserAgent = "apidoc:0.6.5 http://www.apidoc.me/gilt/code/quality/0.0.15-dev/play_2_3_client"
->>>>>>> Allow filtering meetings by agenda item. Meetings now have organizations
     private val logger = play.api.Logger("com.gilt.quality.client")
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
