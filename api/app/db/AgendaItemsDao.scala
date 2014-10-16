@@ -151,7 +151,7 @@ object AgendaItemsDao {
               Team(
                 key = teamKey,
                 email = row[Option[String]]("team_email"),
-                icons = Defaults.Icons,
+                icons = core.Defaults.Icons,
                 organization = Organization(
                   key = row[String]("organization_key"),
                   name = row[String]("organization_name")

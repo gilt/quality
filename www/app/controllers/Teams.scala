@@ -4,7 +4,7 @@ import client.Api
 import com.gilt.quality.models.Team
 import lib.{ Pagination, PaginatedCollection }
 import java.util.UUID
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 import play.api._
@@ -91,6 +91,68 @@ object Teams extends Controller {
       }
 
     )
+  }
+
+  def edit(org: String, key: String) = OrgAction.async { implicit request =>
+    for {
+      team <- Api.instance.teams.getByOrgAndKey(org, key)
+    } yield {
+      team match {
+        case None => {
+          Redirect(routes.Teams.index(org)).flashing("success" -> s"Team not found")
+        }
+        case Some(t) => {
+          val form = teamForm.fill(
+            TeamForm(
+              key = t.key,
+              email = t.email,
+              smileyUrl = Some(t.icons.smileyUrl),
+              frownyUrl = Some(t.icons.frownyUrl)
+            )
+          )
+
+          Ok(views.html.teams.edit(t, form))
+        }
+      }
+    }
+  }
+
+  def postEdit(org: String, key: String) = OrgAction.async { implicit request =>
+    for {
+      team <- Api.instance.teams.getByOrgAndKey(org, key)
+    } yield {
+      team match {
+        case None => {
+          Redirect(routes.Teams.index(org)).flashing("success" -> s"Team not found")
+        }
+        case Some(t) => {
+          val boundForm = teamForm.bindFromRequest
+          boundForm.fold (
+            formWithErrors => {
+              Ok(views.html.teams.edit(t, formWithErrors))
+            },
+
+            teamForm => {
+              val form = com.gilt.quality.models.UpdateTeamForm(
+                email = teamForm.email,
+                smileyUrl = teamForm.smileyUrl,
+                frownyUrl = teamForm.frownyUrl
+              )
+              Await.result(
+                Api.instance.teams.putByOrgAndKey(org = org, key = t.key, updateTeamForm = form).map { team =>
+                  Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
+                }.recover {
+                  case response: com.gilt.quality.error.ErrorsResponse => {
+                    Ok(views.html.teams.create(request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
+                  }
+                },
+                1000.millis
+              )
+            }
+          )
+        }
+      }
+    }
   }
 
   def postDeleteByKey(

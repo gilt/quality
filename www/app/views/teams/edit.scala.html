@@ -1,0 +1,19 @@
+@(team: com.gilt.quality.models.Team,
+  form: Form[controllers.Teams.TeamForm],
+  errorMessage: Option[String] = None
+)(implicit flash: Flash)
+
+@main(org = Some(team.organization), title = s"Edit Team", errorMessage = errorMessage) {
+
+  <div class="container">
+
+    @helper.form(action = routes.Teams.postEdit(team.organization.key, team.key)) {
+
+      @teamForm(form, routes.Teams.show(team.organization.key, team.key))
+
+    }
+
+  </div>
+
+}
+

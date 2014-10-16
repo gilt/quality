@@ -1,8 +1,8 @@
 package controllers
 
+import core.Defaults
 import com.gilt.quality.models.{Icons, Team, TeamForm, UpdateTeamForm}
 import com.gilt.quality.error.ErrorsResponse
-import db.Defaults
 import java.util.UUID
 
 import play.api.test._

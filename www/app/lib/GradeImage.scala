@@ -1,5 +1,6 @@
 package lib
 
+import core.Defaults
 import com.gilt.quality.models.Team
 
 object GradeImage {
@@ -12,11 +13,12 @@ object GradeImage {
     score: Option[Int],
     size: Int = 25
   ): String = {
+    val icons = team.map(_.icons).getOrElse(Defaults.Icons)
     score match {
       case None => "-"
       case Some(s) => {
-        val filename = if (s <= 50) { "frowny.png" } else { "smiley.png" }
-        s"""<img src="/assets/images/$filename" height="$size" width="$size" />"""
+        val url = if (s <= 50) { icons.frownyUrl } else { icons.smileyUrl }
+        s"""<img src="$url" height="$size" width="$size" />"""
       }
     }
   }
