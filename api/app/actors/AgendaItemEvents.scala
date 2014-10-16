@@ -18,12 +18,14 @@ object AgendaItemEvents {
         agendaItemId = Some(item.id),
         limit = 1
       ).headOption.map { meeting =>
-        val teamEmail = "michael@gilt.com" // TODO
-        Email.sendHtml(
-          to = Person(teamEmail, item.incident.team.map(_.key)),
-          subject = "[PerfectDay] Incident ${item.incident.id} scheduled to ${item.task} on ${meeting.scheduledAt}",
-          body = itemToEmail(meeting, item)
-        )
+        // TODO
+        Seq("michael@gilt.com", "chazlett@gilt.com").foreach { teamEmail =>
+          Email.sendHtml(
+            to = Person(teamEmail, item.incident.team.map(_.key)),
+            subject = "[PerfectDay] Incident ${item.incident.id} scheduled to ${item.task} on ${meeting.scheduledAt}",
+            body = itemToEmail(meeting, item)
+          )
+        }
       }
     }
   }

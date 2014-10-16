@@ -6,7 +6,7 @@ import org.apache.commons.mail.Email
 class MailSpec extends FunSpec with Matchers {
 
   val config = Configuration(
-    defaultFrom = Person(email = "michael@gilt.com", name = Some("Michael Bryzek")),
+    defaultFrom = Person(email = "michael@gilttest.com", name = Some("Michael Bryzek")),
     host = "email-smtp.us-east-1.amazonaws.com",
     username = Some("username"),
     password = Some("password")
@@ -22,7 +22,7 @@ class MailSpec extends FunSpec with Matchers {
 
   it("sends email") {
     val messageId = emailer.sendHtml(
-      to = Person("michael@gilt.com", Some("Mike Bryzek")),
+      to = Person("michael@gilttest.com", Some("Mike Bryzek")),
       subject = "test",
       body = "<b>Hello!</b>"
     )
