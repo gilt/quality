@@ -1,7 +1,7 @@
 package db
 
 import actors.{MeetingSchedule, DayOfWeek}
-import com.gilt.quality.models.{Incident, IncidentForm, Meeting, Organization, OrganizationForm, Severity, Team, TeamForm}
+import com.gilt.quality.models._
 import java.util.UUID
 
 object Util {
@@ -50,5 +50,28 @@ object Util {
     description = None,
     tags = Seq.empty
   )
+
+  def createPlan(
+    org: Organization = createOrganization(),
+    form: Option[PlanForm] = None
+  ): Plan = {
+    val f = form.getOrElse(createPlanForm(org))
+    val incident = IncidentsDao.findById(f.incidentId).getOrElse {
+      sys.error(s"Could not find incident[${f.incidentId}]")
+    }
+    PlansDao.create(User.Default, FullPlanForm(org, incident, f))
+  }
+
+  def createPlanForm(org: Organization) = PlanForm(
+    incidentId = createIncident(org).id,
+    body = "Test"
+  )
+
+  def createGrade(
+    plan: Plan,
+    score: Int
+  ) {
+    GradesDao.upsert(User.Default, GradeForm(plan.id, score))
+  }
 
 }
