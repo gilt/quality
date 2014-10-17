@@ -43,6 +43,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
       println(s"MainActor: Received InternalMeetingMessage.SyncIncident($incidentId)")
       meetingActor ! InternalMeetingMessage.SyncIncident(incidentId)
     }
+
     case m: Any => {
       println("Main actor got an unhandled message: " + m)
     }

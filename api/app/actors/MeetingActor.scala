@@ -25,6 +25,7 @@ class MeetingActor extends Actor {
   def receive = {
 
     case MeetingMessage.AgendaItemCreated(agendaItemId: Long) => {
+      println(s"MeetingActor MeetingMessage.AgendaItemCreated($agendaItemId)")
       AgendaItemEvents.processCreated(agendaItemId)
     }
 
