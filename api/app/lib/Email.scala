@@ -44,8 +44,10 @@ object Email {
       case Some(name) => s""""$name" <${to.email}">"""
     }
 
-    val bytes = s"""To: $name
+    val bytes = s"""<p>To: $name<br/>
 Subject: $subject
+</p>
+<hr size="1"/>
 
 $body
 """.getBytes(StandardCharsets.UTF_8)
