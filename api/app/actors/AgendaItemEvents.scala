@@ -12,9 +12,6 @@ object AgendaItemEvents {
     sys.error(s"configuration parameter[quality.webHostname] is required")
   }
 
-  private[actors] def processIncident(incidentId: Long) {
-  }
-
   private[actors] def processCreated(agendaItemId: Long) {
     AgendaItemsDao.findById(agendaItemId).map { item =>
       MeetingsDao.findAll(

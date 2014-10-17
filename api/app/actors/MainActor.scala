@@ -19,9 +19,9 @@ class MainActor(name: String) extends Actor with ActorLogging {
   Akka.system.scheduler.schedule(25.seconds, 15.minutes, meetingActor, InternalMeetingMessage.SyncIncidents)
 
   def receive = akka.event.LoggingReceive {
-    case e: MeetingMessage.IncidentCreated(incidentId) => {
+    case MeetingMessage.IncidentCreated(incidentId) => {
       println(s"MainActor: Received MeetingMessage.IncidentCreated($incidentId)")
-      meetingActor ! e
+      meetingActor ! InternalMeetingMessage.SyncIncident(incidentId)
     }
 
     case MeetingMessage.IncidentUpdated(incidentId) => {
@@ -43,7 +43,6 @@ class MainActor(name: String) extends Actor with ActorLogging {
       println(s"MainActor: Received InternalMeetingMessage.SyncIncident($incidentId)")
       meetingActor ! InternalMeetingMessage.SyncIncident(incidentId)
     }
-
     case m: Any => {
       println("Main actor got an unhandled message: " + m)
     }
