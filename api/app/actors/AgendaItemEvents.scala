@@ -22,7 +22,7 @@ object AgendaItemEvents {
         Seq("michael@gilt.com", "chazlett@gilt.com").foreach { teamEmail =>
           Email.sendHtml(
             to = Person(teamEmail, item.incident.team.map(_.key)),
-            subject = "[PerfectDay] Incident ${item.incident.id} scheduled to ${item.task} on ${meeting.scheduledAt}",
+            subject = s"[PerfectDay] Incident ${item.incident.id} scheduled to ${item.task} on ${meeting.scheduledAt}",
             body = itemToEmail(meeting, item)
           )
         }
