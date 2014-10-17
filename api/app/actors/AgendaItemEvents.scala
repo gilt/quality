@@ -20,9 +20,10 @@ object AgendaItemEvents {
       ).headOption.map { meeting =>
         // TODO
         Seq("michael@gilt.com", "chazlett@gilt.com").foreach { teamEmail =>
+          val dateTime = org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)
           Email.sendHtml(
             to = Person(teamEmail, item.incident.team.map(_.key)),
-            subject = "[PerfectDay] Incident ${item.incident.id} scheduled to ${item.task} on ${meeting.scheduledAt}",
+            subject = s"[PerfectDay] Incident ${item.incident.id} Added to ${dateTime} Meeting to ${taskLabel(item.task)}",
             body = itemToEmail(meeting, item)
           )
         }
@@ -34,7 +35,18 @@ object AgendaItemEvents {
     meeting: Meeting,
     item: AgendaItem
   ): String = {
-    val taskLabel = item.task match {
+    views.html.emails.agendaItemTeamChanged(
+      item.incident.organization,
+      meeting,
+      item,
+      taskLabel(item.task),
+      qualityWebHostname
+    ).toString
+
+  }
+
+  private def taskLabel(task: Task): String = {
+    task match {
       case Task.ReviewTeam => {
         "review team assignment"
       }
@@ -45,16 +57,8 @@ object AgendaItemEvents {
         key
       }
     }
-
-    views.html.emails.agendaItemTeamChanged(
-      item.incident.organization,
-      meeting,
-      item,
-      taskLabel,
-      qualityWebHostname
-    ).toString
-
   }
+
 
 }
 

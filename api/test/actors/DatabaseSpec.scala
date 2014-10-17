@@ -10,7 +10,6 @@ import org.scalatest.{FunSpec, ShouldMatchers}
 class DatabaseSpec extends FunSpec with ShouldMatchers {
 
   new play.core.StaticApplication(new java.io.File("."))
-/*
   it("syncMeetings") {
     // Actors look for meetings that ended in past 12 hours
     val now = new DateTime()
@@ -65,7 +64,6 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
     val incident = Util.createIncident(org, form)
     Database.nextTask(incident) should be(Some(Task.ReviewTeam))
   }
-*/
 
   it("nextTask workflow") {
     val org = Util.createOrganization()

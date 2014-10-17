@@ -5,6 +5,8 @@ import play.api.Play.current
 import java.util.UUID
 import java.nio.file.{Path, Paths, Files}
 import java.nio.charset.StandardCharsets
+import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 
 object Email {
 
@@ -37,15 +39,19 @@ object Email {
   }
 
   private def localDelivery(dir: Path, to: Person, subject: String, body: String): String = {
+    val timestamp = UrlKey.generate(ISODateTimeFormat.dateTimeNoMillis.print(new DateTime()))
+
     Files.createDirectories(dir)
-    val target = Paths.get(dir.toString, UUID.randomUUID.toString + ".html")
+    val target = Paths.get(dir.toString, timestamp + "-" + UUID.randomUUID.toString + ".html")
     val name = to.name match {
       case None => to.email
       case Some(name) => s""""$name" <${to.email}">"""
     }
 
-    val bytes = s"""To: $name
+    val bytes = s"""<p>To: $name<br/>
 Subject: $subject
+</p>
+<hr size="1"/>
 
 $body
 """.getBytes(StandardCharsets.UTF_8)

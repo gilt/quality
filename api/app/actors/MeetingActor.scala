@@ -7,24 +7,32 @@ import akka.actor._
 import play.api.Play.current
 
 object MeetingMessage {
-  case object SyncOrganizationMeetings
-  case object SyncIncidents
-  case object SyncMeetings
   case class IncidentCreated(incidentId: Long)
   case class IncidentUpdated(incidentId: Long)
   case class IncidentTeamUpdated(incidentId: Long)
-  case class SyncIncident(incidentId: Long)
   case class AgendaItemCreated(agendaItemId: Long)
+}
+
+private[actors] object InternalMeetingMessage {
+  case object SyncOrganizationMeetings
+  case object SyncIncidents
+  case object SyncMeetings
+  case class SyncIncident(incidentId: Long)
 }
 
 class MeetingActor extends Actor {
 
   def receive = {
 
+    case MeetingMessage.AgendaItemCreated(agendaItemId: Long) => {
+      println(s"MeetingActor MeetingMessage.AgendaItemCreated($agendaItemId)")
+      AgendaItemEvents.processCreated(agendaItemId)
+    }
+
     /**
       * Creates upcoming meetings for all organizations.
       */
-    case MeetingMessage.SyncOrganizationMeetings => {
+    case InternalMeetingMessage.SyncOrganizationMeetings => {
       try {
         Database.ensureAllOrganizationHaveUpcomingMeetings()
       } catch {
@@ -42,7 +50,7 @@ class MeetingActor extends Actor {
       *   - reviewed in meeting but incident record not actually modified
       *   - incident needs to get scheduled for next task in next meeting
       */
-    case MeetingMessage.SyncMeetings => {
+    case InternalMeetingMessage.SyncMeetings => {
       try {
         Database.syncMeetings()
       } catch {
@@ -57,7 +65,7 @@ class MeetingActor extends Actor {
       *  a. This incident is assigned to an upcoming meeting
       *  b. OR this incident has already been in a meeting for all Tasks
       */
-    case MeetingMessage.SyncIncident(incidentId) => {
+    case InternalMeetingMessage.SyncIncident(incidentId) => {
       try {
         Database.assignIncident(incidentId)
       } catch {
@@ -65,25 +73,9 @@ class MeetingActor extends Actor {
       }
     }
 
-    case MeetingMessage.IncidentCreated(incidentId: Long) => {
-      sender ! MeetingMessage.SyncIncident(incidentId)
-    }
-
-    case MeetingMessage.IncidentUpdated(incidentId: Long) => {
-      sender ! MeetingMessage.SyncIncident(incidentId)
-    }
-
-    case MeetingMessage.IncidentTeamUpdated(incidentId: Long) => {
-      // TODO
-    }
-
-    case MeetingMessage.AgendaItemCreated(agendaItemId: Long) => {
-      AgendaItemEvents.processCreated(agendaItemId)
-    }
-
-    case MeetingMessage.SyncIncidents => {
+    case InternalMeetingMessage.SyncIncidents => {
       IncidentsDao.findRecentlyModifiedIncidentIds.foreach { incidentId =>
-        sender ! MeetingMessage.SyncIncident(incidentId)
+        sender ! InternalMeetingMessage.SyncIncident(incidentId)
       }
     }
 
