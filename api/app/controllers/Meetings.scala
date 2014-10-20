@@ -41,6 +41,20 @@ object Meetings extends Controller {
     }
   }
 
+  def getPagerByOrgAndIdAndIncidentId(
+    org: String,
+    id: Long,
+    incidentId: Long
+  ) = OrgAction { request =>
+    MeetingsDao.findByOrganizationAndId(request.org, id) match {
+      case None => NotFound
+      case Some(m: Meeting) => {
+        val pager = MeetingsDao.findPager(m, incidentId)
+        Ok(Json.toJson(pager))
+      }
+    }
+  }
+
   def postByOrg(org: String) = OrgAction(parse.json) { request =>
     request.body.validate[MeetingForm] match {
       case e: JsError => Conflict(Json.toJson(Validation.invalidJson(e)))

@@ -54,7 +54,8 @@ object Incidents extends Controller {
 
   def show(
     org: String,
-    id: Long
+    id: Long,
+    meetingId: Option[Long] = None
   ) = OrgAction.async { implicit request =>
     for {
       incident <- Api.instance.incidents.getByOrgAndId(org, id)
@@ -64,7 +65,13 @@ object Incidents extends Controller {
       incident match {
         case None => Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $id not found")
         case Some(i) => {
-          Ok(views.html.incidents.show(request.org, i, plans.headOption, meetings))
+          val pagerOption = meetingId.flatMap { mid =>
+            Await.result(
+              Api.instance.meetings.getPagerByOrgAndIdAndIncidentId(request.org.key, mid, i.id),
+              1000.millis
+            )
+          }
+          Ok(views.html.incidents.show(request.org, i, plans.headOption, meetings, pagerOption))
         }
       }
     }

@@ -17,6 +17,7 @@ GET        /:org/meetings                                  controllers.Meetings.
 GET        /:org/meetings/:id                              controllers.Meetings.getByOrgAndId(org: String, id: Long)
 POST       /:org/meetings                                  controllers.Meetings.postByOrg(org: String)
 DELETE     /:org/meetings/:id                              controllers.Meetings.deleteByOrgAndId(org: String, id: Long)
+GET        /:org/meetings/:id/pager/:incident_id           controllers.Meetings.getPagerByOrgAndIdAndIncidentId(org: String, id: Long, incident_id: Long)
 GET        /:org/plans                                     controllers.Plans.getByOrg(org: String, id: Option[Long], incident_id: Option[Long], team_key: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 POST       /:org/plans                                     controllers.Plans.postByOrg(org: String)
 PUT        /:org/plans/:id                                 controllers.Plans.putByOrgAndId(org: String, id: Long)
