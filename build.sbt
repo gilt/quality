@@ -26,7 +26,8 @@ lazy val api = project
     libraryDependencies ++= Seq(
       jdbc,
       anorm,
-      "org.postgresql" % "postgresql" % "9.3-1101-jdbc4"
+      "org.postgresql" % "postgresql" % "9.3-1101-jdbc4",
+      "com.sendgrid" % "sendgrid-java" % "1.3.0"
     ),
     routesImport += "com.gilt.quality.Bindables._"
   )

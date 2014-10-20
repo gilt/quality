@@ -1,12 +1,14 @@
 package lib
 
-import core.mail.{ Configuration, Emailer, Person }
 import play.api.Play.current
 import java.util.UUID
 import java.nio.file.{Path, Paths, Files}
 import java.nio.charset.StandardCharsets
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
+import com.sendgrid._
+
+case class Person(email: String, name: Option[String] = None)
 
 object Email {
 
@@ -16,25 +18,37 @@ object Email {
     }
   }
 
-  private val localDeliveryDir = current.configuration.getString("mail.local_delivery_dir")
+  private val localDeliveryDir = current.configuration.getString("mail.localDeliveryDir")
 
-  private val emailer = Emailer(Configuration(
-    defaultFrom = Person(config("mail.default_from_email"), Some(config("mail.default_from_name"))),
-    host = config("mail.host"),
-    port = config("mail.port").toInt,
-    sslOnConnect = config("mail.sslOnConnect").toBoolean,
-    username = current.configuration.getString("mail.username"),
-    password = current.configuration.getString("mail.password")
-  ))
+  private val from = Person(
+    email = config("mail.defaultFromEmail"),
+    name = Some(config("mail.defaultFromName"))
+  )
+
+  private val sendgrid = new SendGrid(config("sendgrid.apiUser"), config("sendgrid.apiKey"))
 
   def sendHtml(
     to: Person,
     subject: String,
     body: String
-  ): String = {
+  ) {
+    val email = new SendGrid.Email()
+    email.addTo(to.email)
+    to.name.map { n => email.addToName(n) }
+    email.setFrom(from.email)
+    from.name.map { n => email.setFromName(n) }
+    email.setSubject(subject)
+    email.setHtml(body)
+
     localDeliveryDir match {
-      case None => emailer.sendHtml(to = to, subject = subject, body = body)
-      case Some(dir) => localDelivery(Paths.get(dir), to, subject, body)
+      case Some(dir) => {
+        localDelivery(Paths.get(dir), to, subject, body)
+      }
+
+      case None => {
+        val response = sendgrid.send(email)
+        assert(response.getStatus, "Error sending email: " + response.getMessage())
+      }
     }
   }
 

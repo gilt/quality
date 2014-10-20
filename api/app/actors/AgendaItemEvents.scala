@@ -2,8 +2,7 @@ package actors
 
 import com.gilt.quality.models.{AgendaItem, Meeting, Task}
 import db.{AgendaItemsDao, MeetingsDao}
-import lib.Email
-import core.mail.Person
+import lib.{Email, Person}
 import play.api.Play.current
 
 object AgendaItemEvents {
