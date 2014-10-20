@@ -13,9 +13,11 @@ case class Person(email: String, name: Option[String] = None)
 object Email {
 
   private def config(name: String): String = {
-    current.configuration.getString(name).getOrElse {
+    val value = current.configuration.getString(name).getOrElse {
       sys.error(s"configuration parameter[$name] is required")
     }
+    assert(value.trim != "", "Value for configuration parameter[$name] cannot be blank")
+    value
   }
 
   private val from = Person(
