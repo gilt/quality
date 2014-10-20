@@ -2,7 +2,7 @@ package controllers
 
 import client.Api
 import com.gilt.quality.models.{Incident, IncidentForm, Severity, Team}
-import lib.{IncidentContext, Pagination, PaginatedCollection}
+import lib.{Pagination, PaginatedCollection}
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
@@ -65,13 +65,13 @@ object Incidents extends Controller {
       incident match {
         case None => Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $id not found")
         case Some(i) => {
-          val contextOption = meetingId.flatMap { mid =>
+          val pagerOption = meetingId.flatMap { mid =>
             Await.result(
-              Api.instance.meetings.getByOrgAndId(org, mid),
+              Api.instance.meetings.getPagerByOrgAndIdAndIncidentId(request.org.key, mid, i.id),
               1000.millis
-            ).map { IncidentContext(request.org, i, _) }
+            )
           }
-          Ok(views.html.incidents.show(request.org, i, plans.headOption, meetings, contextOption))
+          Ok(views.html.incidents.show(request.org, i, plans.headOption, meetings, pagerOption))
         }
       }
     }

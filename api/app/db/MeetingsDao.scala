@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Incident, Meeting, MeetingForm, Organization, Task}
+import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Incident, Meeting, MeetingForm, MeetingPager, Organization, Task}
 import org.joda.time.DateTime
 import anorm._
 import anorm.ParameterValue._
@@ -180,6 +180,41 @@ object MeetingsDao {
         )
       }.toSeq
     }
+  }
+
+  def findPager(
+    meeting: Meeting,
+    incidentId: Long
+  ): MeetingPager = {
+    val incidentIds = scala.collection.mutable.ListBuffer[Long]()
+
+    Pager.eachPage[AgendaItem] { offset =>
+      AgendaItemsDao.findAll(
+        meetingId = Some(meeting.id),
+        offset = offset
+      )
+    } { item =>
+      incidentIds.append(item.incident.id)
+    }
+
+    val index = incidentIds.indexOf(incidentId)
+
+    MeetingPager(
+      meeting = meeting,
+      priorIncident = if (index <= 0) { None } else { findAgendaItemByMeetingAndIncidentId(meeting, incidentIds(index - 1)).map(_.incident) },
+      nextIncident = if (index >= incidentIds.size - 1) { None } else { findAgendaItemByMeetingAndIncidentId(meeting, incidentIds(index + 1)).map(_.incident) }
+    )
+  }
+
+  private def findAgendaItemByMeetingAndIncidentId(
+    meeting: Meeting,
+    incidentId: Long
+  ): Option[AgendaItem] = {
+      AgendaItemsDao.findAll(
+        meetingId = Some(meeting.id),
+        incidentId = Some(incidentId),
+        limit = 1
+      ).headOption
   }
 
 }

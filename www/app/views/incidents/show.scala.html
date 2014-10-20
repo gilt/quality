@@ -2,19 +2,19 @@
   incident: com.gilt.quality.models.Incident,
   plan: Option[com.gilt.quality.models.Plan],
   meetings: Seq[com.gilt.quality.models.Meeting],
-  contextOption: Option[lib.IncidentContext]
+  pagerOption: Option[com.gilt.quality.models.MeetingPager]
 )(implicit flash: Flash)
 
 @main(org = Some(org), title = s"#${incident.id}: ${incident.summary}") {
 
-  @contextOption.map { context =>
+  @pagerOption.map { pager =>
     <ul class="pager">
-      <li><a href="@routes.Meetings.show(org.key, context.meeting.id)">Back to Meeting</a></li>
-      @context.previousId.map { previousId =>
-        <li><a href="@routes.Incidents.show(org.key, incident.id, Some(previousId))">Previous</a></li>
+      <li><a href="@routes.Meetings.show(org.key, pager.meeting.id)">Back to Meeting</a></li>
+      @pager.priorIncident.map { prior =>
+        <li><a href="@routes.Incidents.show(org.key, prior.id, Some(pager.meeting.id))">Prior Incident #@prior.id</a></li>
       }
-      @context.nextId.map { nextId =>
-        <li><a href="@routes.Incidents.show(org.key, incident.id, Some(nextId))">Next</a></li>
+      @pager.nextIncident.map { next =>
+        <li><a href="@routes.Incidents.show(org.key, next.id, Some(pager.meeting.id))">Next Incident #@next.id</a></li>
       }
     </ul>
   }

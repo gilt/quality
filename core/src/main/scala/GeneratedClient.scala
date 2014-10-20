@@ -98,6 +98,17 @@ package com.gilt.quality.models {
   )
 
   /**
+   * Used to enable pagination when walking through the issues in a particular
+   * meeting. General idea is given a meeting id and an incident id, returns the
+   * previous and next incident IDs, if any
+   */
+  case class MeetingPager(
+    meeting: com.gilt.quality.models.Meeting,
+    priorIncident: scala.Option[com.gilt.quality.models.Incident] = None,
+    nextIncident: scala.Option[com.gilt.quality.models.Incident] = None
+  )
+
+  /**
    * Top level organization for which we are managing quality. Key entities like
    * teams and meetings are scoped to the organization.
    */
@@ -565,6 +576,22 @@ package com.gilt.quality.models {
       )
     }
 
+    implicit def jsonReadsQualityMeetingPager: play.api.libs.json.Reads[MeetingPager] = {
+      (
+        (__ \ "meeting").read[com.gilt.quality.models.Meeting] and
+        (__ \ "prior_incident").readNullable[com.gilt.quality.models.Incident] and
+        (__ \ "next_incident").readNullable[com.gilt.quality.models.Incident]
+      )(MeetingPager.apply _)
+    }
+
+    implicit def jsonWritesQualityMeetingPager: play.api.libs.json.Writes[MeetingPager] = {
+      (
+        (__ \ "meeting").write[com.gilt.quality.models.Meeting] and
+        (__ \ "prior_incident").write[scala.Option[com.gilt.quality.models.Incident]] and
+        (__ \ "next_incident").write[scala.Option[com.gilt.quality.models.Incident]]
+      )(unlift(MeetingPager.unapply _))
+    }
+
     implicit def jsonReadsQualityOrganization: play.api.libs.json.Reads[Organization] = {
       (
         (__ \ "key").read[String] and
@@ -710,7 +737,7 @@ package com.gilt.quality {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
-    private val UserAgent = "apidoc:0.6.6 http://www.apidoc.me/gilt/code/quality/0.0.10-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.8 http://www.apidoc.me/gilt/code/quality/0.0.10-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.quality.client")
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
@@ -954,6 +981,18 @@ package com.gilt.quality {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${id}").map {
           case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def getPagerByOrgAndIdAndIncidentId(
+        org: String,
+        id: Long,
+        incidentId: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.MeetingPager]] = {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${id}/pager/${incidentId}").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.MeetingPager])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -1361,6 +1400,16 @@ package com.gilt.quality {
       org: String,
       id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+
+    /**
+     * Get information on paging through incidents (e.g. the prior or next incident in
+     * a given meeting)
+     */
+    def getPagerByOrgAndIdAndIncidentId(
+      org: String,
+      id: Long,
+      incidentId: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.MeetingPager]]
   }
 
   trait Organizations {

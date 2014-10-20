@@ -63,4 +63,27 @@ class MeetingsSpec extends BaseSpec {
     await(client.meetings.getByOrg(org.key, agendaItemId = Some(-1))).map(_.id) must be(Seq.empty)
   }
 
+  "GET /:org/meetings/:id/pager/:incident_id" in new WithServer {
+    val meeting = createMeeting(org)
+    Database.ensureOrganizationHasUpcomingMeetings(org)
+    val item1 = createAgendaItem(org, Some(meeting))
+    val item2 = createAgendaItem(org, Some(meeting))
+    val item3 = createAgendaItem(org, Some(meeting))
+
+    val pager1 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item1.incident.id)).get
+    pager1.meeting must be(meeting)
+    pager1.priorIncident.map(_.id) must be(None)
+    pager1.nextIncident.map(_.id) must be(Some(item2.incident.id))
+
+    val pager2 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item2.incident.id)).get
+    pager2.meeting must be(meeting)
+    pager2.priorIncident.map(_.id) must be(Some(item1.incident.id))
+    pager2.nextIncident.map(_.id) must be(Some(item3.incident.id))
+
+    val pager3 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item3.incident.id)).get
+    pager3.meeting must be(meeting)
+    pager3.priorIncident.map(_.id) must be(Some(item2.incident.id))
+    pager3.nextIncident.map(_.id) must be(None)
+  }
+
 }
