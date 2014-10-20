@@ -7,7 +7,7 @@
 
 
 <p>
-  <a href="@host/@org.key/item.incidents/@item.incident.id">Incident
+  <a href="@host/@org.key/incidents/@{item.incident.id}">Incident
   #@item.incident.id</a>: @item.incident.summary has been added to the
   agenda to @taskLabel for the Perfect Day meeting scheduled for
   @_root_.org.joda.time.format.DateTimeFormat.mediumDateTime.print(meeting.scheduledAt).
