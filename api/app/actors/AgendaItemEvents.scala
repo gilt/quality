@@ -27,25 +27,17 @@ object AgendaItemEvents {
           Email.sendHtml(
             to = Person(teamEmail, item.incident.team.map(_.key)),
             subject = s"[PerfectDay] Incident ${item.incident.id} Added to ${dateTime} Meeting to ${taskLabel(item.task)}",
-            body = itemToEmail(meeting, item)
+            body = views.html.emails.agendaItemTeamChanged(
+              item.incident.organization,
+              meeting,
+              item,
+              taskLabel(item.task),
+              qualityWebHostname
+            ).toString
           )
         }
       }
     }
-  }
-
-  def itemToEmail(
-    meeting: Meeting,
-    item: AgendaItem
-  ): String = {
-    views.html.emails.agendaItemTeamChanged(
-      item.incident.organization,
-      meeting,
-      item,
-      taskLabel(item.task),
-      qualityWebHostname
-    ).toString
-
   }
 
   private def taskLabel(task: Task): String = {
