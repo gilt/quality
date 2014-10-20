@@ -19,8 +19,10 @@ class EmailSpec extends FunSpec with ShouldMatchers {
   }
 
   def deleteFiles(dir: Path) {
-    Files.newDirectoryStream(targetDir).foreach { f =>
-      f.toFile.delete()
+    if (dir.toFile.exists) {
+      Files.newDirectoryStream(dir).foreach { f =>
+        f.toFile.delete()
+      }
     }
   }
 
