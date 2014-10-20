@@ -4,6 +4,7 @@ import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
 import db.IncidentsDao
 import akka.actor._
+import play.api.Logger
 import play.api.Play.current
 
 object MeetingMessage {
@@ -26,7 +27,11 @@ class MeetingActor extends Actor {
 
     case MeetingMessage.AgendaItemCreated(agendaItemId: Long) => {
       println(s"MeetingActor MeetingMessage.AgendaItemCreated($agendaItemId)")
-      AgendaItemEvents.processCreated(agendaItemId)
+      try {
+        AgendaItemEvents.processCreated(agendaItemId)
+      } catch {
+        case t: Throwable => Logger.error(s"MeetingMessage.AgendaItemCreated($agendaItemId): ${t}" , t)
+      }
     }
 
     /**
@@ -36,7 +41,7 @@ class MeetingActor extends Actor {
       try {
         Database.ensureAllOrganizationHaveUpcomingMeetings()
       } catch {
-        case e: Throwable => println("ERROR: " + e)
+        case t: Throwable => Logger.error(s"InternalMeetingMessage.SyncOrganizationMeetings: ${t}" , t)
       }
     }
 
@@ -54,7 +59,7 @@ class MeetingActor extends Actor {
       try {
         Database.syncMeetings()
       } catch {
-        case e: Throwable => println("ERROR: " + e)
+        case t: Throwable => Logger.error(s"InternalMeetingMessage.SyncMeetings: ${t}" , t)
       }
     }
 
@@ -69,13 +74,17 @@ class MeetingActor extends Actor {
       try {
         Database.assignIncident(incidentId)
       } catch {
-        case e: Throwable => println("ERROR: " + e)
+        case t: Throwable => Logger.error(s"InternalMeetingMessage.SyncIncident($incidentId): ${t}" , t)
       }
     }
 
     case InternalMeetingMessage.SyncIncidents => {
-      IncidentsDao.findRecentlyModifiedIncidentIds.foreach { incidentId =>
-        sender ! InternalMeetingMessage.SyncIncident(incidentId)
+      try {
+        IncidentsDao.findRecentlyModifiedIncidentIds.foreach { incidentId =>
+          sender ! InternalMeetingMessage.SyncIncident(incidentId)
+        }
+      } catch {
+        case t: Throwable => Logger.error(s"InternalMeetingMessage.SyncIncidents: ${t}" , t)
       }
     }
 
