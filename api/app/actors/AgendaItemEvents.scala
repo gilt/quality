@@ -18,9 +18,12 @@ object AgendaItemEvents {
         agendaItemId = Some(item.id),
         limit = 1
       ).headOption.map { meeting =>
-        // TODO
-        Seq("michael@gilt.com").foreach { teamEmail =>
-          val dateTime = org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)
+        val dateTime = org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)
+        val emails = Seq(
+          Some("michael@gilt.com"),
+          Some("chazlett@gilt.com"),
+          item.incident.team.flatMap(_.email)
+        ).flatten.foreach { teamEmail =>
           Email.sendHtml(
             to = Person(teamEmail, item.incident.team.map(_.key)),
             subject = s"[PerfectDay] Incident ${item.incident.id} Added to ${dateTime} Meeting to ${taskLabel(item.task)}",
