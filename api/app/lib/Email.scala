@@ -18,14 +18,22 @@ object Email {
     }
   }
 
-  private val localDeliveryDir = current.configuration.getString("mail.localDeliveryDir")
-
   private val from = Person(
     email = config("mail.defaultFromEmail"),
     name = Some(config("mail.defaultFromName"))
   )
 
-  private val sendgrid = new SendGrid(config("sendgrid.apiUser"), config("sendgrid.apiKey"))
+  val localDeliveryDir = current.configuration.getString("mail.localDeliveryDir").map(Paths.get(_))
+
+  // Initialize sendgrid on startup to verify that all of our settings
+  // are here. If using localDeliveryDir, set password to a test
+  // string.
+  private val sendgrid = {
+    localDeliveryDir match {
+      case None => new SendGrid(config("sendgrid.apiUser"), config("sendgrid.apiKey"))
+      case Some(_) => new SendGrid(config("sendgrid.apiUser"), "development")
+    }
+  }
 
   def sendHtml(
     to: Person,
@@ -42,7 +50,7 @@ object Email {
 
     localDeliveryDir match {
       case Some(dir) => {
-        localDelivery(Paths.get(dir), to, subject, body)
+        localDelivery(dir, to, subject, body)
       }
 
       case None => {

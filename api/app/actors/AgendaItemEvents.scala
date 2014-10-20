@@ -12,6 +12,7 @@ object AgendaItemEvents {
   }
 
   private[actors] def processCreated(agendaItemId: Long) {
+    println(s"processCreated($agendaItemId)")
     AgendaItemsDao.findById(agendaItemId).map { item =>
       MeetingsDao.findAll(
         agendaItemId = Some(item.id),
