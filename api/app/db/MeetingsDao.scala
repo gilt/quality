@@ -184,37 +184,35 @@ object MeetingsDao {
 
   def findPager(
     meeting: Meeting,
-    incidentId: Long
+    item: AgendaItem
   ): MeetingPager = {
-    val incidentIds = scala.collection.mutable.ListBuffer[Long]()
+    val agendaItemIds = scala.collection.mutable.ListBuffer[Long]()
 
     Pager.eachPage[AgendaItem] { offset =>
       AgendaItemsDao.findAll(
         meetingId = Some(meeting.id),
+        task = Some(item.task),
         offset = offset
       )
     } { item =>
-      incidentIds.append(item.incident.id)
+      agendaItemIds.append(item.id)
     }
 
-    val index = incidentIds.indexOf(incidentId)
+    val index = agendaItemIds.indexOf(item.id)
 
     MeetingPager(
       meeting = meeting,
-      priorIncident = if (index <= 0) { None } else { findAgendaItemByMeetingAndIncidentId(meeting, incidentIds(index - 1)).map(_.incident) },
-      nextIncident = if (index >= incidentIds.size - 1) { None } else { findAgendaItemByMeetingAndIncidentId(meeting, incidentIds(index + 1)).map(_.incident) }
+      priorIncident = if (index <= 0) {
+        None
+      } else {
+        AgendaItemsDao.findById(agendaItemIds(index - 1)).map(_.incident)
+      },
+      nextIncident = if (index >= agendaItemIds.size - 1) {
+        None
+      } else {
+        AgendaItemsDao.findById(agendaItemIds(index + 1)).map(_.incident)
+      }
     )
-  }
-
-  private def findAgendaItemByMeetingAndIncidentId(
-    meeting: Meeting,
-    incidentId: Long
-  ): Option[AgendaItem] = {
-      AgendaItemsDao.findAll(
-        meetingId = Some(meeting.id),
-        incidentId = Some(incidentId),
-        limit = 1
-      ).headOption
   }
 
 }

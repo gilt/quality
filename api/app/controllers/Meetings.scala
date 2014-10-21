@@ -1,12 +1,12 @@
 package controllers
 
-import com.gilt.quality.models.{Error, Meeting, MeetingForm, User}
+import com.gilt.quality.models.{Error, Meeting, MeetingPager, MeetingForm, User}
 import com.gilt.quality.models.json._
 
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{FullMeetingForm, MeetingsDao, OrganizationsDao}
+import db.{AgendaItemsDao, FullMeetingForm, MeetingsDao, OrganizationsDao}
 import lib.Validation
 
 object Meetings extends Controller {
@@ -48,8 +48,15 @@ object Meetings extends Controller {
   ) = OrgAction { request =>
     MeetingsDao.findByOrganizationAndId(request.org, id) match {
       case None => NotFound
-      case Some(m: Meeting) => {
-        val pager = MeetingsDao.findPager(m, incidentId)
+      case Some(meeting: Meeting) => {
+        val pager = AgendaItemsDao.findAll(
+          meetingId = Some(id),
+          incidentId = Some(incidentId),
+          limit = 1
+        ).headOption match {
+          case None => MeetingPager(meeting = meeting)
+          case Some(item) => MeetingsDao.findPager(meeting, item)
+        }
         Ok(Json.toJson(pager))
       }
     }
