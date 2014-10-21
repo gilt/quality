@@ -36,9 +36,14 @@ object UsersDao {
   def validate(
     form: UserForm
   ): Seq[Error] = {
-    val emailErrors = findByEmail(form.email) match {
-      case None => Seq.empty
-      case Some(_) => Seq("Email already exists")
+    val index = form.email.indexOf("@")
+    val emailErrors = if (index <= 0) {
+      Seq(s"email is not valid")
+    } else {
+      findByEmail(form.email) match {
+        case None => Seq.empty
+        case Some(_) => Seq("Email already exists")
+      }
     }
 
     Validation.errors(emailErrors)
@@ -50,26 +55,22 @@ object UsersDao {
 
     val guid = UUID.randomUUID
 
-    val id = DB.withConnection { implicit c =>
+    DB.withConnection { implicit c =>
       SQL("""
         insert into users
-        (guid, email, created_by_guid)
+        (guid, email, created_by_guid, updated_by_guid)
         values
-        ({guid}::uuid, {email}, {created_by_guid}::uuid)
+        ({guid}::uuid, {email}, {user_guid}::uuid, {user_guid}::uuid)
       """).on(
         'guid -> guid,
         'email -> form.email,
-        'created_by_guid -> createdBy.guid
-      ).executeInsert().getOrElse(sys.error("Missing id"))
+        'user_guid -> createdBy.guid
+      ).execute()
     }
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create user")
     }
-  }
-
-  def softDelete(deletedBy: User, user: User) {
-    SoftDelete.deleteByGuid("users", deletedBy, user.guid)
   }
 
   def findByGuid(guid: UUID): Option[User] = findOne(guid = Some(guid))
@@ -84,7 +85,7 @@ object UsersDao {
 
     val sql = Seq(
       Some(BaseQuery.trim),
-      guid.map { v => "and users.guid = {guid}" },
+      guid.map { v => "and users.guid = {guid}::uuid" },
       email.map { v => "and users.email = lower(trim({email}))" },
       Some("limit 1")
     ).flatten.mkString("\n   ")
