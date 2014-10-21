@@ -167,6 +167,7 @@ package com.gilt.quality.models {
    * Represents a user that is currently subscribed to a publication
    */
   case class Subscription(
+    id: Long,
     user: com.gilt.quality.models.User,
     publication: com.gilt.quality.models.Publication
   )
@@ -738,6 +739,7 @@ package com.gilt.quality.models {
 
     implicit def jsonReadsQualitySubscription: play.api.libs.json.Reads[Subscription] = {
       (
+        (__ \ "id").read[Long] and
         (__ \ "user").read[com.gilt.quality.models.User] and
         (__ \ "publication").read[com.gilt.quality.models.Publication]
       )(Subscription.apply _)
@@ -745,6 +747,7 @@ package com.gilt.quality.models {
 
     implicit def jsonWritesQualitySubscription: play.api.libs.json.Writes[Subscription] = {
       (
+        (__ \ "id").write[Long] and
         (__ \ "user").write[com.gilt.quality.models.User] and
         (__ \ "publication").write[com.gilt.quality.models.Publication]
       )(unlift(Subscription.unapply _))
@@ -869,6 +872,8 @@ package com.gilt.quality {
     def plans: Plans = Plans
 
     def statistics: Statistics = Statistics
+
+    def subscriptions: Subscriptions = Subscriptions
 
     def teams: Teams = Teams
 
@@ -1269,6 +1274,61 @@ package com.gilt.quality {
       }
     }
 
+    object Subscriptions extends Subscriptions {
+      override def get(
+        id: scala.Option[Long] = None,
+        organizationKey: scala.Option[String] = None,
+        userGuid: scala.Option[java.util.UUID] = None,
+        publicationKey: scala.Option[String] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Subscription]] = {
+        val queryParameters = Seq(
+          id.map("id" -> _.toString),
+          organizationKey.map("organization_key" -> _),
+          userGuid.map("user_guid" -> _.toString),
+          publicationKey.map("publication_key" -> _),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/subscriptions", queryParameters = queryParameters).map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Subscription]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def getById(
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Subscription]] = {
+        _executeRequest("GET", s"/subscriptions/${id}").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.Subscription])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def post(subscriptionForm: com.gilt.quality.models.SubscriptionForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Subscription] = {
+        val payload = play.api.libs.json.Json.toJson(subscriptionForm)
+
+        _executeRequest("POST", s"/subscriptions", body = Some(payload)).map {
+          case r if r.status == 201 => r.json.as[com.gilt.quality.models.Subscription]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def deleteById(
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
+        _executeRequest("DELETE", s"/subscriptions/${id}").map {
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
     object Teams extends Teams {
       override def getByOrg(
         org: String,
@@ -1658,6 +1718,36 @@ package com.gilt.quality {
       teamKey: scala.Option[String] = None,
       numberHours: scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Statistic]]
+  }
+
+  trait Subscriptions {
+    /**
+     * Search for a specific subscription.
+     */
+    def get(
+      id: scala.Option[Long] = None,
+      organizationKey: scala.Option[String] = None,
+      userGuid: scala.Option[java.util.UUID] = None,
+      publicationKey: scala.Option[String] = None,
+      limit: scala.Option[Int] = None,
+      offset: scala.Option[Int] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Subscription]]
+
+    /**
+     * Returns information about this subscription.
+     */
+    def getById(
+      id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Subscription]]
+
+    /**
+     * Create a new subscription.
+     */
+    def post(subscriptionForm: com.gilt.quality.models.SubscriptionForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Subscription]
+
+    def deleteById(
+      id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }
 
   trait Teams {

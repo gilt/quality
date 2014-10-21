@@ -11,7 +11,8 @@ import java.util.UUID
 object SubscriptionsDao {
 
   private val BaseQuery = """
-    select publications.key as publication_key,
+    select subscriptions.id,
+           publications.key as publication_key,
            users.guid as user_guid,
            users.email as user_email
       from subscriptions
@@ -119,6 +120,7 @@ object SubscriptionsDao {
     row: anorm.Row
   ): Subscription = {
     Subscription(
+      id = row[Long]("id"),
       user = UsersDao.fromRow(row, Some("user")),
       publication = PublicationsDao.fromRow(row, Some("publication"))
     )
