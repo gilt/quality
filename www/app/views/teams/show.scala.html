@@ -1,10 +1,11 @@
-@(org: com.gilt.quality.models.Organization,
+@(tpl: lib.MainTemplate,
+  org: com.gilt.quality.models.Organization,
   team: com.gilt.quality.models.Team,
   stats: Option[com.gilt.quality.models.Statistic],
   incidents: lib.PaginatedCollection[com.gilt.quality.models.Incident]
 )(implicit flash: Flash)
 
-@main(org = Some(org), title = s"Team ${team.key}") {
+@main(tpl.copy(title = Some(s"Team ${team.key}"))) {
 
   <div class="pull-right">
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(org.key, teamKey = Some(team.key))">Create Incident</a>

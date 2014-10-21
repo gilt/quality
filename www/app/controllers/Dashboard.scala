@@ -18,7 +18,7 @@ object Dashboard extends Controller {
       stats <- Api.instance.Statistics.getByOrg(org, numberHours = Some(OneWeekInHours))
       events <- Api.instance.Events.getByOrg(org, numberHours = Some(OneDayInHours), limit = Some(10))
     } yield {
-      Ok(views.html.dashboard.index(request.org, stats, events))
+      Ok(views.html.dashboard.index(request.mainTemplate(), request.org, stats, events))
     }
   }
 

@@ -1,5 +1,4 @@
-@(title: String,
-  org: Option[com.gilt.quality.models.Organization] = None,
+@(tpl: lib.MainTemplate,
   section: Option[String] = None,
   errorMessage: Option[String] = None
 )(content: Html)(implicit flash: Flash)
@@ -9,7 +8,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@title</title>
+    <title>@tpl.headTitle.getOrElse(tpl.title.getOrElse("quality"))</title>
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.1.1/css/bootstrap.min.css")">
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
     <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.ico")">
@@ -17,19 +16,12 @@
 
   <body data-spy="scroll" data-target=".models">
 
-    <!-- Fixed navbar -->
-    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="/">Quality</a>
-        </div>
-      </div>
-    </div>
+    @mainNavbar(tpl.user)
 
     <div class="container-fluid">
       <div class="row">
 
-        @org.map { o =>
+        @tpl.org.map { o =>
           <div class="col-sm-3 col-md-2 sidebar models">
             <ul class="nav nav-sidebar">
               <li><a@if(section == Some("dashboard")) { class="active" } href="@routes.Dashboard.index(o.key)">Dashboard</a></li>
@@ -46,7 +38,7 @@
           @flash.get("warning").map { msg => <span class="label label-warning">@msg</span> }
           @flash.get("error").map { msg => <span class="label label-error">@msg</span> }
 
-          <h2>@title</h2>
+          @tpl.title.map { t => <h2>@t</h2> }
 
           @if(!errorMessage.isEmpty) {
             <dd class="error">@errorMessage.get</dd>

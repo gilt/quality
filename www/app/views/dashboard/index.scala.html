@@ -1,9 +1,10 @@
-@(org: com.gilt.quality.models.Organization,
+@(tpl: lib.MainTemplate,
+  org: com.gilt.quality.models.Organization,
   statistics: Seq[com.gilt.quality.models.Statistic],
   events: Seq[com.gilt.quality.models.Event]
 )(implicit flash: Flash)
 
-@main(org = Some(org), title = s"Quality", section = Some("dashboard")) {
+@main(tpl, section = Some("dashboard")) {
 
   <div class="pull-right">
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(org.key)">Create Incident</a>

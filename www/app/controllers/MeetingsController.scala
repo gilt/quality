@@ -27,7 +27,7 @@ object Meetings extends Controller {
         offset = Some(page * Pagination.DefaultLimit)
       )
     } yield {
-      Ok(views.html.meetings.index(request.org, PaginatedCollection(page, meetings)))
+      Ok(views.html.meetings.index(request.mainTemplate(), request.org, PaginatedCollection(page, meetings)))
     }
   }
 
@@ -61,6 +61,7 @@ object Meetings extends Controller {
         case Some(meeting: Meeting) => {
           Ok(
             views.html.meetings.show(
+              request.mainTemplate(),
               request.org,
               meeting,
               PaginatedCollection(reviewTeamsPage, reviewTeams),

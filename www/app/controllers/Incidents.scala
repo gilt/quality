@@ -48,7 +48,7 @@ object Incidents extends Controller {
       teams <- Api.instance.teams.getByOrg(org, limit = Some(MaxTeams))
     } yield {
       val teamsOrEmpty = if (teams.size >= MaxTeams) { Seq.empty } else { teams }
-      Ok(views.html.incidents.index(request.org, filters, PaginatedCollection(page, incidents), teamsOrEmpty))
+      Ok(views.html.incidents.index(request.mainTemplate(), request.org, filters, PaginatedCollection(page, incidents), teamsOrEmpty))
     }
   }
 
@@ -71,7 +71,7 @@ object Incidents extends Controller {
               1000.millis
             )
           }
-          Ok(views.html.incidents.show(request.org, i, plans.headOption, meetings, pagerOption))
+          Ok(views.html.incidents.show(request.mainTemplate(), request.org, i, plans.headOption, meetings, pagerOption))
         }
       }
     }
@@ -105,7 +105,7 @@ object Incidents extends Controller {
           tags = ""
         )
       )
-      Ok(views.html.incidents.create(request.org, form, teamsOrEmpty))
+      Ok(views.html.incidents.create(request.mainTemplate(), request.org, form, teamsOrEmpty))
     }
   }
 
@@ -118,7 +118,7 @@ object Incidents extends Controller {
           teams <- Api.instance.teams.getByOrg(org, limit = Some(MaxTeams))
         } yield {
           val teamsOrEmpty = if (teams.size >= MaxTeams) { Seq.empty } else { teams }
-          Ok(views.html.incidents.create(request.org, formWithErrors, teamsOrEmpty))
+          Ok(views.html.incidents.create(request.mainTemplate(), request.org, formWithErrors, teamsOrEmpty))
         }
       },
 
@@ -136,7 +136,7 @@ object Incidents extends Controller {
           Redirect(routes.Incidents.show(org, incident.id)).flashing("success" -> "Incident created")
         }.recover {
           case response: com.gilt.quality.error.ErrorsResponse => {
-            Ok(views.html.incidents.create(request.org, boundForm, fetchTeamsOrEmpty(org), Some(response.errors.map(_.message).mkString("\n"))))
+            Ok(views.html.incidents.create(request.mainTemplate(), request.org, boundForm, fetchTeamsOrEmpty(org), Some(response.errors.map(_.message).mkString("\n"))))
           }
         }
       }
@@ -166,7 +166,7 @@ object Incidents extends Controller {
             )
           )
           val teamsOrEmpty = if (teams.size >= MaxTeams) { Seq.empty } else { teams }
-          Ok(views.html.incidents.edit(request.org, incident, teamsOrEmpty, form))
+          Ok(views.html.incidents.edit(request.mainTemplate(), request.org, incident, teamsOrEmpty, form))
         }
       }
     }
@@ -190,7 +190,7 @@ object Incidents extends Controller {
               teams <- Api.instance.teams.getByOrg(org, limit = Some(MaxTeams))
             } yield {
               val teamsOrEmpty = if (teams.size >= MaxTeams) { Seq.empty } else { teams }
-              Ok(views.html.incidents.edit(request.org, incident, teamsOrEmpty, formWithErrors))
+              Ok(views.html.incidents.edit(request.mainTemplate(), request.org, incident, teamsOrEmpty, formWithErrors))
             }
           },
 
@@ -209,7 +209,7 @@ object Incidents extends Controller {
               Redirect(routes.Incidents.show(org, incident.id)).flashing("success" -> "Incident updated")
             }.recover {
               case r: com.gilt.quality.error.ErrorsResponse => {
-                Ok(views.html.incidents.create(request.org, boundForm, fetchTeamsOrEmpty(org), Some(r.errors.map(_.message).mkString("\n"))))
+                Ok(views.html.incidents.create(request.mainTemplate(), request.org, boundForm, fetchTeamsOrEmpty(org), Some(r.errors.map(_.message).mkString("\n"))))
               }
             }
           }

@@ -1,8 +1,9 @@
-@(loginForm: Form[controllers.LoginController.LoginData],
+@(tpl: lib.MainTemplate,
+  loginForm: Form[controllers.LoginController.LoginData],
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(title = "Login", errorMessage = errorMessage) {
+@main(tpl.copy(title = Some("Login")), errorMessage = errorMessage) {
 
   <div class="container">
 

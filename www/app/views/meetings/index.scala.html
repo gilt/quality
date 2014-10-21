@@ -1,8 +1,9 @@
-@(org: com.gilt.quality.models.Organization,
+@(tpl: lib.MainTemplate,
+  org: com.gilt.quality.models.Organization,
   meetings: lib.PaginatedCollection[com.gilt.quality.models.Meeting]
 )(implicit flash: Flash)
 
-@main(org = Some(org), title = "Meetings", section = Some("meetings")) {
+@main(tpl.copy(title = Some("Meetings")), section = Some("meetings")) {
 
   @if(meetings.isEmpty) {
     <em>No meetings found</em>
