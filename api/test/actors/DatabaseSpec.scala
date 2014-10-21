@@ -1,7 +1,7 @@
 package actors
 
-import com.gilt.quality.models.{PlanForm, Task}
-import db.{AgendaItemsDao, FullIncidentForm, IncidentsDao, MeetingsDao, User, Util}
+import com.gilt.quality.models.{PlanForm, Task, User}
+import db.{AgendaItemsDao, FullIncidentForm, IncidentsDao, MeetingsDao, UsersDao, Util}
 import org.joda.time.DateTime
 import java.util.UUID
 import play.api.test.Helpers._

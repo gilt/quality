@@ -1,7 +1,7 @@
 package actors
 
-import com.gilt.quality.models.{PlanForm, Task}
-import db.{AgendaItemsDao, FullIncidentForm, IncidentsDao, MeetingsDao, User, Util}
+import com.gilt.quality.models.{PlanForm, Task, User}
+import db.{AgendaItemsDao, FullIncidentForm, IncidentsDao, MeetingsDao, Util}
 import lib.Email
 import org.joda.time.DateTime
 import java.nio.file.{Files, Path}
@@ -14,7 +14,7 @@ class EmailSpec extends FunSpec with ShouldMatchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-  val targetDir = Email.localDeliveryDir.getOrElse {
+  private val targetDir = Email.localDeliveryDir.getOrElse {
     sys.error("Local email delivery not enabled")
   }
 
