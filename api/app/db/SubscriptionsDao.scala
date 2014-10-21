@@ -49,7 +49,17 @@ object SubscriptionsDao {
         case Some(_) => Seq.empty
     }
 
-    Validation.errors(organizationKeyErrors ++ publicationErrors ++ userErrors)
+    val alreadySubscribed = SubscriptionsDao.findAll(
+      organizationKey = Some(form.organizationKey),
+      userGuid = Some(form.userGuid),
+      publication = Some(form.publication),
+      limit = 1
+    ).headOption match {
+      case None => Seq.empty
+      case Some(_) => Seq("User is already subscribed to this publication for this organization")
+    }
+
+    Validation.errors(organizationKeyErrors ++ publicationErrors ++ userErrors ++ alreadySubscribed)
   }
 
   def create(createdBy: User, form: SubscriptionForm): Subscription = {
