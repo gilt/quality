@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{Error, Subscription, SubscriptionForm, User}
+import com.gilt.quality.models.{Error, Publication, Subscription, SubscriptionForm, User}
 import anorm._
 import lib.Validation
 import play.api.db._
@@ -37,9 +37,9 @@ object SubscriptionsDao {
         case Some(_) => Seq.empty
     }
 
-    val publicationKeyErrors = PublicationsDao.lookupId(form.publicationKey) match {
-        case None => Seq("Publication not found")
-        case Some(_) => Seq.empty
+    val publicationErrors = form.publication match {
+      case Publication.UNDEFINED(_) => Seq("Publication not found")
+      case _ => Seq.empty
     }
 
     val userErrors = UsersDao.findByGuid(form.userGuid) match {
@@ -47,7 +47,7 @@ object SubscriptionsDao {
         case Some(_) => Seq.empty
     }
 
-    Validation.errors(organizationKeyErrors ++ publicationKeyErrors ++ userErrors)
+    Validation.errors(organizationKeyErrors ++ publicationErrors ++ userErrors)
   }
 
   def create(createdBy: User, form: SubscriptionForm): Subscription = {
@@ -55,7 +55,6 @@ object SubscriptionsDao {
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
     val organizationId = OrganizationsDao.lookupId(form.organizationKey).get
-    val publicationId = PublicationsDao.lookupId(form.publicationKey).get
 
     val id = DB.withConnection { implicit c =>
       SQL("""
@@ -65,7 +64,7 @@ object SubscriptionsDao {
         ({organization_id}, {publication_id}, {user_guid}::uuid, {created_by_guid}::uuid)
       """).on(
         'organization_id -> organizationId,
-        'publication_id -> publicationId,
+        'publication -> form.publication.toString,
         'user_guid -> form.userGuid,
         'created_by_guid -> createdBy.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
@@ -80,7 +79,7 @@ object SubscriptionsDao {
     DB.withConnection { implicit c =>
       SQL(SoftDeleteQuery).on(
         'deleted_by_guid -> deletedBy.guid,
-        'publication_id -> subscription.publication.key,
+        'publication -> subscription.publication.toString,
         'user_guid -> subscription.user.guid
       ).execute()
     }
@@ -94,7 +93,7 @@ object SubscriptionsDao {
     id: Option[Long] = None,
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
-    publicationKey: Option[String] = None,
+    publication: Option[Publication] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Subscription] = {
@@ -103,7 +102,7 @@ object SubscriptionsDao {
       id.map { v => "and subscriptions.id = {id}" },
       organizationKey.map { v => "and subscriptions.organization_id = (select id from organizations where deleted_at is null and key = {organization_key})" },
       userGuid.map { v => "and subscriptions.user_guid = {user_guid}::uuid" },
-      publicationKey.map { v => "and subscriptions.publication_id = (select id from publications where deleted_at is null and key = {publication_key})" },
+      publication.map { v => "and subscriptions.publication = {publication}" },
       Some(s"order by lower(subscriptions.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
@@ -111,7 +110,7 @@ object SubscriptionsDao {
       id.map('id -> _),
       organizationKey.map('organization_key -> _),
       userGuid.map('user_guid -> _.toString),
-      publicationKey.map('publication_key -> _)
+      publication.map('publication -> _.toString)
     ).flatten
 
     DB.withConnection { implicit c =>
@@ -125,7 +124,7 @@ object SubscriptionsDao {
     Subscription(
       id = row[Long]("id"),
       user = UsersDao.fromRow(row, Some("user")),
-      publication = PublicationsDao.fromRow(row, Some("publication"))
+      publication = Publication(row[String]("publication"))
     )
   }
 

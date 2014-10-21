@@ -35,6 +35,14 @@
 		{ "name": "review_team", "description": "Used in meetings to indicate that a team should be assigned to the incident or that the group should review the team assignment to make sure it is correct." },
 		{ "name": "review_plan", "description": "Indicates that the incident plan should be reviewed and rated" }
 	    ]
+	},
+
+	"publication": {
+	    "description": "A publication represents something that a user can subscribe to. An example would be subscribing via email to the publication of all new incidents.",
+	    "values": [
+		{ "name": "all_new_incidents", "description": "Email notification whenever an incident is created." },
+		{ "name": "all_plans", "description": "Email notification whenever a plan is created or updated." }
+	    ]
 	}
 
     },
@@ -247,13 +255,6 @@
             ]
 	},
 
-	"publication": {
-	    "description": "A publication represents something that a user can subscribe to. An example would be subscribing via email to the publication of all new incidents.",
-	    "fields": [
-		{ "name": "key", "type": "string" }
-	    ]
-	},
-
 	"subscription": {
 	    "description": "Represents a user that is currently subscribed to a publication",
 	    "fields": [
@@ -267,7 +268,7 @@
 	    "fields": [
 		{ "name": "organization_key", "type": "string" },
 		{ "name": "user_guid", "type": "uuid" },
-		{ "name": "publication_key", "type": "string" }
+		{ "name": "publication", "type": "publication" }
 	    ]
 	}
 
@@ -715,7 +716,7 @@
                         { "name": "id", "type": "long", "description": "Find the subscription with this id.", "required": false },
                         { "name": "organization_key", "type": "string", "description": "Find subscriptions for this organization.", "required": false },
                         { "name": "user_guid", "type": "uuid", "description": "Find subscriptions for this user.", "required": false },
-                        { "name": "publication_key", "type": "string", "description": "Find subscriptions for this publication.", "required": false },
+                        { "name": "publication", "type": "publication", "description": "Find subscriptions for this publication.", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],

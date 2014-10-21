@@ -2,7 +2,7 @@ package controllers
 
 import db.{SubscriptionsDao, UsersDao}
 import lib.Validation
-import com.gilt.quality.models.{SubscriptionForm, User}
+import com.gilt.quality.models.{Publication, SubscriptionForm, User}
 import com.gilt.quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
@@ -17,7 +17,7 @@ trait Subscriptions {
     id: Option[Long],
     organizationKey: Option[String],
     userGuid: Option[java.util.UUID],
-    publicationKey: Option[String],
+    publication: Option[Publication],
     limit: Int = 25,
     offset: Int = 0
   ) = Action { request =>
@@ -25,7 +25,7 @@ trait Subscriptions {
       id = id,
       organizationKey = organizationKey,
       userGuid = userGuid,
-      publicationKey = publicationKey,
+      publication = publication,
       limit = limit,
       offset = offset
     )

@@ -143,14 +143,6 @@ package com.gilt.quality.models {
   )
 
   /**
-   * A publication represents something that a user can subscribe to. An example
-   * would be subscribing via email to the publication of all new incidents.
-   */
-  case class Publication(
-    key: String
-  )
-
-  /**
    * Statistics on each team's quality metrics, number of issues
    */
   case class Statistic(
@@ -175,7 +167,7 @@ package com.gilt.quality.models {
   case class SubscriptionForm(
     organizationKey: String,
     userGuid: java.util.UUID,
-    publicationKey: String
+    publication: com.gilt.quality.models.Publication
   )
 
   /**
@@ -299,6 +291,50 @@ package com.gilt.quality.models {
 
   }
 
+  /**
+   * A publication represents something that a user can subscribe to. An example
+   * would be subscribing via email to the publication of all new incidents.
+   */
+  sealed trait Publication
+
+  object Publication {
+
+    /**
+     * Email notification whenever an incident is created.
+     */
+    case object AllNewIncidents extends Publication { override def toString = "all_new_incidents" }
+    /**
+     * Email notification whenever a plan is created or updated.
+     */
+    case object AllPlans extends Publication { override def toString = "all_plans" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Publication
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(AllNewIncidents, AllPlans)
+
+    private[this]
+    val byName = all.map(x => x.toString -> x).toMap
+
+    def apply(value: String): Publication = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): scala.Option[Publication] = byName.get(value)
+
+  }
+
   sealed trait Severity
 
   object Severity {
@@ -412,6 +448,11 @@ package com.gilt.quality.models {
     implicit val jsonReadsQualityEnum_Model = __.read[String].map(Model.apply)
     implicit val jsonWritesQualityEnum_Model = new Writes[Model] {
       def writes(x: Model) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsQualityEnum_Publication = __.read[String].map(Publication.apply)
+    implicit val jsonWritesQualityEnum_Publication = new Writes[Publication] {
+      def writes(x: Publication) = JsString(x.toString)
     }
 
     implicit val jsonReadsQualityEnum_Severity = __.read[String].map(Severity.apply)
@@ -703,16 +744,6 @@ package com.gilt.quality.models {
       )(unlift(PlanForm.unapply _))
     }
 
-    implicit def jsonReadsQualityPublication: play.api.libs.json.Reads[Publication] = {
-      (__ \ "key").read[String].map { x => new Publication(key = x) }
-    }
-
-    implicit def jsonWritesQualityPublication: play.api.libs.json.Writes[Publication] = new play.api.libs.json.Writes[Publication] {
-      def writes(x: Publication) = play.api.libs.json.Json.obj(
-        "key" -> play.api.libs.json.Json.toJson(x.key)
-      )
-    }
-
     implicit def jsonReadsQualityStatistic: play.api.libs.json.Reads[Statistic] = {
       (
         (__ \ "team").read[com.gilt.quality.models.Team] and
@@ -757,7 +788,7 @@ package com.gilt.quality.models {
       (
         (__ \ "organization_key").read[String] and
         (__ \ "user_guid").read[java.util.UUID] and
-        (__ \ "publication_key").read[String]
+        (__ \ "publication").read[com.gilt.quality.models.Publication]
       )(SubscriptionForm.apply _)
     }
 
@@ -765,7 +796,7 @@ package com.gilt.quality.models {
       (
         (__ \ "organization_key").write[String] and
         (__ \ "user_guid").write[java.util.UUID] and
-        (__ \ "publication_key").write[String]
+        (__ \ "publication").write[com.gilt.quality.models.Publication]
       )(unlift(SubscriptionForm.unapply _))
     }
 
@@ -1279,7 +1310,7 @@ package com.gilt.quality {
         id: scala.Option[Long] = None,
         organizationKey: scala.Option[String] = None,
         userGuid: scala.Option[java.util.UUID] = None,
-        publicationKey: scala.Option[String] = None,
+        publication: scala.Option[com.gilt.quality.models.Publication] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Subscription]] = {
@@ -1287,7 +1318,7 @@ package com.gilt.quality {
           id.map("id" -> _.toString),
           organizationKey.map("organization_key" -> _),
           userGuid.map("user_guid" -> _.toString),
-          publicationKey.map("publication_key" -> _),
+          publication.map("publication" -> _.toString),
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
@@ -1728,7 +1759,7 @@ package com.gilt.quality {
       id: scala.Option[Long] = None,
       organizationKey: scala.Option[String] = None,
       userGuid: scala.Option[java.util.UUID] = None,
-      publicationKey: scala.Option[String] = None,
+      publication: scala.Option[com.gilt.quality.models.Publication] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Subscription]]
@@ -1875,6 +1906,17 @@ package com.gilt.quality {
 
     implicit val queryStringBindableEnumModel = new QueryStringBindable.Parsing[Model](
       Model.fromString(_).get, _.toString, enumModelNotFound
+    )
+
+    // Enum: Publication
+    private val enumPublicationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Publication.all.mkString(", ")}"
+
+    implicit val pathBindableEnumPublication = new PathBindable.Parsing[Publication] (
+      Publication.fromString(_).get, _.toString, enumPublicationNotFound
+    )
+
+    implicit val queryStringBindableEnumPublication = new QueryStringBindable.Parsing[Publication](
+      Publication.fromString(_).get, _.toString, enumPublicationNotFound
     )
 
     // Enum: Severity
