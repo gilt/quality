@@ -245,6 +245,29 @@
 	    "fields": [
                 { "name": "email", "type": "string" }
             ]
+	},
+
+	"publication": {
+	    "description": "A publication represents something that a user can subscribe to. An example would be subscribing via email to the publication of all new incidents.",
+	    "fields": [
+		{ "name": "key", "type": "string" }
+	    ]
+	},
+
+	"subscription": {
+	    "description": "Represents a user that is currently subscribed to a publication",
+	    "fields": [
+		{ "name": "user", "type": "user" },
+		{ "name": "publication", "type": "publication" }
+	    ]
+	},
+
+	"subscription_form": {
+	    "fields": [
+		{ "name": "organization_key", "type": "string" },
+		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "publication_key", "type": "string" }
+	    ]
 	}
 
     },

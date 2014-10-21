@@ -143,6 +143,14 @@ package com.gilt.quality.models {
   )
 
   /**
+   * A publication represents something that a user can subscribe to. An example
+   * would be subscribing via email to the publication of all new incidents.
+   */
+  case class Publication(
+    key: String
+  )
+
+  /**
    * Statistics on each team's quality metrics, number of issues
    */
   case class Statistic(
@@ -153,6 +161,20 @@ package com.gilt.quality.models {
     totalIncidents: Long,
     totalPlans: Long,
     plans: scala.collection.Seq[com.gilt.quality.models.Plan] = Nil
+  )
+
+  /**
+   * Represents a user that is currently subscribed to a publication
+   */
+  case class Subscription(
+    user: com.gilt.quality.models.User,
+    publication: com.gilt.quality.models.Publication
+  )
+
+  case class SubscriptionForm(
+    organizationKey: String,
+    userGuid: java.util.UUID,
+    publicationKey: String
   )
 
   /**
@@ -680,6 +702,16 @@ package com.gilt.quality.models {
       )(unlift(PlanForm.unapply _))
     }
 
+    implicit def jsonReadsQualityPublication: play.api.libs.json.Reads[Publication] = {
+      (__ \ "key").read[String].map { x => new Publication(key = x) }
+    }
+
+    implicit def jsonWritesQualityPublication: play.api.libs.json.Writes[Publication] = new play.api.libs.json.Writes[Publication] {
+      def writes(x: Publication) = play.api.libs.json.Json.obj(
+        "key" -> play.api.libs.json.Json.toJson(x.key)
+      )
+    }
+
     implicit def jsonReadsQualityStatistic: play.api.libs.json.Reads[Statistic] = {
       (
         (__ \ "team").read[com.gilt.quality.models.Team] and
@@ -702,6 +734,36 @@ package com.gilt.quality.models {
         (__ \ "total_plans").write[Long] and
         (__ \ "plans").write[scala.collection.Seq[com.gilt.quality.models.Plan]]
       )(unlift(Statistic.unapply _))
+    }
+
+    implicit def jsonReadsQualitySubscription: play.api.libs.json.Reads[Subscription] = {
+      (
+        (__ \ "user").read[com.gilt.quality.models.User] and
+        (__ \ "publication").read[com.gilt.quality.models.Publication]
+      )(Subscription.apply _)
+    }
+
+    implicit def jsonWritesQualitySubscription: play.api.libs.json.Writes[Subscription] = {
+      (
+        (__ \ "user").write[com.gilt.quality.models.User] and
+        (__ \ "publication").write[com.gilt.quality.models.Publication]
+      )(unlift(Subscription.unapply _))
+    }
+
+    implicit def jsonReadsQualitySubscriptionForm: play.api.libs.json.Reads[SubscriptionForm] = {
+      (
+        (__ \ "organization_key").read[String] and
+        (__ \ "user_guid").read[java.util.UUID] and
+        (__ \ "publication_key").read[String]
+      )(SubscriptionForm.apply _)
+    }
+
+    implicit def jsonWritesQualitySubscriptionForm: play.api.libs.json.Writes[SubscriptionForm] = {
+      (
+        (__ \ "organization_key").write[String] and
+        (__ \ "user_guid").write[java.util.UUID] and
+        (__ \ "publication_key").write[String]
+      )(unlift(SubscriptionForm.unapply _))
     }
 
     implicit def jsonReadsQualityTeam: play.api.libs.json.Reads[Team] = {
