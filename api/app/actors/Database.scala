@@ -1,7 +1,7 @@
 package actors
 
 import com.gilt.quality.models.{Incident, Meeting, MeetingForm, Organization, Task}
-import db.{AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, Pager, User}
+import db.{AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, Pager}
 import org.joda.time.DateTime
 
 object Database {

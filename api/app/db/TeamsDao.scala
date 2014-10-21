@@ -1,7 +1,7 @@
 package db
 
 import core.Defaults
-import com.gilt.quality.models.{Error, Icons, Organization, Team, TeamForm}
+import com.gilt.quality.models.{Error, Icons, Organization, Team, TeamForm, User}
 import lib.{UrlKey, Validation}
 import anorm._
 import anorm.ParameterValue._

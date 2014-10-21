@@ -22,7 +22,7 @@ class MeetingsDaoSpec extends FunSpec with Matchers {
     MeetingsDao.upsert(org, date)
     MeetingsDao.findAll(org = Some(org), scheduledAt = Some(date)).map(_.id) should be(Seq(mtg.id))
 
-    MeetingsDao.softDelete(User.Default, mtg)
+    MeetingsDao.softDelete(UsersDao.Default, mtg)
     MeetingsDao.findAll(org = Some(org), scheduledAt = Some(date)) should be(Seq.empty)
 
     val mtg2 = MeetingsDao.upsert(org, date)
@@ -43,7 +43,7 @@ class MeetingsDaoSpec extends FunSpec with Matchers {
     MeetingsDao.upsertAgendaItem(meeting, incident, Task.ReviewTeam)
     AgendaItemsDao.findAll(meetingId = Some(meeting.id)).map(_.id) should be(Seq(item.id))
 
-    AgendaItemsDao.softDelete(User.Default, item)
+    AgendaItemsDao.softDelete(UsersDao.Default, item)
     AgendaItemsDao.findAll(meetingId = Some(meeting.id)).map(_.id) should be(Seq.empty)
 
     val item2 = MeetingsDao.upsertAgendaItem(meeting, incident, Task.ReviewTeam)

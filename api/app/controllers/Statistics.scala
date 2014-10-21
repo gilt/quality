@@ -1,11 +1,9 @@
 package controllers
 
-import com.gilt.quality.models.{Error, Statistic}
 import com.gilt.quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
-import db.{StatisticsDao, User}
+import db.StatisticsDao
 
 object Statistics extends Controller {
 

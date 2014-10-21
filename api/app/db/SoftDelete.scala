@@ -1,8 +1,10 @@
 package db
 
+import com.gilt.quality.models.User
 import anorm._
 import play.api.db._
 import play.api.Play.current
+import java.util.UUID
 
 private[db] object SoftDelete {
 
@@ -12,6 +14,10 @@ private[db] object SoftDelete {
 
   private val SoftDeleteByKeyQuery = """
     update %s set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now(), updated_at = now() where key = {key} and deleted_at is null
+  """
+
+  private val SoftDeleteByGuidQuery = """
+    update %s set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now(), updated_at = now() where guid = {guid}::uuid and deleted_at is null
   """
 
   def delete(tableName: String, deletedBy: User, id: Long) {
@@ -33,6 +39,12 @@ private[db] object SoftDelete {
 
   def deleteByKey(implicit c: java.sql.Connection, tableName: String, deletedBy: User, key: String) {
     SQL(SoftDeleteByKeyQuery.format(tableName)).on('deleted_by_guid -> deletedBy.guid, 'key -> key).execute()
+  }
+
+  def deleteByGuid(tableName: String, deletedBy: User, guid: UUID) {
+    DB.withConnection { implicit c =>
+      SQL(SoftDeleteByGuidQuery.format(tableName)).on('deleted_by_guid -> deletedBy.guid, 'guid -> guid.toString).execute()
+    }
   }
 
 }

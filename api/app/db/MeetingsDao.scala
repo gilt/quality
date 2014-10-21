@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Incident, Meeting, MeetingForm, MeetingPager, Organization, Task}
+import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Incident, Meeting, MeetingForm, MeetingPager, Organization, Task, User}
 import org.joda.time.DateTime
 import anorm._
 import anorm.ParameterValue._
@@ -75,7 +75,7 @@ object MeetingsDao {
       limit = 1
     ).headOption.getOrElse {
       MeetingsDao.create(
-        User.Actor,
+        UsersDao.Actor,
         FullMeetingForm(
           org,
           MeetingForm(
@@ -102,7 +102,7 @@ object MeetingsDao {
     ).headOption.getOrElse {
       try {
         AgendaItemsDao.create(
-          User.Actor,
+          UsersDao.Actor,
           FullAgendaItemForm(
             meeting,
             AgendaItemForm(

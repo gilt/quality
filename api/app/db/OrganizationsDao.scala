@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{Error, Organization, OrganizationForm}
+import com.gilt.quality.models.{Error, Organization, OrganizationForm, User}
 import anorm._
 import lib.{UrlKey, Validation}
 import play.api.db._
