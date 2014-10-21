@@ -32,7 +32,7 @@ object Teams extends Controller {
         offset = Some(page * Pagination.DefaultLimit)
       )
     } yield {
-      Ok(views.html.teams.index(request.org, filters, PaginatedCollection(page, teams)))
+      Ok(views.html.teams.index(request.mainTemplate(), request.org, filters, PaginatedCollection(page, teams)))
     }
   }
 
@@ -56,14 +56,14 @@ object Teams extends Controller {
           Redirect(routes.Teams.index(org)).flashing("warning" -> s"Team $key not found")
         }
         case Some(team: Team) => {
-          Ok(views.html.teams.show(request.org, team, stats.headOption, PaginatedCollection(incidentsPage, incidents)))
+          Ok(views.html.teams.show(request.mainTemplate(), request.org, team, stats.headOption, PaginatedCollection(incidentsPage, incidents)))
         }
       }
     }
   }
 
   def create(org: String) = OrgAction { implicit request =>
-    Ok(views.html.teams.create(request.org, teamForm))
+    Ok(views.html.teams.create(request.mainTemplate(), request.org, teamForm))
   }
 
   def postCreate(org: String) = OrgAction.async { implicit request =>
@@ -71,7 +71,7 @@ object Teams extends Controller {
     boundForm.fold (
 
       formWithErrors => Future {
-        Ok(views.html.teams.create(request.org, formWithErrors))
+        Ok(views.html.teams.create(request.mainTemplate(), request.org, formWithErrors))
       },
 
       teamForm => {
@@ -85,7 +85,7 @@ object Teams extends Controller {
           Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
         }.recover {
           case response: com.gilt.quality.error.ErrorsResponse => {
-            Ok(views.html.teams.create(request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
+            Ok(views.html.teams.create(request.mainTemplate(), request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
           }
         }
       }
@@ -111,7 +111,7 @@ object Teams extends Controller {
             )
           )
 
-          Ok(views.html.teams.edit(t, form))
+          Ok(views.html.teams.edit(request.mainTemplate(), t, form))
         }
       }
     }
@@ -129,7 +129,7 @@ object Teams extends Controller {
           val boundForm = teamForm.bindFromRequest
           boundForm.fold (
             formWithErrors => {
-              Ok(views.html.teams.edit(t, formWithErrors))
+              Ok(views.html.teams.edit(request.mainTemplate(), t, formWithErrors))
             },
 
             teamForm => {
@@ -143,7 +143,7 @@ object Teams extends Controller {
                   Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
                 }.recover {
                   case response: com.gilt.quality.error.ErrorsResponse => {
-                    Ok(views.html.teams.create(request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
+                    Ok(views.html.teams.create(request.mainTemplate(), request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
                   }
                 },
                 1000.millis

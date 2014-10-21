@@ -1,10 +1,11 @@
-@(org: com.gilt.quality.models.Organization,
+@(tpl: lib.MainTemplate,
+  org: com.gilt.quality.models.Organization,
   meeting: com.gilt.quality.models.Meeting,
   reviewTeams: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem],
   reviewPlans: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem]
 )(implicit flash: Flash)
 
-@main(org = Some(org), title = s"Meeting on ${_root_.org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)}") {
+@main(tpl.copy(title = Some(s"Meeting on ${_root_.org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)}"))) {
 
   <ul>
     <li><a href="@routes.Meetings.postDeleteById(org.key, meeting.id)" class="delete" data-confirm="Are you sure to delete this meeting?">Delete</a></li>

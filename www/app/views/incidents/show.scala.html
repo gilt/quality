@@ -1,11 +1,12 @@
-@(org: com.gilt.quality.models.Organization,
+@(tpl: lib.MainTemplate,
+  org: com.gilt.quality.models.Organization,
   incident: com.gilt.quality.models.Incident,
   plan: Option[com.gilt.quality.models.Plan],
   meetings: Seq[com.gilt.quality.models.Meeting],
   pagerOption: Option[com.gilt.quality.models.MeetingPager]
 )(implicit flash: Flash)
 
-@main(org = Some(org), title = s"#${incident.id}: ${incident.summary}") {
+@main(tpl) {
 
   @pagerOption.map { pager =>
     <ul class="pager">
@@ -18,6 +19,8 @@
       }
     </ul>
   }
+
+  <h2>#@incident.id: @incident.summary</h2>
 
   <ul>
     <li>Team: 

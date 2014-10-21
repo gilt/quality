@@ -1,9 +1,10 @@
-@(team: com.gilt.quality.models.Team,
+@(tpl: lib.MainTemplate,
+  team: com.gilt.quality.models.Team,
   form: Form[controllers.Teams.TeamForm],
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(org = Some(team.organization), title = s"Edit Team", errorMessage = errorMessage) {
+@main(tpl.copy(title = Some("Edit Team")), errorMessage = errorMessage) {
 
   <div class="container">
 

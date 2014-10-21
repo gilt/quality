@@ -1,0 +1,45 @@
+@(tpl: lib.MainTemplate,
+  loginForm: Form[controllers.LoginController.LoginData],
+  errorMessage: Option[String] = None
+)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some("Login")), errorMessage = errorMessage) {
+
+  <div class="container">
+
+    <div class="row">
+      <div class="span12">
+        <div class="" id="loginModal">
+          <div class="modal-body">
+            <div class="well">
+              <div class="tab-content">
+
+                <div id="login" class="tab-pane active in">
+
+                  @helper.form(action = routes.LoginController.indexPost) {
+
+                    @loginForm.globalErrors.map(_.message).map { msg =>
+                      <p><span class="error">@msg</span></p>
+                    }
+
+                    <fieldset>
+                        @helper.inputText(
+                            loginForm("email"),
+                            '_label -> "Email address",
+                            '_error -> loginForm.error("email")
+                        )
+                    </fieldset>
+
+                    <button class="btn btn-large btn-primary" type="submit">Login</button>
+
+                  }
+
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+}

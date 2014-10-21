@@ -1,9 +1,10 @@
-@(org: com.gilt.quality.models.Organization,
+@(tpl: lib.MainTemplate,
+  org: com.gilt.quality.models.Organization,
   incident: com.gilt.quality.models.Incident,
   teams: Seq[com.gilt.quality.models.Team],
   form: Form[controllers.Incidents.UiForm])(implicit flash: Flash)
 
-@main(org = Some(org), title = s"Edit Incident ${incident.id}") {
+@main(tpl.copy(title = Some(s"Edit Incident ${incident.id}"))) {
 
   <div class="container">
 

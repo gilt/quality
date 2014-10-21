@@ -58,7 +58,7 @@ object Plans extends Controller {
           val form = uiForm.fill(
             UiForm(body = plan.map(_.body).getOrElse(""))
           )
-          Ok(views.html.plans.upload(request.org, incident, form))
+          Ok(views.html.plans.upload(request.mainTemplate(), request.org, incident, form))
         }
       }
     }
@@ -79,7 +79,7 @@ object Plans extends Controller {
           boundForm.fold (
 
             formWithErrors => {
-              Ok(views.html.plans.upload(request.org, incident, formWithErrors))
+              Ok(views.html.plans.upload(request.mainTemplate(), request.org, incident, formWithErrors))
             },
 
             uiForm => {
@@ -91,7 +91,7 @@ object Plans extends Controller {
                       Redirect(routes.Incidents.show(org, plan.incidentId)).flashing("success" -> "Plan created")
                     }.recover {
                       case response: com.gilt.quality.error.ErrorsResponse => {
-                        Ok(views.html.plans.upload(request.org, incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
+                        Ok(views.html.plans.upload(request.mainTemplate(), request.org, incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
                       }
                     }
                     , 1000.millis
@@ -111,7 +111,7 @@ object Plans extends Controller {
                       Redirect(routes.Incidents.show(org, plan.incidentId)).flashing("success" -> "Plan updated")
                     }.recover {
                       case response: com.gilt.quality.error.ErrorsResponse => {
-                        Ok(views.html.plans.upload(request.org, incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
+                        Ok(views.html.plans.upload(request.mainTemplate(), request.org, incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
                       }
                     }
                     , 1000.millis
