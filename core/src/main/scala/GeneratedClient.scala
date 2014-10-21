@@ -303,11 +303,19 @@ package com.gilt.quality.models {
     /**
      * Email notification whenever an incident is created.
      */
-    case object AllNewIncidents extends Publication { override def toString = "all_new_incidents" }
+    case object Incidentscreate extends Publication { override def toString = "incidents.create" }
     /**
-     * Email notification whenever a plan is created or updated.
+     * Email notification whenever an incident is updated.
      */
-    case object AllPlans extends Publication { override def toString = "all_plans" }
+    case object Incidentsupdate extends Publication { override def toString = "incidents.update" }
+    /**
+     * Email notification whenever a plan is created.
+     */
+    case object Planscreate extends Publication { override def toString = "plans.create" }
+    /**
+     * Email notification whenever a plan is updated.
+     */
+    case object Plansupdate extends Publication { override def toString = "plans.update" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -325,7 +333,7 @@ package com.gilt.quality.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(AllNewIncidents, AllPlans)
+    val all = Seq(Incidentscreate, Incidentsupdate, Planscreate, Plansupdate)
 
     private[this]
     val byName = all.map(x => x.toString -> x).toMap

@@ -40,8 +40,10 @@
 	"publication": {
 	    "description": "A publication represents something that a user can subscribe to. An example would be subscribing via email to the publication of all new incidents.",
 	    "values": [
-		{ "name": "all_new_incidents", "description": "Email notification whenever an incident is created." },
-		{ "name": "all_plans", "description": "Email notification whenever a plan is created or updated." }
+		{ "name": "incidents.create", "description": "Email notification whenever an incident is created." },
+		{ "name": "incidents.update", "description": "Email notification whenever an incident is updated." },
+		{ "name": "plans.create", "description": "Email notification whenever a plan is created." },
+		{ "name": "plans.update", "description": "Email notification whenever a plan is updated." }
 	    ]
 	}
 
