@@ -18,6 +18,16 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
 
   val client = new com.gilt.quality.Client(s"http://localhost:$port")
 
+  def createUser(
+    form: UserForm = createUserForm()
+  ): User = {
+    await(client.users.post(form))
+  }
+
+  def createUserForm() = UserForm(
+    email = UUID.randomUUID.toString + "@gilttest.com"
+  )
+
   def createOrganization(
     form: OrganizationForm = createOrganizationForm()
   ): Organization = {

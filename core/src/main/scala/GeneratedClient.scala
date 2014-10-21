@@ -1310,9 +1310,11 @@ package com.gilt.quality {
         }
       }
 
-      override def post()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.User] = {
-        _executeRequest("POST", s"/users").map {
-          case r if r.status == 200 => r.json.as[com.gilt.quality.models.User]
+      override def post(userForm: com.gilt.quality.models.UserForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.User] = {
+        val payload = play.api.libs.json.Json.toJson(userForm)
+
+        _executeRequest("POST", s"/users", body = Some(payload)).map {
+          case r if r.status == 201 => r.json.as[com.gilt.quality.models.User]
           case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
@@ -1663,7 +1665,7 @@ package com.gilt.quality {
     /**
      * Create a new user.
      */
-    def post()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.User]
+    def post(userForm: com.gilt.quality.models.UserForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.User]
   }
 
   case class FailedRequest(
