@@ -86,29 +86,32 @@ object SubscriptionsDao {
     }
   }
 
-  private[this] def findById(id: Long): Option[Subscription] = {
+  def findById(id: Long): Option[Subscription] = {
     findAll(id = Some(id), limit = 1).headOption
   }
 
   def findAll(
     id: Option[Long] = None,
+    organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
-    publicationId: Option[Long] = None,
+    publicationKey: Option[String] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Subscription] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and subscriptions.id = {id}" },
+      organizationKey.map { v => "and subscriptions.organization_id = (select id from organizations where deleted_at is null and key = {organization_key})" },
       userGuid.map { v => "and subscriptions.user_guid = {user_guid}::uuid" },
-      publicationId.map { v => "and subscriptions.publication_id = {publication_id}" },
+      publicationKey.map { v => "and subscriptions.publication_id = (select id from publications where deleted_at is null and key = {publication_key})" },
       Some(s"order by lower(subscriptions.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       id.map('id -> _),
+      organizationKey.map('organization_key -> _),
       userGuid.map('user_guid -> _.toString),
-      publicationId.map('publication_id -> _)
+      publicationKey.map('publication_key -> _)
     ).flatten
 
     DB.withConnection { implicit c =>
