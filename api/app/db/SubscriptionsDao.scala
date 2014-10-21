@@ -12,12 +12,14 @@ object SubscriptionsDao {
 
   private val BaseQuery = """
     select subscriptions.id,
-           publications.key as publication_key,
+           subscriptions.publication,
            users.guid as user_guid,
-           users.email as user_email
+           users.email as user_email,
+           organizations.key as organization_key,
+           organizations.name as organization_name
       from subscriptions
-      join publications on publications.id = subscriptions.publication_id and publications.deleted_at is null
-      join users on users.id = publications.user_id and users.deleted_at is null
+      join users on users.guid = subscriptions.user_guid and users.deleted_at is null
+      join organizations on organizations.id = subscriptions.organization_id and organizations.deleted_at is null
      where subscriptions.deleted_at is null
   """
 
@@ -26,7 +28,7 @@ object SubscriptionsDao {
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
      where deleted_at is null
        and user_guid = {user_guid}::uuid
-       and publication_id = (select id from publications where deleted_at is null and key = {publication_key})
+       and publication = {publication}
   """
 
   def validate(
@@ -59,9 +61,9 @@ object SubscriptionsDao {
     val id = DB.withConnection { implicit c =>
       SQL("""
         insert into subscriptions
-        (organization_id, publication_id, user_guid, created_by_guid)
+        (organization_id, publication, user_guid, created_by_guid)
         values
-        ({organization_id}, {publication_id}, {user_guid}::uuid, {created_by_guid}::uuid)
+        ({organization_id}, {publication}, {user_guid}::uuid, {created_by_guid}::uuid)
       """).on(
         'organization_id -> organizationId,
         'publication -> form.publication.toString,
@@ -103,7 +105,7 @@ object SubscriptionsDao {
       organizationKey.map { v => "and subscriptions.organization_id = (select id from organizations where deleted_at is null and key = {organization_key})" },
       userGuid.map { v => "and subscriptions.user_guid = {user_guid}::uuid" },
       publication.map { v => "and subscriptions.publication = {publication}" },
-      Some(s"order by lower(subscriptions.name) limit ${limit} offset ${offset}")
+      Some(s"order by subscriptions.id limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
@@ -123,6 +125,7 @@ object SubscriptionsDao {
   ): Subscription = {
     Subscription(
       id = row[Long]("id"),
+      organization = OrganizationsDao.fromRow(row, Some("organization")),
       user = UsersDao.fromRow(row, Some("user")),
       publication = Publication(row[String]("publication"))
     )

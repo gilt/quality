@@ -160,6 +160,7 @@ package com.gilt.quality.models {
    */
   case class Subscription(
     id: Long,
+    organization: com.gilt.quality.models.Organization,
     user: com.gilt.quality.models.User,
     publication: com.gilt.quality.models.Publication
   )
@@ -771,6 +772,7 @@ package com.gilt.quality.models {
     implicit def jsonReadsQualitySubscription: play.api.libs.json.Reads[Subscription] = {
       (
         (__ \ "id").read[Long] and
+        (__ \ "organization").read[com.gilt.quality.models.Organization] and
         (__ \ "user").read[com.gilt.quality.models.User] and
         (__ \ "publication").read[com.gilt.quality.models.Publication]
       )(Subscription.apply _)
@@ -779,6 +781,7 @@ package com.gilt.quality.models {
     implicit def jsonWritesQualitySubscription: play.api.libs.json.Writes[Subscription] = {
       (
         (__ \ "id").write[Long] and
+        (__ \ "organization").write[com.gilt.quality.models.Organization] and
         (__ \ "user").write[com.gilt.quality.models.User] and
         (__ \ "publication").write[com.gilt.quality.models.Publication]
       )(unlift(Subscription.unapply _))
