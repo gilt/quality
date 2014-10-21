@@ -31,6 +31,7 @@ GET     /:org/teams/:key                                          controllers.Te
 POST    /:org/teams/delete/:key                                   controllers.Teams.postDeleteByKey(org: String, key: String)
 
 GET     /:org/subscriptions/                                      controllers.Subscriptions.index(org: String)
+POST    /:org/subscriptions/:publication/toggle                   controllers.Subscriptions.postToggle(org: String, publication: com.gilt.quality.models.Publication)
 
 GET     /:org/meetings/                                           controllers.Meetings.index(org: String, page: Int ?= 0)
 GET     /:org/meetings/:id                                        controllers.Meetings.show(org: String, id: Long, reviewTeamsPage: Int ?= 0, reviewPlansPage: Int ?= 0)

@@ -38,7 +38,8 @@ lazy val www = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    version := "1.0-SNAPSHOT"
+    version := "1.0-SNAPSHOT",
+    routesImport += "com.gilt.quality.Bindables._"
   )
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
