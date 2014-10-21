@@ -1,12 +1,12 @@
 package controllers
 
-import com.gilt.quality.models.{Team, TeamForm, UpdateTeamForm}
+import com.gilt.quality.models.{Team, TeamForm, UpdateTeamForm, User}
 import com.gilt.quality.models.json._
 
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{FullTeamForm, OrganizationsDao, TeamsDao, User}
+import db.{FullTeamForm, OrganizationsDao, TeamsDao}
 import lib.Validation
 
 object Teams extends Controller {

@@ -7,7 +7,7 @@ import java.util.UUID
 object Util {
 
   def createOrganization(): Organization = {
-    OrganizationsDao.create(User.Default,
+    OrganizationsDao.create(UsersDao.Default,
       OrganizationForm(
         name = UUID.randomUUID.toString
       )
@@ -29,7 +29,7 @@ object Util {
     org: Organization = createOrganization(),
     form: TeamForm = createTeamForm()
   ): Team = {
-    TeamsDao.create(User.Default, FullTeamForm(org, form))
+    TeamsDao.create(UsersDao.Default, FullTeamForm(org, form))
   }
 
   def createTeamForm() = TeamForm(
@@ -40,7 +40,7 @@ object Util {
     org: Organization = createOrganization(),
     form: IncidentForm = createIncidentForm()
   ): Incident = {
-    IncidentsDao.create(User.Default, FullIncidentForm(org, form))
+    IncidentsDao.create(UsersDao.Default, FullIncidentForm(org, form))
   }
 
   def createIncidentForm() = IncidentForm(
@@ -59,7 +59,7 @@ object Util {
     val incident = IncidentsDao.findById(f.incidentId).getOrElse {
       sys.error(s"Could not find incident[${f.incidentId}]")
     }
-    PlansDao.create(User.Default, FullPlanForm(org, incident, f))
+    PlansDao.create(UsersDao.Default, FullPlanForm(org, incident, f))
   }
 
   def createPlanForm(org: Organization) = PlanForm(
@@ -71,7 +71,7 @@ object Util {
     plan: Plan,
     score: Int
   ) {
-    GradesDao.upsert(User.Default, GradeForm(plan.id, score))
+    GradesDao.upsert(UsersDao.Default, GradeForm(plan.id, score))
   }
 
 }

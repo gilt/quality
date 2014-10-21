@@ -10,6 +10,7 @@ object Validation {
   private val ErrorCode = "validation_error"
   private val ServerError = "server_error"
   private val BadRequest = "bad_request"
+  private val UserAuthorizationFailedCode = "user_authorization_failed"
 
   def badRequest(error: String): Seq[Error] = {
     Seq(Error(BadRequest, error))
@@ -33,6 +34,10 @@ object Validation {
 
   def serverError(error: String = "Internal Server Error"): Seq[Error] = {
     Seq(Error(ServerError, error))
+  }
+
+  def userAuthorizationFailed(): Seq[Error] = {
+    Seq(Error(UserAuthorizationFailedCode, "Email address not valid"))
   }
 
 }

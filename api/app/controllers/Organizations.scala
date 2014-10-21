@@ -1,8 +1,8 @@
 package controllers
 
-import db.{OrganizationsDao, User}
+import db.{OrganizationsDao, UsersDao}
 import lib.Validation
-import com.gilt.quality.models.OrganizationForm
+import com.gilt.quality.models.{OrganizationForm, User}
 import com.gilt.quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
@@ -43,7 +43,7 @@ trait Organizations {
         val form = s.get
         OrganizationsDao.validate(form) match {
           case Nil => {
-            val org = OrganizationsDao.create(User.Default, form)
+            val org = OrganizationsDao.create(UsersDao.Default, form)
             Created(Json.toJson(org))
           }
           case errors => {
@@ -56,7 +56,7 @@ trait Organizations {
 
   def deleteByKey(key: String) = Action { request =>
     OrganizationsDao.findByKey(key).map { org =>
-      OrganizationsDao.softDelete(User.Default, org)
+      OrganizationsDao.softDelete(UsersDao.Default, org)
     }
     NoContent
   }

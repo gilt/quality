@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{Error, Incident, IncidentForm, Organization, Plan, Severity, Team}
+import com.gilt.quality.models.{Error, Incident, IncidentForm, Organization, Plan, Severity, Team, User}
 import com.gilt.quality.models.json._
 import lib.Validation
 

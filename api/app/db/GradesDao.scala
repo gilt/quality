@@ -1,5 +1,6 @@
 package db
 
+import com.gilt.quality.models.User
 import anorm._
 import anorm.ParameterValue._
 import play.api.db._

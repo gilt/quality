@@ -1,12 +1,12 @@
 package controllers
 
-import com.gilt.quality.models.{Error, Incident, IncidentForm, Plan}
+import com.gilt.quality.models.{Error, Incident, IncidentForm, Plan, User}
 import com.gilt.quality.models.json._
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{FullIncidentForm, IncidentsDao, OrganizationsDao, User}
+import db.{FullIncidentForm, IncidentsDao, OrganizationsDao}
 
 object Incidents extends Controller {
 

@@ -14,6 +14,10 @@ package com.gilt.quality.models {
     task: com.gilt.quality.models.Task
   )
 
+  case class AuthenticationForm(
+    email: String
+  )
+
   case class Error(
     code: String,
     message: String
@@ -173,6 +177,18 @@ package com.gilt.quality.models {
     email: scala.Option[String] = None,
     smileyUrl: scala.Option[String] = None,
     frownyUrl: scala.Option[String] = None
+  )
+
+  /**
+   * A user is a top level person.
+   */
+  case class User(
+    guid: java.util.UUID,
+    email: String
+  )
+
+  case class UserForm(
+    email: String
   )
 
   /**
@@ -412,6 +428,16 @@ package com.gilt.quality.models {
         (__ \ "incident_id").write[Long] and
         (__ \ "task").write[com.gilt.quality.models.Task]
       )(unlift(AgendaItemForm.unapply _))
+    }
+
+    implicit def jsonReadsQualityAuthenticationForm: play.api.libs.json.Reads[AuthenticationForm] = {
+      (__ \ "email").read[String].map { x => new AuthenticationForm(email = x) }
+    }
+
+    implicit def jsonWritesQualityAuthenticationForm: play.api.libs.json.Writes[AuthenticationForm] = new play.api.libs.json.Writes[AuthenticationForm] {
+      def writes(x: AuthenticationForm) = play.api.libs.json.Json.obj(
+        "email" -> play.api.libs.json.Json.toJson(x.email)
+      )
     }
 
     implicit def jsonReadsQualityError: play.api.libs.json.Reads[Error] = {
@@ -729,6 +755,30 @@ package com.gilt.quality.models {
         (__ \ "frowny_url").write[scala.Option[String]]
       )(unlift(UpdateTeamForm.unapply _))
     }
+
+    implicit def jsonReadsQualityUser: play.api.libs.json.Reads[User] = {
+      (
+        (__ \ "guid").read[java.util.UUID] and
+        (__ \ "email").read[String]
+      )(User.apply _)
+    }
+
+    implicit def jsonWritesQualityUser: play.api.libs.json.Writes[User] = {
+      (
+        (__ \ "guid").write[java.util.UUID] and
+        (__ \ "email").write[String]
+      )(unlift(User.unapply _))
+    }
+
+    implicit def jsonReadsQualityUserForm: play.api.libs.json.Reads[UserForm] = {
+      (__ \ "email").read[String].map { x => new UserForm(email = x) }
+    }
+
+    implicit def jsonWritesQualityUserForm: play.api.libs.json.Writes[UserForm] = new play.api.libs.json.Writes[UserForm] {
+      def writes(x: UserForm) = play.api.libs.json.Json.obj(
+        "email" -> play.api.libs.json.Json.toJson(x.email)
+      )
+    }
   }
 }
 
@@ -759,6 +809,8 @@ package com.gilt.quality {
     def statistics: Statistics = Statistics
 
     def teams: Teams = Teams
+
+    def users: Users = Users
 
     object AgendaItems extends AgendaItems {
       override def getMeetingsAndAgendaItemsByOrgAndMeetingId(
@@ -1222,6 +1274,51 @@ package com.gilt.quality {
       }
     }
 
+    object Users extends Users {
+      override def get(
+        guid: scala.Option[java.util.UUID] = None,
+        email: scala.Option[String] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.User]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          email.map("email" -> _)
+        ).flatten
+
+        _executeRequest("GET", s"/users", queryParameters = queryParameters).map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.User]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def getByGuid(
+        guid: java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.User]] = {
+        _executeRequest("GET", s"/users/${guid}").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.User])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def postAuthenticate(authenticationForm: com.gilt.quality.models.AuthenticationForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.User] = {
+        val payload = play.api.libs.json.Json.toJson(authenticationForm)
+
+        _executeRequest("POST", s"/users/authenticate", body = Some(payload)).map {
+          case r if r.status == 200 => r.json.as[com.gilt.quality.models.User]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def post()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.User] = {
+        _executeRequest("POST", s"/users").map {
+          case r if r.status == 200 => r.json.as[com.gilt.quality.models.User]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
@@ -1537,6 +1634,36 @@ package com.gilt.quality {
       org: String,
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+  }
+
+  trait Users {
+    /**
+     * Search for a specific user. You must specify at least 1 parameter - either a
+     * guid or email - and will receive back either 0 or 1 users.
+     */
+    def get(
+      guid: scala.Option[java.util.UUID] = None,
+      email: scala.Option[String] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.User]]
+
+    /**
+     * Returns information about the user with this guid.
+     */
+    def getByGuid(
+      guid: java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.User]]
+
+    /**
+     * Used to authenticate a user with an email address and password. Successful
+     * authentication returns an instance of the user model. Failed authorizations of
+     * any kind are returned as a generic error with code user_authorization_failed.
+     */
+    def postAuthenticate(authenticationForm: com.gilt.quality.models.AuthenticationForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.User]
+
+    /**
+     * Create a new user.
+     */
+    def post()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.User]
   }
 
   case class FailedRequest(

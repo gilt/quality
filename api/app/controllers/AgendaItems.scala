@@ -1,7 +1,7 @@
 package controllers
 
-import db.{AgendaItemsDao, FullAgendaItemForm, MeetingsDao, User}
-import com.gilt.quality.models.AgendaItemForm
+import db.{AgendaItemsDao, FullAgendaItemForm, MeetingsDao}
+import com.gilt.quality.models.{AgendaItemForm, User}
 import lib.Validation
 import com.gilt.quality.models.json._
 import play.api.mvc._

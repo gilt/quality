@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.quality.models.{Meeting, Organization}
-import db.{MeetingsDao, OrganizationsDao, User}
+import com.gilt.quality.models.{Meeting, Organization, User}
+import db.{MeetingsDao, OrganizationsDao, UsersDao}
 import scala.concurrent.Future
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
@@ -32,7 +32,7 @@ object OrgAction extends ActionBuilder[OrgRequest] {
 
           case Some(org: Organization) => {
             // TODO: Add authentication
-            block(new OrgRequest(User.Default, org, request))
+            block(new OrgRequest(UsersDao.Default, org, request))
           }
         }
       }
@@ -76,7 +76,7 @@ object MeetingAction extends ActionBuilder[MeetingRequest] {
                   Future.successful(Redirect("/").flashing("warning" -> s"Meeting $meetingId not found"))
                 }
                 case Some(meeting) => {
-                  block(new MeetingRequest(User.Default, org, meeting, request))
+                  block(new MeetingRequest(UsersDao.Default, org, meeting, request))
                 }
               }
             } else {

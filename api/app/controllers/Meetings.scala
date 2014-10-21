@@ -1,12 +1,12 @@
 package controllers
 
-import com.gilt.quality.models.{Error, Meeting, MeetingForm}
+import com.gilt.quality.models.{Error, Meeting, MeetingForm, User}
 import com.gilt.quality.models.json._
 
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{FullMeetingForm, MeetingsDao, OrganizationsDao, User}
+import db.{FullMeetingForm, MeetingsDao, OrganizationsDao}
 import lib.Validation
 
 object Meetings extends Controller {
