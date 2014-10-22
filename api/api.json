@@ -44,7 +44,7 @@
 		{ "name": "incidents.update", "description": "Email notification whenever an incident is updated." },
 		{ "name": "plans.create", "description": "Email notification whenever a plan is created." },
 		{ "name": "plans.update", "description": "Email notification whenever a plan is updated." },
-		{ "name": "meetings.adjourned", "description": "Email notification whenever a meeting is adjourned.." }
+		{ "name": "meetings.adjourned", "description": "Email notification whenever a meeting is adjourned." }
 	    ]
 	}
 
