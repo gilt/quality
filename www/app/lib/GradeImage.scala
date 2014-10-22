@@ -5,8 +5,8 @@ import com.gilt.quality.models.Team
 
 object GradeImage {
 
-  val Bad = 0
-  val Good = 100
+  val Good = Defaults.GoodGrade
+  val Bad = Defaults.BadGrade
 
   def imageTag(
     team: Option[Team],
@@ -17,7 +17,7 @@ object GradeImage {
     score match {
       case None => "-"
       case Some(s) => {
-        val url = if (s <= 50) { icons.frownyUrl } else { icons.smileyUrl }
+        val url = if (Defaults.isGoodGrade(s)) { icons.smileyUrl } else { icons.frownyUrl }
         s"""<img src="$url" height="$size" width="$size" />"""
       }
     }

@@ -1,0 +1,51 @@
+@(incident: com.gilt.quality.models.Incident)
+
+<ul>
+  <li>Org: @incident.organization.key</li>
+  <li>Id: @incident.id</li>
+  <li>Summary: @incident.summary</li>
+  <li>Team: 
+      @if(incident.team.isEmpty) {
+        <em>Not yet assigned</em>
+      } else {
+        @incident.team.get.key
+      }
+  </li>
+  <li>Severity: @incident.severity</li>
+  <li>Tags:
+    @if(incident.tags.isEmpty) {
+      <em>N/A</em>
+    } else {
+      @Html(incident.tags.mkString("<ul><li>", "</li><li>", "</li></ul>"))
+    }
+  </li>
+  <li>Created: @core.DateHelper.longDateTime(incident.organization, incident.createdAt)</li>
+</ul>
+
+@incident.description.map { desc =>
+  <div class="markdown">
+    @Html(core.Markdown.toHtml(desc))
+  </div>
+}
+
+<h2>Prevention Plan</h2>
+@if(incident.plan.isEmpty) {
+  <em>No plan uploaded</em>
+} else {
+  <p>
+    <b>Grade:</b>
+    @if(incident.plan.get.grade.isEmpty) {
+      <em>N/A</em>
+    } else {
+      @if(core.Defaults.isGoodGrade(incident.plan.get.grade.get)) {
+        Smiley
+      } else {
+        Frowny
+      }
+    }
+  </p>
+  <div class="markdown">
+    @Html(core.Markdown.toHtml(incident.plan.get.body))
+  </div>
+  <p><em>Created: @core.DateHelper.longDateTime(incident.organization, incident.plan.get.createdAt)</em></p>
+}

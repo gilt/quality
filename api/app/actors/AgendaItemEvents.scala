@@ -1,6 +1,7 @@
 package actors
 
 import com.gilt.quality.models.{AgendaItem, Meeting, Task}
+import core.DateHelper
 import db.{AgendaItemsDao, MeetingsDao}
 import lib.{Email, Person}
 import play.api.Play.current
@@ -18,7 +19,7 @@ object AgendaItemEvents {
         agendaItemId = Some(item.id),
         limit = 1
       ).headOption.map { meeting =>
-        val dateTime = org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)
+        val dateTime = DateHelper.shortDate(item.incident.organization, meeting.scheduledAt)
         val emails = Seq(
           Some("michael@gilt.com"),
           Some("chazlett@gilt.com"),

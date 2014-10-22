@@ -19,7 +19,7 @@
     @incidents.map { incident =>
      <tr>
        <td><a href="@routes.Incidents.show(org.key, incident.id, meeting.map(_.id))">@incident.id</a></td>
-       <td>@_root_.org.joda.time.format.DateTimeFormat.shortDate.print(incident.createdAt)</td>
+       <td>@core.DateHelper.shortDate(org, incident.createdAt)</td>
        <td>@incident.severity</td>
        <td>
          @if(incident.plan.isEmpty) {

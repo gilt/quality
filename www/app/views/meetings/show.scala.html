@@ -5,7 +5,7 @@
   reviewPlans: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem]
 )(implicit flash: Flash)
 
-@main(tpl.copy(title = Some(s"Meeting on ${_root_.org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)}"))) {
+@main(tpl.copy(title = Some(s"Meeting on ${core.DateHelper.shortDate(org, meeting.scheduledAt)}"))) {
 
   <ul>
     <li><a href="@routes.Meetings.postDeleteById(org.key, meeting.id)" class="delete" data-confirm="Are you sure to delete this meeting?">Delete</a></li>

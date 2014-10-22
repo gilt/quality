@@ -23,7 +23,7 @@
             @if(!event.url.isEmpty) {
               <a href="@event.url.getOrElse("")">
             }
-            @_root_.org.joda.time.format.DateTimeFormat.longDateTime.print(event.timestamp)
+            @core.DateHelper.longDateTime(org, event.timestamp)
             @{event.model match {
               case com.gilt.quality.models.Model.Incident => Html(s"${event.action} Incident #${event.data.modelId}: ${event.data.summary}")
               case com.gilt.quality.models.Model.Plan => Html(s"${event.action} ${event.data.summary}")
