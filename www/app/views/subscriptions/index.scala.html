@@ -1,0 +1,30 @@
+@(tpl: lib.MainTemplate,
+  userPublications: Seq[controllers.Subscriptions.UserPublication]
+)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some("Subscriptions")), section = Some("subscriptions")) {
+
+  @if(userPublications.isEmpty) {
+    <em>No publications found</em>
+  } else {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @userPublications.map { up =>
+         <tr>
+           <td>
+             @if(up.isSubscribed) {
+               Subscribed
+             } else {
+               Not subscribed
+             }
+             </br>
+             (<a href="@routes.Subscriptions.postToggle(tpl.org.get.key, up.publication)" class="delete">Toggle</a>)
+           </td>
+           <td>@up.publicationName</td>
+         </tr>
+       }
+      </tbody>
+    </table>
+  }
+
+}

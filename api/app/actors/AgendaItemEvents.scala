@@ -1,15 +1,12 @@
 package actors
 
 import com.gilt.quality.models.{AgendaItem, Meeting, Task}
+import core.DateHelper
 import db.{AgendaItemsDao, MeetingsDao}
 import lib.{Email, Person}
 import play.api.Play.current
 
 object AgendaItemEvents {
-
-  val qualityWebHostname = current.configuration.getString("quality.webHostname").getOrElse {
-    sys.error(s"configuration parameter[quality.webHostname] is required")
-  }
 
   private[actors] def processCreated(agendaItemId: Long) {
     println(s"processCreated($agendaItemId)")
@@ -18,7 +15,7 @@ object AgendaItemEvents {
         agendaItemId = Some(item.id),
         limit = 1
       ).headOption.map { meeting =>
-        val dateTime = org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)
+        val dateTime = DateHelper.shortDate(item.incident.organization, meeting.scheduledAt)
         val emails = Seq(
           Some("michael@gilt.com"),
           Some("chazlett@gilt.com"),
@@ -26,34 +23,19 @@ object AgendaItemEvents {
         ).flatten.foreach { teamEmail =>
           Email.sendHtml(
             to = Person(teamEmail, item.incident.team.map(_.key)),
-            subject = s"[PerfectDay] Incident ${item.incident.id} Added to ${dateTime} Meeting to ${taskLabel(item.task)}",
+            subject = s"[PerfectDay] Incident ${item.incident.id} Added to ${dateTime} Meeting to ${Emails.taskLabel(item.task)}",
             body = views.html.emails.agendaItemTeamChanged(
+              Emails.qualityWebHostname,
               item.incident.organization,
               meeting,
               item,
-              taskLabel(item.task),
-              qualityWebHostname
+              Emails.taskLabel(item.task)
             ).toString
           )
         }
       }
     }
   }
-
-  private def taskLabel(task: Task): String = {
-    task match {
-      case Task.ReviewTeam => {
-        "review team assignment"
-      }
-      case Task.ReviewPlan => {
-        "review the prevention plan"
-      }
-      case Task.UNDEFINED(key) => {
-        key
-      }
-    }
-  }
-
 
 }
 

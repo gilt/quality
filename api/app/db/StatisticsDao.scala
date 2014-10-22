@@ -27,7 +27,7 @@ object StatisticsDao {
   """
 
   def findAll(
-    orgKey: String,
+    org: Organization,
     numberHours: Int,
     teamKey: Option[String] = None
   ): Seq[Statistic] = {
@@ -41,7 +41,7 @@ object StatisticsDao {
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      Some(NamedParameter("org_key", toParameterValue(orgKey))),
+      Some(NamedParameter("org_key", toParameterValue(org.key))),
       teamKey.map { v => NamedParameter("team_key", toParameterValue(v)) },
       Some(NamedParameter("number_hours", toParameterValue(numberHours)))
     ).flatten
@@ -55,7 +55,7 @@ object StatisticsDao {
           totalIncidents = row[Long]("total_incidents"),
           totalOpenIncidents = row[Long]("total_open_incidents"),
           totalPlans = row[Long]("total_plans"),
-          plans = PlansDao.findAll(orgKey = orgKey, teamKey = Some(row[String]("team_key")))
+          plans = PlansDao.findAll(org = Some(org), teamKey = Some(row[String]("team_key")))
         )
       }.toSeq
     }

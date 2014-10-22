@@ -12,7 +12,7 @@
       <tbody>
         @meetings.items.map { meeting =>
          <tr>
-           <td><a href="@routes.Meetings.show(org.key, meeting.id)">@_root_.org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)</a></td>
+           <td><a href="@routes.Meetings.show(org.key, meeting.id)">@core.DateHelper.mediumDateTime(org, meeting.scheduledAt)</a></td>
          </tr>
        }
       </tbody>

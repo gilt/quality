@@ -3,8 +3,8 @@ GET     /_internal_/healthcheck                                   controllers.He
 GET     /                                                         controllers.Application.index(page: Int ?= 0)
 
 GET     /login                                                    controllers.LoginController.redirect
-GET     /login/                                                   controllers.LoginController.index
-POST    /login/                                                   controllers.LoginController.indexPost
+GET     /login/                                                   controllers.LoginController.index(return_url: Option[String] ?= None)
+POST    /login/                                                   controllers.LoginController.postIndex
 
 GET     /:org                                                     controllers.Dashboard.index(org: String)
 GET     /:org/incidents/                                          controllers.Incidents.index(org: String, team_key: Option[String] ?= None, has_team: Option[String] ?= None, has_plan: Option[String] ?= None, has_grade: Option[String] ?= None, page: Int ?= 0)
@@ -29,6 +29,9 @@ GET     /:org/teams/edit                                          controllers.Te
 POST    /:org/teams/postEdit                                      controllers.Teams.postEdit(org: String, key: String)
 GET     /:org/teams/:key                                          controllers.Teams.show(org: String, key: String, incidentsPage: Int ?= 0)
 POST    /:org/teams/delete/:key                                   controllers.Teams.postDeleteByKey(org: String, key: String)
+
+GET     /:org/subscriptions/                                      controllers.Subscriptions.index(org: String)
+POST    /:org/subscriptions/:publication/toggle                   controllers.Subscriptions.postToggle(org: String, publication: com.gilt.quality.models.Publication)
 
 GET     /:org/meetings/                                           controllers.Meetings.index(org: String, page: Int ?= 0)
 GET     /:org/meetings/:id                                        controllers.Meetings.show(org: String, id: Long, reviewTeamsPage: Int ?= 0, reviewPlansPage: Int ?= 0)

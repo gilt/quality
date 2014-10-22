@@ -38,7 +38,7 @@
         @Html(incident.tags.mkString("<ul><li>", "</li><li>", "</li></ul>"))
       }
     </li>
-    <li>Created: @_root_.org.joda.time.format.DateTimeFormat.longDateTime.print(incident.createdAt)</li>
+    <li>Created: @core.DateHelper.longDateTime(org, incident.createdAt)</li>
     <li><a href="@routes.Incidents.edit(org.key, incident.id)">Edit</a> |
         <a href="@routes.Incidents.postDeleteById(org.key, incident.id)" class="delete" data-confirm="Are you sure to delete this incident?">Delete</a>
     </li>
@@ -74,7 +74,7 @@
     <div class="markdown">
       @Html(core.Markdown.toHtml(plan.get.body))
     </div>
-    <p><em>Created: @_root_.org.joda.time.format.DateTimeFormat.longDateTime.print(plan.get.createdAt)</em></p>
+    <p><em>Created: @core.DateHelper.longDateTime(org, plan.get.createdAt)</em></p>
     <p>
       <a href="@routes.Plans.uploadByIncidentId(org.key, incident.id)">Edit</a> |
       <a href="@routes.Plans.postDeleteById(org.key, plan.get.id, incident.id)" class="delete" data-confirm="Are you sure to delete this plan?">Delete</a>
@@ -89,7 +89,7 @@
       <tbody>
         @meetings.map { meeting =>
          <tr>
-           <td><a href="@routes.Meetings.show(org.key, meeting.id)">@_root_.org.joda.time.format.DateTimeFormat.shortDate.print(meeting.scheduledAt)</a></td>
+           <td><a href="@routes.Meetings.show(org.key, meeting.id)">@core.DateHelper.mediumDateTime(org, meeting.scheduledAt)</a></td>
          </tr>
         }
       </tbody>

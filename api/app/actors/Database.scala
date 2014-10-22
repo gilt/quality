@@ -41,7 +41,7 @@ object Database {
       )
     } { meeting =>
       syncMeeting(meeting, incident =>
-        global.Actors.mainActor ! InternalMeetingMessage.SyncIncident(incident.id)
+        global.Actors.mainActor ! MeetingMessage.SyncIncident(incident.id)
       )
     }
   }

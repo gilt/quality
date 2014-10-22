@@ -156,6 +156,22 @@ package com.gilt.quality.models {
   )
 
   /**
+   * Represents a user that is currently subscribed to a publication
+   */
+  case class Subscription(
+    id: Long,
+    organization: com.gilt.quality.models.Organization,
+    user: com.gilt.quality.models.User,
+    publication: com.gilt.quality.models.Publication
+  )
+
+  case class SubscriptionForm(
+    organizationKey: String,
+    userGuid: java.util.UUID,
+    publication: com.gilt.quality.models.Publication
+  )
+
+  /**
    * A team is the main actor in the system. Teams have a unique key and own
    * incidents
    */
@@ -276,6 +292,58 @@ package com.gilt.quality.models {
 
   }
 
+  /**
+   * A publication represents something that a user can subscribe to. An example
+   * would be subscribing via email to the publication of all new incidents.
+   */
+  sealed trait Publication
+
+  object Publication {
+
+    /**
+     * Email notification whenever an incident is created.
+     */
+    case object IncidentsCreate extends Publication { override def toString = "incidents.create" }
+    /**
+     * Email notification whenever an incident is updated.
+     */
+    case object IncidentsUpdate extends Publication { override def toString = "incidents.update" }
+    /**
+     * Email notification whenever a plan is created.
+     */
+    case object PlansCreate extends Publication { override def toString = "plans.create" }
+    /**
+     * Email notification whenever a plan is updated.
+     */
+    case object PlansUpdate extends Publication { override def toString = "plans.update" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Publication
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(IncidentsCreate, IncidentsUpdate, PlansCreate, PlansUpdate)
+
+    private[this]
+    val byName = all.map(x => x.toString -> x).toMap
+
+    def apply(value: String): Publication = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): scala.Option[Publication] = byName.get(value)
+
+  }
+
   sealed trait Severity
 
   object Severity {
@@ -389,6 +457,11 @@ package com.gilt.quality.models {
     implicit val jsonReadsQualityEnum_Model = __.read[String].map(Model.apply)
     implicit val jsonWritesQualityEnum_Model = new Writes[Model] {
       def writes(x: Model) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsQualityEnum_Publication = __.read[String].map(Publication.apply)
+    implicit val jsonWritesQualityEnum_Publication = new Writes[Publication] {
+      def writes(x: Publication) = JsString(x.toString)
     }
 
     implicit val jsonReadsQualityEnum_Severity = __.read[String].map(Severity.apply)
@@ -704,6 +777,40 @@ package com.gilt.quality.models {
       )(unlift(Statistic.unapply _))
     }
 
+    implicit def jsonReadsQualitySubscription: play.api.libs.json.Reads[Subscription] = {
+      (
+        (__ \ "id").read[Long] and
+        (__ \ "organization").read[com.gilt.quality.models.Organization] and
+        (__ \ "user").read[com.gilt.quality.models.User] and
+        (__ \ "publication").read[com.gilt.quality.models.Publication]
+      )(Subscription.apply _)
+    }
+
+    implicit def jsonWritesQualitySubscription: play.api.libs.json.Writes[Subscription] = {
+      (
+        (__ \ "id").write[Long] and
+        (__ \ "organization").write[com.gilt.quality.models.Organization] and
+        (__ \ "user").write[com.gilt.quality.models.User] and
+        (__ \ "publication").write[com.gilt.quality.models.Publication]
+      )(unlift(Subscription.unapply _))
+    }
+
+    implicit def jsonReadsQualitySubscriptionForm: play.api.libs.json.Reads[SubscriptionForm] = {
+      (
+        (__ \ "organization_key").read[String] and
+        (__ \ "user_guid").read[java.util.UUID] and
+        (__ \ "publication").read[com.gilt.quality.models.Publication]
+      )(SubscriptionForm.apply _)
+    }
+
+    implicit def jsonWritesQualitySubscriptionForm: play.api.libs.json.Writes[SubscriptionForm] = {
+      (
+        (__ \ "organization_key").write[String] and
+        (__ \ "user_guid").write[java.util.UUID] and
+        (__ \ "publication").write[com.gilt.quality.models.Publication]
+      )(unlift(SubscriptionForm.unapply _))
+    }
+
     implicit def jsonReadsQualityTeam: play.api.libs.json.Reads[Team] = {
       (
         (__ \ "organization").read[com.gilt.quality.models.Organization] and
@@ -807,6 +914,8 @@ package com.gilt.quality {
     def plans: Plans = Plans
 
     def statistics: Statistics = Statistics
+
+    def subscriptions: Subscriptions = Subscriptions
 
     def teams: Teams = Teams
 
@@ -1207,6 +1316,61 @@ package com.gilt.quality {
       }
     }
 
+    object Subscriptions extends Subscriptions {
+      override def get(
+        id: scala.Option[Long] = None,
+        organizationKey: scala.Option[String] = None,
+        userGuid: scala.Option[java.util.UUID] = None,
+        publication: scala.Option[com.gilt.quality.models.Publication] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Subscription]] = {
+        val queryParameters = Seq(
+          id.map("id" -> _.toString),
+          organizationKey.map("organization_key" -> _),
+          userGuid.map("user_guid" -> _.toString),
+          publication.map("publication" -> _.toString),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/subscriptions", queryParameters = queryParameters).map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Subscription]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def getById(
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Subscription]] = {
+        _executeRequest("GET", s"/subscriptions/${id}").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.Subscription])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def post(subscriptionForm: com.gilt.quality.models.SubscriptionForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Subscription] = {
+        val payload = play.api.libs.json.Json.toJson(subscriptionForm)
+
+        _executeRequest("POST", s"/subscriptions", body = Some(payload)).map {
+          case r if r.status == 201 => r.json.as[com.gilt.quality.models.Subscription]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def deleteById(
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
+        _executeRequest("DELETE", s"/subscriptions/${id}").map {
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
     object Teams extends Teams {
       override def getByOrg(
         org: String,
@@ -1598,6 +1762,36 @@ package com.gilt.quality {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Statistic]]
   }
 
+  trait Subscriptions {
+    /**
+     * Search for a specific subscription.
+     */
+    def get(
+      id: scala.Option[Long] = None,
+      organizationKey: scala.Option[String] = None,
+      userGuid: scala.Option[java.util.UUID] = None,
+      publication: scala.Option[com.gilt.quality.models.Publication] = None,
+      limit: scala.Option[Int] = None,
+      offset: scala.Option[Int] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Subscription]]
+
+    /**
+     * Returns information about this subscription.
+     */
+    def getById(
+      id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Subscription]]
+
+    /**
+     * Create a new subscription.
+     */
+    def post(subscriptionForm: com.gilt.quality.models.SubscriptionForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Subscription]
+
+    def deleteById(
+      id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+  }
+
   trait Teams {
     /**
      * Search all teams. Results are always paginated.
@@ -1723,6 +1917,17 @@ package com.gilt.quality {
 
     implicit val queryStringBindableEnumModel = new QueryStringBindable.Parsing[Model](
       Model.fromString(_).get, _.toString, enumModelNotFound
+    )
+
+    // Enum: Publication
+    private val enumPublicationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Publication.all.mkString(", ")}"
+
+    implicit val pathBindableEnumPublication = new PathBindable.Parsing[Publication] (
+      Publication.fromString(_).get, _.toString, enumPublicationNotFound
+    )
+
+    implicit val queryStringBindableEnumPublication = new QueryStringBindable.Parsing[Publication](
+      Publication.fromString(_).get, _.toString, enumPublicationNotFound
     )
 
     // Enum: Severity

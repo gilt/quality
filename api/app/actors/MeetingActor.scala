@@ -7,14 +7,7 @@ import akka.actor._
 import play.api.Logger
 import play.api.Play.current
 
-object MeetingMessage {
-  case class IncidentCreated(incidentId: Long)
-  case class IncidentUpdated(incidentId: Long)
-  case class IncidentTeamUpdated(incidentId: Long)
-  case class AgendaItemCreated(agendaItemId: Long)
-}
-
-private[actors] object InternalMeetingMessage {
+private[actors] object MeetingMessage {
   case object SyncOrganizationMeetings
   case object SyncIncidents
   case object SyncMeetings
@@ -25,8 +18,8 @@ class MeetingActor extends Actor {
 
   def receive = {
 
-    case MeetingMessage.AgendaItemCreated(agendaItemId: Long) => {
-      println(s"MeetingActor MeetingMessage.AgendaItemCreated($agendaItemId)")
+    case MainActor.AgendaItemCreated(agendaItemId: Long) => {
+      println(s"MeetingActor MainActor.AgendaItemCreated($agendaItemId)")
       try {
         AgendaItemEvents.processCreated(agendaItemId)
       } catch {
@@ -37,11 +30,11 @@ class MeetingActor extends Actor {
     /**
       * Creates upcoming meetings for all organizations.
       */
-    case InternalMeetingMessage.SyncOrganizationMeetings => {
+    case MeetingMessage.SyncOrganizationMeetings => {
       try {
         Database.ensureAllOrganizationHaveUpcomingMeetings()
       } catch {
-        case t: Throwable => Logger.error(s"InternalMeetingMessage.SyncOrganizationMeetings: ${t}" , t)
+        case t: Throwable => Logger.error(s"MeetingMessage.SyncOrganizationMeetings: ${t}" , t)
       }
     }
 
@@ -55,11 +48,11 @@ class MeetingActor extends Actor {
       *   - reviewed in meeting but incident record not actually modified
       *   - incident needs to get scheduled for next task in next meeting
       */
-    case InternalMeetingMessage.SyncMeetings => {
+    case MeetingMessage.SyncMeetings => {
       try {
         Database.syncMeetings()
       } catch {
-        case t: Throwable => Logger.error(s"InternalMeetingMessage.SyncMeetings: ${t}" , t)
+        case t: Throwable => Logger.error(s"MeetingMessage.SyncMeetings: ${t}" , t)
       }
     }
 
@@ -70,21 +63,21 @@ class MeetingActor extends Actor {
       *  a. This incident is assigned to an upcoming meeting
       *  b. OR this incident has already been in a meeting for all Tasks
       */
-    case InternalMeetingMessage.SyncIncident(incidentId) => {
+    case MeetingMessage.SyncIncident(incidentId) => {
       try {
         Database.assignIncident(incidentId)
       } catch {
-        case t: Throwable => Logger.error(s"InternalMeetingMessage.SyncIncident($incidentId): ${t}" , t)
+        case t: Throwable => Logger.error(s"MeetingMessage.SyncIncident($incidentId): ${t}" , t)
       }
     }
 
-    case InternalMeetingMessage.SyncIncidents => {
+    case MeetingMessage.SyncIncidents => {
       try {
         IncidentsDao.findRecentlyModifiedIncidentIds.foreach { incidentId =>
-          sender ! InternalMeetingMessage.SyncIncident(incidentId)
+          sender ! MeetingMessage.SyncIncident(incidentId)
         }
       } catch {
-        case t: Throwable => Logger.error(s"InternalMeetingMessage.SyncIncidents: ${t}" , t)
+        case t: Throwable => Logger.error(s"MeetingMessage.SyncIncidents: ${t}" , t)
       }
     }
 

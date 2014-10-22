@@ -19,11 +19,11 @@ object LoginController extends Controller {
     Redirect(routes.LoginController.index())
   }
 
-  def index() = Action { implicit request =>
+  def index(returnUrl: Option[String]) = Action { implicit request =>
     Ok(views.html.login.index(MainTemplate(), loginForm))
   }
 
-  def indexPost = Action.async { implicit request =>
+  def postIndex() = Action.async { implicit request =>
     val form = loginForm.bindFromRequest
     form.fold (
 

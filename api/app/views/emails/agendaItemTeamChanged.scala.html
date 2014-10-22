@@ -1,16 +1,15 @@
-@(org: com.gilt.quality.models.Organization,
+@(host: String,
+  org: com.gilt.quality.models.Organization,
   meeting: com.gilt.quality.models.Meeting,
   item: com.gilt.quality.models.AgendaItem,
-  taskLabel: String,
-  host: String
+  taskLabel: String
 )
-
 
 <p>
   <a href="@host/@org.key/incidents/@{item.incident.id}">Incident
   #@item.incident.id</a>: @item.incident.summary has been added to the
   agenda to @taskLabel for the Perfect Day meeting scheduled for
-  @_root_.org.joda.time.format.DateTimeFormat.mediumDateTime.print(meeting.scheduledAt).
+  @core.DateHelper.mediumDateTime(org, meeting.scheduledAt).
 </p>
 
 @if(item.task == com.gilt.quality.models.Task.ReviewTeam) {

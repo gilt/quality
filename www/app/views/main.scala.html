@@ -28,6 +28,7 @@
               <li><a@if(section == Some("meetings")) { class="active" } href="@routes.Meetings.index(o.key)">Meetings</a></li>
               <li><a@if(section == Some("incidents")) { class="active" } href="@routes.Incidents.index(o.key)">Incidents</a></li>
               <li><a@if(section == Some("teams")) { class="active" } href="@routes.Teams.index(o.key)">Teams</a></li>
+              <li><a@if(section == Some("subscriptions")) { class="active" } href="@routes.Subscriptions.index(o.key)">Subscriptions</a></li>
             </ul>
           </div>
         }

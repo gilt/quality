@@ -69,6 +69,8 @@ object PlansDao {
       ).executeInsert().getOrElse(sys.error("Missing id"))
     }
 
+    global.Actors.mainActor ! actors.MainActor.PlanCreated(id)
+
     findByOrganizationAndId(fullForm.org, id).getOrElse {
       sys.error("Failed to create plan")
     }
@@ -87,7 +89,9 @@ object PlansDao {
       ).executeUpdate()
     }
 
-    findByOrganizationAndId(fullForm.org, plan.id).getOrElse {
+    global.Actors.mainActor ! actors.MainActor.PlanUpdated(plan.id)
+
+    findById(plan.id).getOrElse {
       sys.error("Failed to update plan")
     }
   }
@@ -96,24 +100,40 @@ object PlansDao {
     SoftDelete.delete("plans", deletedBy, plan.id)
   }
 
+  def findById(id: Long): Option[Plan] = {
+    findAll(id = Some(id), limit = 1).headOption
+  }
+
   def findByOrganizationAndId(
     org: Organization,
     id: Long
   ): Option[Plan] = {
-    findAll(orgKey = org.key, id = Some(id), limit = 1).headOption
+    findAll(org = Some(org), id = Some(id), limit = 1).headOption
   }
 
   def findAll(
-    orgKey: String,
+    org: Option[Organization] = None,
     id: Option[Long] = None,
     incidentId: Option[Long] = None,
     teamKey: Option[String] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Plan] = {
+    val orgId = org match {
+      case None => None
+      case Some(o) => {
+        Some(
+          OrganizationsDao.lookupId(o.key).getOrElse {
+            sys.error("Organization ID not found for key[${org.key}]")
+          }
+        )
+      }
+    }
+
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and plans.id = {id}" },
+      org.map { v => "and incidents.organization_id = {organization_id}" },
       incidentId.map { v => "and plans.incident_id = {incident_id}" },
       teamKey.map {v => "and teams.key = {team_key}"},
       Some("order by plans.created_at desc, plans.id desc"),
@@ -122,6 +142,7 @@ object PlansDao {
 
     val bind = Seq(
       id.map { v => NamedParameter("id", toParameterValue(v)) },
+      orgId.map { v => NamedParameter("organization_id", toParameterValue(v)) },
       incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
       teamKey.map {v => NamedParameter("team_key", toParameterValue(v))}
     ).flatten

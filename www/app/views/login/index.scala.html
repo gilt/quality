@@ -16,7 +16,7 @@
 
                 <div id="login" class="tab-pane active in">
 
-                  @helper.form(action = routes.LoginController.indexPost) {
+                  @helper.form(action = routes.LoginController.postIndex()) {
 
                     @loginForm.globalErrors.map(_.message).map { msg =>
                       <p><span class="error">@msg</span></p>
