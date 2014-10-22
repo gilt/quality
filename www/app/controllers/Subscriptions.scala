@@ -17,10 +17,10 @@ object Subscriptions extends Controller {
 
   case class UserPublication(publication: Publication, isSubscribed: Boolean) {
     val publicationName = publication match {
-      case Publication.Incidentscreate => "Email me whenever an incident is created"
-      case Publication.Incidentsupdate => "Email me whenever an incident is updated"
-      case Publication.Planscreate => "Email me whenever a plan is created"
-      case Publication.Plansupdate => "Email me whenever a plan is updated"
+      case Publication.IncidentsCreate => "Email me whenever an incident is created"
+      case Publication.IncidentsUpdate => "Email me whenever an incident is updated"
+      case Publication.PlansCreate => "Email me whenever a plan is created"
+      case Publication.PlansUpdate => "Email me whenever a plan is updated"
       case Publication.UNDEFINED(key) => key
     }
   }

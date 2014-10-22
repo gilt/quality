@@ -116,9 +116,9 @@ object IncidentsDao {
       id
     }
 
-    global.Actors.mainActor ! actors.MeetingMessage.IncidentCreated(id)
+    global.Actors.mainActor ! actors.MainActor.IncidentCreated(id)
     fullForm.teamId.map { _ =>
-        global.Actors.mainActor ! actors.MeetingMessage.IncidentTeamUpdated(id)
+        global.Actors.mainActor ! actors.MainActor.IncidentTeamUpdated(id)
     }
 
     findByOrganizationAndId(fullForm.org, id).getOrElse {
@@ -146,11 +146,11 @@ object IncidentsDao {
       IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, fullForm.form.tags)
     }
 
-    global.Actors.mainActor ! actors.MeetingMessage.IncidentUpdated(incident.id)
+    global.Actors.mainActor ! actors.MainActor.IncidentUpdated(incident.id)
 
     if (incident.team.map(_.key) != fullForm.form.teamKey) {
       fullForm.teamId.map { _ =>
-        global.Actors.mainActor ! actors.MeetingMessage.IncidentTeamUpdated(incident.id)
+        global.Actors.mainActor ! actors.MainActor.IncidentTeamUpdated(incident.id)
       }
     }
 

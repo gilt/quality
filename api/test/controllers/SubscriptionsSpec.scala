@@ -20,13 +20,13 @@ class SubscriptionsSpec extends BaseSpec {
       SubscriptionForm(
         organizationKey = org.key,
         userGuid = user.guid,
-        publication = Publication.AllNewIncidents
+        publication = Publication.IncidentsCreate
       )
     )
 
     subscription.organization.key must be(org.key)
     subscription.user.guid must be(user.guid)
-    subscription.publication must be(Publication.AllNewIncidents)
+    subscription.publication must be(Publication.IncidentsCreate)
   }
 
   "POST /subscriptions handles user already subscribed" in new WithServer {
@@ -46,13 +46,13 @@ class SubscriptionsSpec extends BaseSpec {
 
     subscription1.organization.key must be(org.key)
     subscription1.user.guid must be(user.guid)
-    subscription1.publication must be(Publication.AllNewIncidents)
+    subscription1.publication must be(Publication.IncidentsCreate)
 
     val org2 = createOrganization()
     val subscription2 = createSubscription(form.copy(organizationKey = org2.key))
     subscription2.organization.key must be(org2.key)
     subscription2.user.guid must be(user.guid)
-    subscription2.publication must be(Publication.AllNewIncidents)
+    subscription2.publication must be(Publication.IncidentsCreate)
   }
 
   "POST /subscriptions validates org key" in new WithServer {
@@ -63,7 +63,7 @@ class SubscriptionsSpec extends BaseSpec {
         SubscriptionForm(
           organizationKey = UUID.randomUUID.toString,
           userGuid = user.guid,
-          publication = Publication.AllNewIncidents
+          publication = Publication.IncidentsCreate
         )
       )
     }.errors.map(_.message) must be(Seq("Organization not found"))
@@ -75,7 +75,7 @@ class SubscriptionsSpec extends BaseSpec {
         SubscriptionForm(
           organizationKey = org.key,
           userGuid = UUID.randomUUID,
-          publication = Publication.AllNewIncidents
+          publication = Publication.IncidentsCreate
         )
       )
     }.errors.map(_.message) must be(Seq("User not found"))
@@ -122,7 +122,7 @@ class SubscriptionsSpec extends BaseSpec {
       SubscriptionForm(
         organizationKey = org1.key,
         userGuid = user1.guid,
-        publication = Publication.AllNewIncidents
+        publication = Publication.IncidentsCreate
       )
     )
 
@@ -130,7 +130,7 @@ class SubscriptionsSpec extends BaseSpec {
       SubscriptionForm(
         organizationKey = org2.key,
         userGuid = user2.guid,
-        publication = Publication.AllPlans
+        publication = Publication.PlansCreate
       )
     )
 
@@ -142,8 +142,8 @@ class SubscriptionsSpec extends BaseSpec {
     await(client.subscriptions.get(userGuid = Some(user1.guid))).map(_.id) must be(Seq(subscription1.id))
     await(client.subscriptions.get(userGuid = Some(user2.guid))).map(_.id) must be(Seq(subscription2.id))
 
-    await(client.subscriptions.get(userGuid = Some(user1.guid), publication = Some(Publication.AllNewIncidents))).map(_.id) must be(Seq(subscription1.id))
-    await(client.subscriptions.get(userGuid = Some(user2.guid), publication = Some(Publication.AllPlans))).map(_.id) must be(Seq(subscription2.id))
+    await(client.subscriptions.get(userGuid = Some(user1.guid), publication = Some(Publication.IncidentsCreate))).map(_.id) must be(Seq(subscription1.id))
+    await(client.subscriptions.get(userGuid = Some(user2.guid), publication = Some(Publication.PlansCreate))).map(_.id) must be(Seq(subscription2.id))
 
     intercept[FailedRequest] {
       await(client.subscriptions.get(publication = Some(Publication(UUID.randomUUID.toString)))) must be(Seq.empty)

@@ -50,7 +50,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   ) = SubscriptionForm(
     organizationKey = org.key,
     userGuid = user.guid,
-    publication = Publication.AllNewIncidents
+    publication = Publication.IncidentsCreate
   )
 
   def createTeam(
