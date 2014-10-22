@@ -19,8 +19,8 @@ object Plans extends Controller {
     offset: Int = 0
   ) = OrgAction { request =>
     val matches = PlansDao.findAll(
-      orgKey = request.org.key,
       id = id,
+      org = Some(request.org),
       incidentId = incident_id,
       teamKey = team_key,
       limit = limit,

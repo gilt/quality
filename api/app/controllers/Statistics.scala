@@ -13,7 +13,7 @@ object Statistics extends Controller {
     number_hours: Int = 168
   ) = OrgAction { request =>
     val matches = StatisticsDao.findAll(
-      orgKey = request.org.key,
+      org = request.org,
       teamKey = team_key,
       numberHours = number_hours
     )
