@@ -16,7 +16,7 @@ object DateHelper {
     dateTime: DateTime
   ): String = {
     val tz = orgTimeZone(org)
-    DateTimeFormat.shortDate.withZone(DateTimeZone.forID(tz.name)).print(dateTime) + s" ${tz.label}"
+    DateTimeFormat.shortDate.withZone(DateTimeZone.forID(tz.name)).print(dateTime)
   }
 
   def mediumDateTime(
