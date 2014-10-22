@@ -43,7 +43,8 @@
 		{ "name": "incidents.create", "description": "Email notification whenever an incident is created." },
 		{ "name": "incidents.update", "description": "Email notification whenever an incident is updated." },
 		{ "name": "plans.create", "description": "Email notification whenever a plan is created." },
-		{ "name": "plans.update", "description": "Email notification whenever a plan is updated." }
+		{ "name": "plans.update", "description": "Email notification whenever a plan is updated." },
+		{ "name": "meetings.adjourned", "description": "Email notification whenever a meeting is adjourned.." }
 	    ]
 	}
 
@@ -194,13 +195,20 @@
 	    "fields": [
 		{ "name": "id", "type": "long", "description": "Internal unique identifier for this meeting." },
                 { "name": "organization", "type": "organization", "description": "Organization to which this meeting belongs" },
-		{ "name": "scheduled_at", "type": "date-time-iso8601", "description": "The date and time for which this meeting is scheduled." }
+		{ "name": "scheduled_at", "type": "date-time-iso8601", "description": "The date and time for which this meeting is scheduled." },
+		{ "name": "adjourned_at", "type": "date-time-iso8601", "description": "The date and time at which this meeting was adjourned. This can be done explicitly by a person, or will automatically occur a few hours after the meeting's scheduled time.", "required": false }
 	    ]
 	},
 
 	"meeting_form": {
 	    "fields": [
 		{ "name": "scheduled_at", "type": "date-time-iso8601" }
+	    ]
+	},
+
+	"adjourn_form": {
+	    "fields": [
+		{ "name": "adjourned_at", "type": "date-time-iso8601", "required": false, "description": "Defaults to the time of the request" }
 	    ]
 	},
 
@@ -585,6 +593,17 @@
 		    "body": { "type": "meeting_form" },
                     "responses": {
                         "201": { "type": "meeting" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+		{
+		    "description": "Records that a meeting has been adjourned. Will return a validation error if the meeting had previously been adjourned",
+		    "method": "POST",
+		    "path": "/:id/adjourn",
+		    "body": { "type": "adjourn_form" },
+                    "responses": {
+                        "200": { "type": "meeting" },
                         "409": { "type": "[error]" }
                     }
                 },

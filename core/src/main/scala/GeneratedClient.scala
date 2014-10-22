@@ -1,4 +1,8 @@
 package com.gilt.quality.models {
+  case class AdjournForm(
+    adjournedAt: scala.Option[_root_.org.joda.time.DateTime] = None
+  )
+
   /**
    * Describe an agenda item for a meeting. Currently the only agenda items we have
    * are that a particular incident needs to be reviewed.
@@ -94,7 +98,8 @@ package com.gilt.quality.models {
   case class Meeting(
     id: Long,
     organization: com.gilt.quality.models.Organization,
-    scheduledAt: _root_.org.joda.time.DateTime
+    scheduledAt: _root_.org.joda.time.DateTime,
+    adjournedAt: scala.Option[_root_.org.joda.time.DateTime] = None
   )
 
   case class MeetingForm(
@@ -316,6 +321,10 @@ package com.gilt.quality.models {
      * Email notification whenever a plan is updated.
      */
     case object PlansUpdate extends Publication { override def toString = "plans.update" }
+    /**
+     * Email notification whenever a meeting is adjourned..
+     */
+    case object MeetingsAdjourned extends Publication { override def toString = "meetings.adjourned" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -333,7 +342,7 @@ package com.gilt.quality.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(IncidentsCreate, IncidentsUpdate, PlansCreate, PlansUpdate)
+    val all = Seq(IncidentsCreate, IncidentsUpdate, PlansCreate, PlansUpdate, MeetingsAdjourned)
 
     private[this]
     val byName = all.map(x => x.toString -> x).toMap
@@ -473,6 +482,16 @@ package com.gilt.quality.models {
     implicit val jsonWritesQualityEnum_Task = new Writes[Task] {
       def writes(x: Task) = JsString(x.toString)
     }
+    implicit def jsonReadsQualityAdjournForm: play.api.libs.json.Reads[AdjournForm] = {
+      (__ \ "adjourned_at").readNullable[_root_.org.joda.time.DateTime].map { x => new AdjournForm(adjournedAt = x) }
+    }
+
+    implicit def jsonWritesQualityAdjournForm: play.api.libs.json.Writes[AdjournForm] = new play.api.libs.json.Writes[AdjournForm] {
+      def writes(x: AdjournForm) = play.api.libs.json.Json.obj(
+        "adjourned_at" -> play.api.libs.json.Json.toJson(x.adjournedAt)
+      )
+    }
+
     implicit def jsonReadsQualityAgendaItem: play.api.libs.json.Reads[AgendaItem] = {
       (
         (__ \ "id").read[Long] and
@@ -653,7 +672,8 @@ package com.gilt.quality.models {
       (
         (__ \ "id").read[Long] and
         (__ \ "organization").read[com.gilt.quality.models.Organization] and
-        (__ \ "scheduled_at").read[_root_.org.joda.time.DateTime]
+        (__ \ "scheduled_at").read[_root_.org.joda.time.DateTime] and
+        (__ \ "adjourned_at").readNullable[_root_.org.joda.time.DateTime]
       )(Meeting.apply _)
     }
 
@@ -661,7 +681,8 @@ package com.gilt.quality.models {
       (
         (__ \ "id").write[Long] and
         (__ \ "organization").write[com.gilt.quality.models.Organization] and
-        (__ \ "scheduled_at").write[_root_.org.joda.time.DateTime]
+        (__ \ "scheduled_at").write[_root_.org.joda.time.DateTime] and
+        (__ \ "adjourned_at").write[scala.Option[_root_.org.joda.time.DateTime]]
       )(unlift(Meeting.unapply _))
     }
 
@@ -894,7 +915,7 @@ package com.gilt.quality {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
-    private val UserAgent = "apidoc:0.6.8 http://www.apidoc.me/gilt/code/quality/0.0.10-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.9 http://www.apidoc.me/gilt/code/quality/0.0.10-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.quality.client")
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
@@ -1131,6 +1152,19 @@ package com.gilt.quality {
 
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.Meeting]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def postAdjournByOrgAndId(adjournForm: com.gilt.quality.models.AdjournForm, 
+        org: String,
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting] = {
+        val payload = play.api.libs.json.Json.toJson(adjournForm)
+
+        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${id}/adjourn", body = Some(payload)).map {
+          case r if r.status == 200 => r.json.as[com.gilt.quality.models.Meeting]
           case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
@@ -1528,6 +1562,9 @@ package com.gilt.quality {
         case "DELETE" => {
           _logRequest("DELETE", _requestHolder(path).withQueryString(queryParameters:_*)).delete()
         }
+         case "HEAD" => {
+          _logRequest("HEAD", _requestHolder(path).withQueryString(queryParameters:_*)).head()
+        }
         case _ => {
           _logRequest(method, _requestHolder(path).withQueryString(queryParameters:_*))
           sys.error("Unsupported method[%s]".format(method))
@@ -1657,6 +1694,15 @@ package com.gilt.quality {
      */
     def postByOrg(meetingForm: com.gilt.quality.models.MeetingForm, 
       org: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting]
+
+    /**
+     * Records that a meeting has been adjourned. Will return a validation error if the
+     * meeting had previously been adjourned
+     */
+    def postAdjournByOrgAndId(adjournForm: com.gilt.quality.models.AdjournForm, 
+      org: String,
+      id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting]
 
     def deleteByOrgAndId(

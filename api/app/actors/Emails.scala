@@ -27,6 +27,7 @@ private[actors] object Emails {
     publication match {
       case Publication.IncidentsCreate | Publication.PlansCreate => "Created"
       case Publication.IncidentsUpdate | Publication.PlansUpdate => "Updated"
+      case Publication.MeetingsAdjourned => "Adjourned"
       case Publication.UNDEFINED(key) => key
     }
   }
