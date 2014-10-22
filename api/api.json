@@ -1,7 +1,7 @@
 {
     "name": "Quality",
     "description": "Application to track perfect day and quality at gilt",
-    "base_url": "http://localhost:9000",
+    "base_url": "http://api.quality.architecture.giltaws.com",
 
     "enums": {
 	"model": {
