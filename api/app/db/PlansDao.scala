@@ -69,6 +69,8 @@ object PlansDao {
       ).executeInsert().getOrElse(sys.error("Missing id"))
     }
 
+    global.Actors.mainActor ! actors.MeetingMessage.PlanCreated(id)
+
     findByOrganizationAndId(fullForm.org, id).getOrElse {
       sys.error("Failed to create plan")
     }
@@ -86,6 +88,8 @@ object PlansDao {
         'user_guid -> user.guid
       ).executeUpdate()
     }
+
+    global.Actors.mainActor ! actors.MeetingMessage.PlanUpdated(plan.id)
 
     findById(plan.id).getOrElse {
       sys.error("Failed to update plan")

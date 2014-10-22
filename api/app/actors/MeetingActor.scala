@@ -12,6 +12,8 @@ object MeetingMessage {
   case class IncidentUpdated(incidentId: Long)
   case class IncidentTeamUpdated(incidentId: Long)
   case class AgendaItemCreated(agendaItemId: Long)
+  case class PlanCreated(planId: Long)
+  case class PlanUpdated(planId: Long)
 }
 
 private[actors] object InternalMeetingMessage {
