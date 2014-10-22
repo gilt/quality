@@ -32,7 +32,7 @@ object DateHelper {
     dateTime: DateTime
   ): String = {
     val tz = orgTimeZone(org)
-    DateTimeFormat.longDateTime.withZone(DateTimeZone.forID(tz.name)).print(dateTime) + s" ${tz.label}"
+    DateTimeFormat.longDateTime.withZone(DateTimeZone.forID(tz.name)).print(dateTime)
   }
 
   // Place holder to enable time zone configuration later by

@@ -24,8 +24,8 @@ class EmailActor extends Actor {
           Emails.deliver(
             org = incident.organization,
             publication = publication,
-            subject = "Incident Test ID " + incidentId,
-            body = "Body"
+            subject = s"[PerfectDay] Incident ${incident.id} ${Emails.action(publication)}",
+            body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString
           )
         }
       } catch {
@@ -41,8 +41,8 @@ class EmailActor extends Actor {
             Emails.deliver(
               org = incident.organization,
               publication = publication,
-              subject = "Plan Test ID " + planId,
-              body = "Body"
+              subject = s"[PerfectDay] Incident ${incident.id} Plan ${Emails.action(publication)}",
+              body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString
             )
           }
         }
@@ -58,4 +58,3 @@ class EmailActor extends Actor {
   }
 
 }
-

@@ -8,10 +8,6 @@ import play.api.Play.current
 
 object AgendaItemEvents {
 
-  val qualityWebHostname = current.configuration.getString("quality.webHostname").getOrElse {
-    sys.error(s"configuration parameter[quality.webHostname] is required")
-  }
-
   private[actors] def processCreated(agendaItemId: Long) {
     println(s"processCreated($agendaItemId)")
     AgendaItemsDao.findById(agendaItemId).map { item =>
@@ -27,34 +23,19 @@ object AgendaItemEvents {
         ).flatten.foreach { teamEmail =>
           Email.sendHtml(
             to = Person(teamEmail, item.incident.team.map(_.key)),
-            subject = s"[PerfectDay] Incident ${item.incident.id} Added to ${dateTime} Meeting to ${taskLabel(item.task)}",
+            subject = s"[PerfectDay] Incident ${item.incident.id} Added to ${dateTime} Meeting to ${Emails.taskLabel(item.task)}",
             body = views.html.emails.agendaItemTeamChanged(
+              Emails.qualityWebHostname,
               item.incident.organization,
               meeting,
               item,
-              taskLabel(item.task),
-              qualityWebHostname
+              Emails.taskLabel(item.task)
             ).toString
           )
         }
       }
     }
   }
-
-  private def taskLabel(task: Task): String = {
-    task match {
-      case Task.ReviewTeam => {
-        "review team assignment"
-      }
-      case Task.ReviewPlan => {
-        "review the prevention plan"
-      }
-      case Task.UNDEFINED(key) => {
-        key
-      }
-    }
-  }
-
 
 }
 
