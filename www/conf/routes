@@ -3,8 +3,8 @@ GET     /_internal_/healthcheck                                   controllers.He
 GET     /                                                         controllers.Application.index(page: Int ?= 0)
 
 GET     /login                                                    controllers.LoginController.redirect
-GET     /login/                                                   controllers.LoginController.index
-POST    /login/                                                   controllers.LoginController.indexPost
+GET     /login/                                                   controllers.LoginController.index(return_url: Option[String] ?= None)
+POST    /login/                                                   controllers.LoginController.postIndex
 
 GET     /:org                                                     controllers.Dashboard.index(org: String)
 GET     /:org/incidents/                                          controllers.Incidents.index(org: String, team_key: Option[String] ?= None, has_team: Option[String] ?= None, has_plan: Option[String] ?= None, has_grade: Option[String] ?= None, page: Int ?= 0)

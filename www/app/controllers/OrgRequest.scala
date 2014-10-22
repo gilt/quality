@@ -52,7 +52,7 @@ object OrgAction extends ActionBuilder[OrgRequest] {
     val helper = RequestHelper(request)
     helper.user match {
       case None => {
-        Future.successful(Redirect(routes.LoginController.index()).flashing("warning" -> s"Please login"))
+        Future.successful(Redirect(routes.LoginController.index(return_url = Some(request.path))).flashing("warning" -> s"Please login"))
       }
       case Some(user) => {
         helper.org match {
@@ -93,7 +93,7 @@ object AuthenticatedAction extends ActionBuilder[AuthenticatedRequest] {
     val helper = RequestHelper(request)
     helper.user match {
       case None => {
-        Future.successful(Redirect(routes.LoginController.index()).flashing("warning" -> s"Please login"))
+        Future.successful(Redirect(routes.LoginController.index(return_url = Some(request.path))).flashing("warning" -> s"Please login"))
       }
       case Some(user) => {
         block(new AuthenticatedRequest(user, request))
