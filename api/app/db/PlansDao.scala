@@ -133,7 +133,7 @@ object PlansDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and plans.id = {id}" },
-      org.map { v => "and teams.organization_id = {organization_id}" },
+      org.map { v => "and incidents.organization_id = {organization_id}" },
       incidentId.map { v => "and plans.incident_id = {incident_id}" },
       teamKey.map {v => "and teams.key = {team_key}"},
       Some("order by plans.created_at desc, plans.id desc"),
