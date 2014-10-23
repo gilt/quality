@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Incident, Meeting, MeetingForm, MeetingPager, Organization, Task, User}
+import com.gilt.quality.models.{AdjournForm, AgendaItem, AgendaItemForm, Incident, Meeting, MeetingForm, MeetingPager, Organization, Task, User}
 import org.joda.time.DateTime
 import anorm._
 import anorm.ParameterValue._
@@ -18,9 +18,11 @@ object MeetingsDao {
 
   private val BaseQuery = """
     select meetings.id, meetings.scheduled_at,
+           meeting_adjournments.adjourned_at,
            organizations.key as organization_key, 
            organizations.name as organization_name
       from meetings
+      left join meeting_adjournments on meeting_adjournments.deleted_at is null and meeting_adjournments.meeting_id = meetings.id
       join organizations on organizations.deleted_at is null and organizations.id = meetings.organization_id
      where meetings.deleted_at is null
   """
@@ -30,6 +32,13 @@ object MeetingsDao {
     (organization_id, scheduled_at, created_by_guid)
     values
     ({organization_id}, {scheduled_at}, {user_guid}::uuid)
+  """
+
+  private val AdjournMeetingQuery = """
+    insert into meeting_adjournments
+    (meeting_id, adjourned_at, created_by_guid)
+    values
+    ({meeting_id}, {adjourned_at}, {user_guid}::uuid)
   """
 
   def create(user: User, fullForm: FullMeetingForm): Meeting = {
@@ -47,6 +56,22 @@ object MeetingsDao {
 
     findById(id).getOrElse {
       sys.error("Failed to create meeting")
+    }
+  }
+
+  def adjourn(user: User, meeting: Meeting, form: AdjournForm): Meeting = {
+    DB.withConnection { implicit c =>
+      SQL(AdjournMeetingQuery).on(
+        'meeting_id -> meeting.id,
+        'adjourned_at -> form.adjournedAt.getOrElse(new DateTime()),
+        'user_guid -> user.guid
+      ).execute()
+    }
+
+    global.Actors.mainActor ! actors.MainActor.MeetingAdjourned(meeting.id)
+
+    findById(meeting.id).getOrElse {
+      sys.error("Failed to adjourn meeting")
     }
   }
 
@@ -137,7 +162,9 @@ object MeetingsDao {
     agendaItemId: Option[Long] = None,
     scheduledAt: Option[DateTime] = None,
     scheduledWithinNHours: Option[Int] = None,
+    scheduledOnOrBefore: Option[DateTime] = None,
     isUpcoming: Option[Boolean] = None,
+    isAdjourned: Option[Boolean] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Meeting] = {
@@ -149,10 +176,17 @@ object MeetingsDao {
       agendaItemId.map { v => "and meetings.id in (select meeting_id from agenda_items where deleted_at is null and id = {agenda_item_id})" },
       scheduledAt.map { v => "and date_trunc('minute', meetings.scheduled_at) = date_trunc('minute', {scheduled_at}::timestamptz)" },
       scheduledWithinNHours.map { v => s"and meetings.scheduled_at between now() - interval '${v} hours' and now() + interval '${v} hours'" },
+      scheduledOnOrBefore.map { v => s"and meetings.scheduled_at <= {scheduled_on_or_before}" },
       isUpcoming.map { v =>
         v match {
           case true => "and meetings.scheduled_at > now()"
           case false => "and meetings.scheduled_at <= now()"
+        }
+      },
+      isAdjourned.map { v =>
+        v match {
+          case true => "and meeting_adjournments.adjourned_at is not null"
+          case false => "and meeting_adjournments.adjourned_at is null"
         }
       },
       Some("order by meetings.scheduled_at desc"),
@@ -165,7 +199,8 @@ object MeetingsDao {
       id.map { v => NamedParameter("id", toParameterValue(v)) },
       incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
       agendaItemId.map { v => NamedParameter("agenda_item_id", toParameterValue(v)) },
-      scheduledAt.map { v => NamedParameter("scheduled_at", toParameterValue(v)) }
+      scheduledAt.map { v => NamedParameter("scheduled_at", toParameterValue(v)) },
+      scheduledOnOrBefore.map { v => NamedParameter("scheduled_on_or_before", toParameterValue(v)) }
     ).flatten
 
     DB.withConnection { implicit c =>
@@ -173,6 +208,7 @@ object MeetingsDao {
         Meeting(
           id = row[Long]("id"),
           scheduledAt = row[DateTime]("scheduled_at"),
+          adjournedAt = row[Option[DateTime]]("adjourned_at"),
           organization = Organization(
             key = row[String]("organization_key"),
             name = row[String]("organization_name")

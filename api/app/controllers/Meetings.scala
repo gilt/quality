@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.quality.models.{Error, Meeting, MeetingPager, MeetingForm, User}
+import com.gilt.quality.models.{AdjournForm, Error, Meeting, MeetingPager, MeetingForm, User}
 import com.gilt.quality.models.json._
 
 import play.api.mvc._
@@ -82,6 +82,26 @@ object Meetings extends Controller {
       MeetingsDao.softDelete(request.user, m)
     }
     NoContent
+  }
+
+  def postAdjournByOrgAndId(
+    org: String,
+    id: Long
+  ) = MeetingAction(parse.json) { request =>
+    request.meeting.adjournedAt match {
+      case None => {
+        request.body.validate[AdjournForm] match {
+          case e: JsError => Conflict(Json.toJson(Validation.invalidJson(e)))
+          case s: JsSuccess[AdjournForm] => {
+            val updated = MeetingsDao.adjourn(request.user, request.meeting, s.get)
+            Ok(Json.toJson(updated))
+          }
+        }
+      }
+      case Some(_) => {
+        Conflict(Json.toJson(Validation.error("This meeting has previously been adjourned")))
+      }
+    }
   }
 
 }

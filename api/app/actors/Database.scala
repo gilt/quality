@@ -1,7 +1,7 @@
 package actors
 
-import com.gilt.quality.models.{Incident, Meeting, MeetingForm, Organization, Task}
-import db.{AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, Pager}
+import com.gilt.quality.models.{AdjournForm, Incident, Meeting, MeetingForm, Organization, Task}
+import db.{AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, Pager, UsersDao}
 import org.joda.time.DateTime
 
 object Database {
@@ -32,18 +32,29 @@ object Database {
     }
   }
 
-  private[actors] def syncMeetings() {
-    Pager.eachPage[Meeting] { offset =>
-      MeetingsDao.findAll(
-        isUpcoming = Some(false),
-        scheduledWithinNHours = Some(12),
-        offset = offset
-      )
-    } { meeting =>
-      syncMeeting(meeting, incident =>
-        global.Actors.mainActor ! MeetingMessage.SyncIncident(incident.id)
-      )
+  private[actors] def autoAdjournMeetings() {
+    val limit = 100
+    val meetings = MeetingsDao.findAll(
+      isUpcoming = Some(false),
+      isAdjourned = Some(false),
+      scheduledWithinNHours = Some(168),
+      scheduledOnOrBefore = Some((new DateTime()).plusMinutes(-90)),
+      limit = limit
+    )
+    meetings.foreach { meeting =>
+      MeetingsDao.adjourn(UsersDao.Actor, meeting, AdjournForm())
     }
+    if (meetings.size >= limit) {
+      // We don't use Pager here as we are modifying the underlying
+      // meetings directly which affects the page size
+      autoAdjournMeetings()
+    }
+  }
+
+  private[actors] def syncMeetingById(meetingId: Long) {
+    eachMeetingIncident(meetingId, incident =>
+      global.Actors.mainActor ! MeetingMessage.SyncIncident(incident.id)
+    )
   }
 
   /**
@@ -51,13 +62,13 @@ object Database {
     * incident in that meeting. This provides an easy way to
     * recalculate next steps for any incident in this meeting.
     */
-  private[actors] def syncMeeting(
-    meeting: Meeting,
+  private[actors] def eachMeetingIncident(
+    meetingId: Long,
     f: Incident => Unit
   ) {
     Pager.eachPage[Incident] { offset =>
       IncidentsDao.findAll(
-        meetingId = Some(meeting.id),
+        meetingId = Some(meetingId),
         limit = 100,
         offset = offset
       )

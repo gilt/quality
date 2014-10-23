@@ -8,10 +8,11 @@ import play.api.Logger
 import play.api.Play.current
 
 private[actors] object MeetingMessage {
-  case object SyncOrganizationMeetings
+  case object EnsureUpcomingMeetings
   case object SyncIncidents
-  case object SyncMeetings
   case class SyncIncident(incidentId: Long)
+  case object AutoAdjournMeetings
+  case class SyncMeeting(meetingId: Long)
 }
 
 class MeetingActor extends Actor {
@@ -30,29 +31,45 @@ class MeetingActor extends Actor {
     /**
       * Creates upcoming meetings for all organizations.
       */
-    case MeetingMessage.SyncOrganizationMeetings => {
+    case MeetingMessage.EnsureUpcomingMeetings => {
       try {
         Database.ensureAllOrganizationHaveUpcomingMeetings()
       } catch {
-        case t: Throwable => Logger.error(s"MeetingMessage.SyncOrganizationMeetings: ${t}" , t)
+        case t: Throwable => Logger.error(s"MeetingMessage.EnsureUpcomingMeetings: ${t}" , t)
       }
     }
 
     /**
-      * Looks at incidents assigned to meeting that recently
-      * passed. Those incidents might not have been updated, so we
-      * trigger a sync on those incidents here.
+      * Looks at meetings that have recently ended but are not
+      * adjourned and automatically adjourns them. This in turn
+      * triggers the SyncMeeting event for each meeting that is
+      * adjourned, allowing the workflow to continue for all incidents
+      * in the meeting that are not yet done.
+      */
+    case MeetingMessage.AutoAdjournMeetings => {
+      try {
+        Database.autoAdjournMeetings()
+      } catch {
+        case t: Throwable => Logger.error(s"MeetingMessage.AutoAdjournMeetings: ${t}" , t)
+      }
+    }
+
+    /**
+      * Looks at incidents assigned to this meeting. Those incidents
+      * might not have been updated, so we trigger a sync on those
+      * incidents here. Normal use case is to trigger this event
+      * whenever a meeting is adjourned.
       * 
       * This catches the use case of
       *   - incident created, assigned to meeting
       *   - reviewed in meeting but incident record not actually modified
       *   - incident needs to get scheduled for next task in next meeting
       */
-    case MeetingMessage.SyncMeetings => {
+    case MeetingMessage.SyncMeeting(meetingId) => {
       try {
-        Database.syncMeetings()
+        Database.syncMeetingById(meetingId)
       } catch {
-        case t: Throwable => Logger.error(s"MeetingMessage.SyncMeetings: ${t}" , t)
+        case t: Throwable => Logger.error(s"MeetingMessage.SyncMeeting($meetingId): ${t}" , t)
       }
     }
 

@@ -1,7 +1,7 @@
 package controllers
 
 import actors.Database
-import com.gilt.quality.models.{Meeting, MeetingForm}
+import com.gilt.quality.models.{AdjournForm, Meeting, MeetingForm}
 import com.gilt.quality.error.ErrorsResponse
 import java.util.UUID
 import org.joda.time.DateTime
@@ -84,6 +84,33 @@ class MeetingsSpec extends BaseSpec {
     pager3.meeting must be(meeting)
     pager3.priorIncident.map(_.id) must be(Some(item2.incident.id))
     pager3.nextIncident.map(_.id) must be(None)
+  }
+
+  "POST /:org/meetings/:id/adjourn" in new WithServer {
+    val meeting = createMeeting(org)
+    val updated = await(
+      client.meetings.postAdjournByOrgAndId(
+        org = org.key,
+        id = meeting.id,
+        adjournForm = AdjournForm()
+      )
+    )
+
+    updated.adjournedAt.get
+  }
+
+  "POST /:org/meetings/:id/adjourn w/ explicit time" in new WithServer {
+    val meeting = createMeeting(org)
+    val now = new DateTime().plusWeeks(-1)
+    val updated = await(
+      client.meetings.postAdjournByOrgAndId(
+        org = org.key,
+        id = meeting.id,
+        adjournForm = AdjournForm(adjournedAt = Some(now))
+      )
+    )
+
+    updated.adjournedAt must be(Some(now))
   }
 
 }

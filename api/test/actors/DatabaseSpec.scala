@@ -10,7 +10,20 @@ import org.scalatest.{FunSpec, ShouldMatchers}
 class DatabaseSpec extends FunSpec with ShouldMatchers {
 
   new play.core.StaticApplication(new java.io.File("."))
-  it("syncMeetings") {
+
+  it("autoAdjournMeetings") {
+    val now = new DateTime()
+    val org = Util.createOrganization()
+    val meetingTomorrow = MeetingsDao.upsert(org, now.plusHours(24))
+    val meetingLastHour = MeetingsDao.upsert(org, now.plusHours(-1))
+    val meeting6HoursAgo = MeetingsDao.upsert(org, now.plusHours(-6))
+
+    Database.autoAdjournMeetings()
+
+    MeetingsDao.findAll(Some(org), isAdjourned = Some(true)).map(_.id) should be(Seq(meeting6HoursAgo.id))
+  }
+
+  it("eachMeetingIncident") {
     // Actors look for meetings that ended in past 12 hours
     val now = new DateTime()
     val org = Util.createOrganization()
@@ -20,7 +33,7 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
     MeetingsDao.upsertAgendaItem(meetingLastHour, incident, Task.ReviewTeam)
 
     var incidentIds = scala.collection.mutable.ListBuffer[Long]()
-    Database.syncMeeting(meetingLastHour, i =>
+    Database.eachMeetingIncident(meetingLastHour.id, i =>
       incidentIds.append(i.id)
     )
     incidentIds should be(Seq(incident.id))
