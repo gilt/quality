@@ -52,11 +52,9 @@ object Database {
   }
 
   private[actors] def syncMeetingById(meetingId: Long) {
-    MeetingsDao.findById(meetingId).map { meeting =>
-      syncMeeting(meeting, incident =>
-        global.Actors.mainActor ! MeetingMessage.SyncIncident(incident.id)
-      )
-    }
+    eachMeetingIncident(meetingId, incident =>
+      global.Actors.mainActor ! MeetingMessage.SyncIncident(incident.id)
+    )
   }
 
   /**
@@ -64,13 +62,13 @@ object Database {
     * incident in that meeting. This provides an easy way to
     * recalculate next steps for any incident in this meeting.
     */
-  private[actors] def syncMeeting(
-    meeting: Meeting,
+  private[actors] def eachMeetingIncident(
+    meetingId: Long,
     f: Incident => Unit
   ) {
     Pager.eachPage[Incident] { offset =>
       IncidentsDao.findAll(
-        meetingId = Some(meeting.id),
+        meetingId = Some(meetingId),
         limit = 100,
         offset = offset
       )

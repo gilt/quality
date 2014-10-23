@@ -55,7 +55,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
 
     case MainActor.MeetingAdjourned(meetingId: Long) => {
       Logger.info(s"MainActor: Received MainActor.MeetingAdjourned($meetingId)")
-      // TODO: what actions do we want to take when a meeting ends?
+      meetingActor ! MeetingMessage.SyncMeeting(meetingId)
     }
 
     case MainActor.IncidentTeamUpdated(incidentId) => {

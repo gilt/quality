@@ -22,9 +22,8 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
 
     MeetingsDao.findAll(Some(org), isAdjourned = Some(true)).map(_.id) should be(Seq(meeting6HoursAgo.id))
   }
-/*
 
-  it("syncMeeting") {
+  it("eachMeetingIncident") {
     // Actors look for meetings that ended in past 12 hours
     val now = new DateTime()
     val org = Util.createOrganization()
@@ -34,7 +33,7 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
     MeetingsDao.upsertAgendaItem(meetingLastHour, incident, Task.ReviewTeam)
 
     var incidentIds = scala.collection.mutable.ListBuffer[Long]()
-    Database.syncMeeting(meetingLastHour, i =>
+    Database.eachMeetingIncident(meetingLastHour.id, i =>
       incidentIds.append(i.id)
     )
     incidentIds should be(Seq(incident.id))
@@ -122,5 +121,5 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
     val incidentWithGradedPlan = IncidentsDao.findById(incidentWithTeam.id).get
     Database.nextTask(incidentWithGradedPlan) should be(None)
   }
- */
+
 }
