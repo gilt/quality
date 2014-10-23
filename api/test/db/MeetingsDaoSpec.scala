@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.Task
+import com.gilt.quality.models.{AdjournForm, Task}
 
 import org.joda.time.DateTime
 import org.scalatest.{FunSpec, Matchers}
@@ -78,6 +78,32 @@ class MeetingsDaoSpec extends FunSpec with Matchers {
       org = Some(org),
       scheduledWithinNHours = Some(1)
     ).map(_.id).sorted should be(Seq(meetingNow.id))
+  }
+
+  it("findAll isUpcoming") {
+    val org = Util.createOrganization()
+    val now = new DateTime()
+    val meetingPast = MeetingsDao.upsert(org, now.plusHours(-1))
+    val meetingFuture = MeetingsDao.upsert(org, now.plusHours(1))
+
+    MeetingsDao.findAll(Some(org)).map(_.id).sorted should be(Seq(meetingPast.id, meetingFuture.id))
+    MeetingsDao.findAll(Some(org), isUpcoming = Some(true)).map(_.id).sorted should be(Seq(meetingFuture.id))
+    MeetingsDao.findAll(Some(org), isUpcoming = Some(false)).map(_.id).sorted should be(Seq(meetingPast.id))
+  }
+
+  it("findAll isAdjourned") {
+    val org = Util.createOrganization()
+    val now = new DateTime()
+    val meeting = MeetingsDao.upsert(org, now.plusHours(-1))
+    val adjourned = MeetingsDao.adjourn(
+      UsersDao.Default,
+      MeetingsDao.upsert(org, now.plusHours(1)),
+      AdjournForm()
+    )
+
+    MeetingsDao.findAll(Some(org)).map(_.id).sorted should be(Seq(meeting.id, adjourned.id))
+    MeetingsDao.findAll(Some(org), isAdjourned = Some(true)).map(_.id).sorted should be(Seq(adjourned.id))
+    MeetingsDao.findAll(Some(org), isAdjourned = Some(false)).map(_.id).sorted should be(Seq(meeting.id))
   }
 
 

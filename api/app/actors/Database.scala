@@ -32,7 +32,7 @@ object Database {
     }
   }
 
-  private[actors] def syncMeetings() {
+  private[actors] def autoAdjournMeetings() {
     Pager.eachPage[Meeting] { offset =>
       MeetingsDao.findAll(
         isUpcoming = Some(false),
@@ -40,6 +40,14 @@ object Database {
         offset = offset
       )
     } { meeting =>
+      syncMeeting(meeting, incident =>
+        global.Actors.mainActor ! MeetingMessage.SyncIncident(incident.id)
+      )
+    }
+  }
+
+  private[actors] def syncMeetingById(meetingId: Long) {
+    MeetingsDao.findById(meetingId).map { meeting =>
       syncMeeting(meeting, incident =>
         global.Actors.mainActor ! MeetingMessage.SyncIncident(incident.id)
       )

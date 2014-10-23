@@ -16,6 +16,7 @@ object MainActor {
   case class AgendaItemCreated(agendaItemId: Long)
   case class PlanCreated(planId: Long)
   case class PlanUpdated(planId: Long)
+  case class MeetingAdjourned(meetingId: Long)
 }
 
 
@@ -25,8 +26,8 @@ class MainActor(name: String) extends Actor with ActorLogging {
   val meetingActor = Akka.system.actorOf(Props[MeetingActor], name = s"$name:meetingActor")
   val emailActor = Akka.system.actorOf(Props[EmailActor], name = s"$name:emailActor")
 
-  Akka.system.scheduler.schedule(15.seconds, 1.minutes, meetingActor, MeetingMessage.SyncOrganizationMeetings)
-  Akka.system.scheduler.schedule(20.seconds, 1.minutes, meetingActor, MeetingMessage.SyncMeetings)
+  Akka.system.scheduler.schedule(15.seconds, 1.minutes, meetingActor, MeetingMessage.EnsureUpcomingMeetings)
+  Akka.system.scheduler.schedule(20.seconds, 1.minutes, meetingActor, MeetingMessage.AutoAdjournMeetings)
   Akka.system.scheduler.schedule(25.seconds, 15.minutes, meetingActor, MeetingMessage.SyncIncidents)
 
   def receive = akka.event.LoggingReceive {
@@ -50,6 +51,11 @@ class MainActor(name: String) extends Actor with ActorLogging {
     case MainActor.PlanUpdated(planId) => {
       Logger.info(s"MainActor: Received MainActor.PlanUpdated($planId)")
       emailActor ! EmailMessage.Plan(Publication.PlansUpdate, planId)
+    }
+
+    case MainActor.MeetingAdjourned(meetingId: Long) => {
+      Logger.info(s"MainActor: Received MainActor.MeetingAdjourned($meetingId)")
+      // TODO: what actions do we want to take when a meeting ends?
     }
 
     case MainActor.IncidentTeamUpdated(incidentId) => {

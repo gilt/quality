@@ -68,6 +68,8 @@ object MeetingsDao {
       ).execute()
     }
 
+    global.Actors.mainActor ! actors.MainActor.MeetingAdjourned(meeting.id)
+
     findById(meeting.id).getOrElse {
       sys.error("Failed to adjourn meeting")
     }
@@ -161,6 +163,7 @@ object MeetingsDao {
     scheduledAt: Option[DateTime] = None,
     scheduledWithinNHours: Option[Int] = None,
     isUpcoming: Option[Boolean] = None,
+    isAdjourned: Option[Boolean] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Meeting] = {
@@ -176,6 +179,12 @@ object MeetingsDao {
         v match {
           case true => "and meetings.scheduled_at > now()"
           case false => "and meetings.scheduled_at <= now()"
+        }
+      },
+      isAdjourned.map { v =>
+        v match {
+          case true => "and meeting_adjournments.adjourned_at is not null"
+          case false => "and meeting_adjournments.adjourned_at is null"
         }
       },
       Some("order by meetings.scheduled_at desc"),
