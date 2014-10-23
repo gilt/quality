@@ -10,6 +10,7 @@ import play.api.Play.current
 
 private[actors] object EmailMessage {
   case class Incident(publication: Publication, incidentId: Long)
+  case class IncidentTeamUpdated(publication: Publication, incidentId: Long)
   case class Plan(publication: Publication, planId: Long)
 }
 
@@ -30,6 +31,30 @@ class EmailActor extends Actor {
         }
       } catch {
         case t: Throwable => Logger.error(s"EmailMessage.Incident($publication, $incidentId): ${t}" , t)
+      }
+    }
+
+    case EmailMessage.IncidentTeamUpdated(publication: Publication, incidentId: Long) => {
+      println(s"EmailActor EmailMessage.IncidentTeamUpdated($publication, $incidentId)")
+      try {
+        IncidentsDao.findById(incidentId).map { incident =>
+          incident.team match {
+            case None => {
+              // Might indicate team was already removed from the incident
+              Logger.warn(s"EmailMessage.IncidentTeamUpdated($publication, $incidentId): No team found for incident")
+            }
+            case Some(team) => {
+              Emails.deliver(
+                org = incident.organization,
+                publication = publication,
+                subject = s"[PerfectDay] Incident ${incident.id} Assigned to Team ${team.key}",
+                body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString
+              )
+            }
+          }
+        }
+      } catch {
+        case t: Throwable => Logger.error(s"EmailMessage.IncidentTeamUpdated($publication, $incidentId): ${t}" , t)
       }
     }
 
