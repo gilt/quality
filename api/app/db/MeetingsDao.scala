@@ -162,6 +162,7 @@ object MeetingsDao {
     agendaItemId: Option[Long] = None,
     scheduledAt: Option[DateTime] = None,
     scheduledWithinNHours: Option[Int] = None,
+    scheduledOnOrBefore: Option[DateTime] = None,
     isUpcoming: Option[Boolean] = None,
     isAdjourned: Option[Boolean] = None,
     limit: Int = 50,
@@ -175,6 +176,7 @@ object MeetingsDao {
       agendaItemId.map { v => "and meetings.id in (select meeting_id from agenda_items where deleted_at is null and id = {agenda_item_id})" },
       scheduledAt.map { v => "and date_trunc('minute', meetings.scheduled_at) = date_trunc('minute', {scheduled_at}::timestamptz)" },
       scheduledWithinNHours.map { v => s"and meetings.scheduled_at between now() - interval '${v} hours' and now() + interval '${v} hours'" },
+      scheduledOnOrBefore.map { v => s"and meetings.scheduled_at <= {scheduled_on_or_before}" },
       isUpcoming.map { v =>
         v match {
           case true => "and meetings.scheduled_at > now()"
@@ -197,7 +199,8 @@ object MeetingsDao {
       id.map { v => NamedParameter("id", toParameterValue(v)) },
       incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
       agendaItemId.map { v => NamedParameter("agenda_item_id", toParameterValue(v)) },
-      scheduledAt.map { v => NamedParameter("scheduled_at", toParameterValue(v)) }
+      scheduledAt.map { v => NamedParameter("scheduled_at", toParameterValue(v)) },
+      scheduledOnOrBefore.map { v => NamedParameter("scheduled_on_or_before", toParameterValue(v)) }
     ).flatten
 
     DB.withConnection { implicit c =>
