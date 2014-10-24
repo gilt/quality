@@ -40,9 +40,8 @@ object Teams extends Controller {
     org: String,
     key: String,
     incidentsPage: Int = 0
-  ) = OrgAction.async { implicit request =>
+  ) = TeamAction.async { implicit request =>
     for {
-      team <- Api.instance.teams.getByOrgAndKey(org, key)
       stats <- Api.instance.Statistics.getByOrg(org = org, teamKey = Some(key), numberHours = Some(Dashboard.OneWeekInHours * 12))
       incidents <- Api.instance.incidents.getByOrg(
         org = org,
@@ -51,14 +50,7 @@ object Teams extends Controller {
         offset = Some(incidentsPage * Pagination.DefaultLimit)
       )
     } yield {
-      team match {
-        case None => {
-          Redirect(routes.Teams.index(org)).flashing("warning" -> s"Team $key not found")
-        }
-        case Some(team: Team) => {
-          Ok(views.html.teams.show(request.mainTemplate(), request.org, team, stats.headOption, PaginatedCollection(incidentsPage, incidents)))
-        }
-      }
+      Ok(views.html.teams.show(request.mainTemplate(), request.team, stats.headOption, PaginatedCollection(incidentsPage, incidents)))
     }
   }
 
@@ -117,42 +109,30 @@ object Teams extends Controller {
     }
   }
 
-  def postEdit(org: String, key: String) = OrgAction.async { implicit request =>
-    for {
-      team <- Api.instance.teams.getByOrgAndKey(org, key)
-    } yield {
-      team match {
-        case None => {
-          Redirect(routes.Teams.index(org)).flashing("success" -> s"Team not found")
+  def postEdit(org: String, key: String) = TeamAction.async { implicit request =>
+    val boundForm = teamForm.bindFromRequest
+    boundForm.fold (
+      formWithErrors => {
+        Future {
+          Ok(views.html.teams.edit(request.mainTemplate(), request.team, formWithErrors))
         }
-        case Some(t) => {
-          val boundForm = teamForm.bindFromRequest
-          boundForm.fold (
-            formWithErrors => {
-              Ok(views.html.teams.edit(request.mainTemplate(), t, formWithErrors))
-            },
+      },
 
-            teamForm => {
-              val form = com.gilt.quality.models.UpdateTeamForm(
-                email = teamForm.email,
-                smileyUrl = teamForm.smileyUrl,
-                frownyUrl = teamForm.frownyUrl
-              )
-              Await.result(
-                Api.instance.teams.putByOrgAndKey(org = org, key = t.key, updateTeamForm = form).map { team =>
-                  Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
-                }.recover {
-                  case response: com.gilt.quality.error.ErrorsResponse => {
-                    Ok(views.html.teams.create(request.mainTemplate(), request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
-                  }
-                },
-                1000.millis
-              )
-            }
-          )
+      teamForm => {
+        val form = com.gilt.quality.models.UpdateTeamForm(
+          email = teamForm.email,
+          smileyUrl = teamForm.smileyUrl,
+          frownyUrl = teamForm.frownyUrl
+        )
+        Api.instance.teams.putByOrgAndKey(org = org, key = request.team.key, updateTeamForm = form).map { team =>
+          Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
+        }.recover {
+          case response: com.gilt.quality.error.ErrorsResponse => {
+            Ok(views.html.teams.create(request.mainTemplate(), request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
+          }
         }
       }
-    }
+    )
   }
 
   def postDeleteByKey(

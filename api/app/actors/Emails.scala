@@ -28,11 +28,12 @@ private[actors] object Emails {
       case Publication.IncidentsCreate | Publication.PlansCreate => "Created"
       case Publication.IncidentsUpdate | Publication.PlansUpdate => "Updated"
       case Publication.MeetingsAdjourned => "Adjourned"
+      case Publication.IncidentsTeamUpdate => "Team Updated"
       case Publication.UNDEFINED(key) => key
     }
   }
 
-  def deliver(
+  def deliverToAllSubscribers(
     org: Organization,
     publication: Publication,
     subject: String,

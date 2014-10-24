@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{Error, Publication, Subscription, SubscriptionForm, User}
+import com.gilt.quality.models.{Error, Publication, Subscription, SubscriptionForm, Team, User}
 import anorm._
 import lib.Validation
 import play.api.db._
@@ -106,6 +106,7 @@ object SubscriptionsDao {
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     publication: Option[Publication] = None,
+    team: Option[Team] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Subscription] = {
@@ -115,6 +116,7 @@ object SubscriptionsDao {
       organizationKey.map { v => "and subscriptions.organization_id = (select id from organizations where deleted_at is null and key = {organization_key})" },
       userGuid.map { v => "and subscriptions.user_guid = {user_guid}::uuid" },
       publication.map { v => "and subscriptions.publication = {publication}" },
+      team.map { v => "and users.guid in (select user_guid from team_members where deleted_at is null and team_id = {team_id})" },
       Some(s"order by subscriptions.id limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
@@ -122,7 +124,12 @@ object SubscriptionsDao {
       id.map('id -> _),
       organizationKey.map('organization_key -> _),
       userGuid.map('user_guid -> _.toString),
-      publication.map('publication -> _.toString)
+      publication.map('publication -> _.toString),
+      team.map { t =>
+        'team_id -> TeamsDao.lookupId(t.organization, t.key).getOrElse {
+          sys.error(s"Could not find team for org[${t.organization.key}] with key[${t.key}]")
+        }
+      }
     ).flatten
 
     DB.withConnection { implicit c =>

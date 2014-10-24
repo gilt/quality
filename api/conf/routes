@@ -39,3 +39,6 @@ GET        /:org/teams/:key                                controllers.Teams.get
 POST       /:org/teams                                     controllers.Teams.postByOrg(org: String)
 PUT        /:org/teams/:key                                controllers.Teams.putByOrgAndKey(org: String, key: String)
 DELETE     /:org/teams/:key                                controllers.Teams.deleteByOrgAndKey(org: String, key: String)
+GET        /:org/teams/:key/members                        controllers.Teams.getMembersByOrgAndKey(org: String, key: String, user_guid: Option[java.util.UUID], limit: Int ?= 25, offset: Int ?= 0)
+PUT        /:org/teams/:key/members/:user_guid             controllers.Teams.putMembersByOrgAndKeyAndUserGuid(org: String, key: String, user_guid: java.util.UUID)
+DELETE     /:org/teams/:key/members/:user_guid             controllers.Teams.deleteMembersByOrgAndKeyAndUserGuid(org: String, key: String, user_guid: java.util.UUID)

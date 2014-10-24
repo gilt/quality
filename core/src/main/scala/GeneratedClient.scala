@@ -194,6 +194,11 @@ package com.gilt.quality.models {
     frownyUrl: scala.Option[String] = None
   )
 
+  case class TeamMember(
+    team: com.gilt.quality.models.Team,
+    user: com.gilt.quality.models.User
+  )
+
   case class UpdateTeamForm(
     email: scala.Option[String] = None,
     smileyUrl: scala.Option[String] = None,
@@ -322,9 +327,13 @@ package com.gilt.quality.models {
      */
     case object PlansUpdate extends Publication { override def toString = "plans.update" }
     /**
-     * Email notification whenever a meeting is adjourned..
+     * Email notification whenever a meeting is adjourned.
      */
     case object MeetingsAdjourned extends Publication { override def toString = "meetings.adjourned" }
+    /**
+     * Email notification whenever a team that you are on is assigned to an incident.
+     */
+    case object IncidentsTeamUpdate extends Publication { override def toString = "incidents.team_update" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -342,7 +351,7 @@ package com.gilt.quality.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(IncidentsCreate, IncidentsUpdate, PlansCreate, PlansUpdate, MeetingsAdjourned)
+    val all = Seq(IncidentsCreate, IncidentsUpdate, PlansCreate, PlansUpdate, MeetingsAdjourned, IncidentsTeamUpdate)
 
     private[this]
     val byName = all.map(x => x.toString -> x).toMap
@@ -866,6 +875,20 @@ package com.gilt.quality.models {
         (__ \ "smiley_url").write[scala.Option[String]] and
         (__ \ "frowny_url").write[scala.Option[String]]
       )(unlift(TeamForm.unapply _))
+    }
+
+    implicit def jsonReadsQualityTeamMember: play.api.libs.json.Reads[TeamMember] = {
+      (
+        (__ \ "team").read[com.gilt.quality.models.Team] and
+        (__ \ "user").read[com.gilt.quality.models.User]
+      )(TeamMember.apply _)
+    }
+
+    implicit def jsonWritesQualityTeamMember: play.api.libs.json.Writes[TeamMember] = {
+      (
+        (__ \ "team").write[com.gilt.quality.models.Team] and
+        (__ \ "user").write[com.gilt.quality.models.User]
+      )(unlift(TeamMember.unapply _))
     }
 
     implicit def jsonReadsQualityUpdateTeamForm: play.api.libs.json.Reads[UpdateTeamForm] = {
@@ -1470,6 +1493,49 @@ package com.gilt.quality {
           case r => throw new FailedRequest(r)
         }
       }
+
+      override def getMembersByOrgAndKey(
+        org: String,
+        key: String,
+        userGuid: scala.Option[java.util.UUID] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.TeamMember]] = {
+        val queryParameters = Seq(
+          userGuid.map("user_guid" -> _.toString),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/members", queryParameters = queryParameters).map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.TeamMember]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def putMembersByOrgAndKeyAndUserGuid(
+        org: String,
+        key: String,
+        userGuid: java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.TeamMember] = {
+        _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/members/${userGuid}").map {
+          case r if r.status == 201 => r.json.as[com.gilt.quality.models.TeamMember]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def deleteMembersByOrgAndKeyAndUserGuid(
+        org: String,
+        key: String,
+        userGuid: java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
+        _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/members/${userGuid}").map {
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
     }
 
     object Users extends Users {
@@ -1875,6 +1941,35 @@ package com.gilt.quality {
     def deleteByOrgAndKey(
       org: String,
       key: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+
+    /**
+     * Lists the members of this team
+     */
+    def getMembersByOrgAndKey(
+      org: String,
+      key: String,
+      userGuid: scala.Option[java.util.UUID] = None,
+      limit: scala.Option[Int] = None,
+      offset: scala.Option[Int] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.TeamMember]]
+
+    /**
+     * Adds the specified user to this team
+     */
+    def putMembersByOrgAndKeyAndUserGuid(
+      org: String,
+      key: String,
+      userGuid: java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.TeamMember]
+
+    /**
+     * Removes this user from this team
+     */
+    def deleteMembersByOrgAndKeyAndUserGuid(
+      org: String,
+      key: String,
+      userGuid: java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }
 

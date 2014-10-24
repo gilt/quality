@@ -78,27 +78,39 @@ object Database {
   }
 
   private[actors] def nextTask(incident: Incident): Option[Task] = {
-    val incidentTasks = AgendaItemsDao.findAll(
-      incidentId = Some(incident.id)
-    ).map(_.task).toSet
+    MeetingsDao.findAll(
+      incidentId = Some(incident.id),
+      isAdjourned = Some(false),
+      limit = 1
+    ).headOption match {
+      case Some(m) => {
+        // Already have an active task for this incident
+        None
+      }
+      case None => {
+        val incidentTasks = AgendaItemsDao.findAll(
+          incidentId = Some(incident.id)
+        ).map(_.task).toSet
 
-    AllTasks.find { t =>
-      t match {
-        case Task.ReviewTeam => {
-          // If the incident does not have a team or the review
-          // team task has never been a meeting for this incident,
-          // then return true
-          incident.team.isEmpty || !incidentTasks.contains(t)
-        }
-        case Task.ReviewPlan => {
-          // The result of the review plan stage is a grade for a plan
-          // for the incident. If there is no grade, or the incident
-          // has never had its plan reviewed, then the incident goes
-          // into the next meeting.
-          incident.plan.flatMap(_.grade).isEmpty || !incidentTasks.contains(t)
-        }
-        case Task.UNDEFINED(_) => {
-          !incidentTasks.contains(t)
+        AllTasks.find { t =>
+          t match {
+            case Task.ReviewTeam => {
+              // If the incident does not have a team or the review
+              // team task has never been a meeting for this incident,
+              // then return true
+              incident.team.isEmpty || !incidentTasks.contains(t)
+            }
+            case Task.ReviewPlan => {
+              // The result of the review plan stage is a grade for a plan
+              // for the incident. If there is no grade, or the incident
+              // has never had its plan reviewed, then the incident goes
+              // into the next meeting.
+              incident.plan.flatMap(_.grade).isEmpty || !incidentTasks.contains(t)
+            }
+            case Task.UNDEFINED(_) => {
+              !incidentTasks.contains(t)
+            }
+          }
         }
       }
     }

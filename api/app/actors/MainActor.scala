@@ -53,14 +53,14 @@ class MainActor(name: String) extends Actor with ActorLogging {
       emailActor ! EmailMessage.Plan(Publication.PlansUpdate, planId)
     }
 
+    case MainActor.IncidentTeamUpdated(incidentId) => {
+      Logger.info(s"MainActor: Received MainActor.IncidentTeamUpdated($incidentId)")
+      emailActor ! EmailMessage.IncidentTeamUpdated(Publication.IncidentsTeamUpdate, incidentId)
+    }
+
     case MainActor.MeetingAdjourned(meetingId: Long) => {
       Logger.info(s"MainActor: Received MainActor.MeetingAdjourned($meetingId)")
       meetingActor ! MeetingMessage.SyncMeeting(meetingId)
-    }
-
-    case MainActor.IncidentTeamUpdated(incidentId) => {
-      Logger.info(s"MainActor: Received MainActor.IncidentTeamUpdated($incidentId)")
-      // TODO: Send Email to the team if this incident is an upcoming meeting
     }
 
     case MainActor.AgendaItemCreated(agendaItemId) => {

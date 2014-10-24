@@ -44,7 +44,8 @@
 		{ "name": "incidents.update", "description": "Email notification whenever an incident is updated." },
 		{ "name": "plans.create", "description": "Email notification whenever a plan is created." },
 		{ "name": "plans.update", "description": "Email notification whenever a plan is updated." },
-		{ "name": "meetings.adjourned", "description": "Email notification whenever a meeting is adjourned." }
+		{ "name": "meetings.adjourned", "description": "Email notification whenever a meeting is adjourned." },
+		{ "name": "incidents.team_update", "description": "Email notification whenever a team that you are on is assigned to an incident." }
 	    ]
 	}
 
@@ -108,6 +109,13 @@
                 { "name": "email", "type": "string", "required": false },
                 { "name": "smiley_url", "type": "string", "required": false },
                 { "name": "frowny_url", "type": "string", "required": false }
+            ]
+        },
+
+	"team_member": {
+            "fields": [
+                { "name": "team", "type": "team" },
+                { "name": "user", "type": "user" }
             ]
         },
 
@@ -410,7 +418,44 @@
 		{
 		    "method": "DELETE",
                     "path": "/:key"
-		}
+		},
+
+                {
+                    "method": "GET",
+		    "path": "/:key/members",
+                    "description": "Lists the members of this team",
+		    "parameters": [
+			{ "name": "user_guid", "type": "uuid", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+		    ],
+                    "responses": {
+                        "200": { "type": "[team_member]" }
+                    }
+                },
+
+                {
+                    "method": "PUT",
+		    "path": "/:key/members/:user_guid",
+                    "description": "Adds the specified user to this team",
+		    "parameters": [
+			{ "name": "user_guid", "type": "uuid" }
+		    ],
+                    "responses": {
+                        "201": { "type": "team_member" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+		    "path": "/:key/members/:user_guid",
+                    "description": "Removes this user from this team",
+		    "parameters": [
+			{ "name": "user_guid", "type": "uuid" }
+		    ]
+                }
+
 	    ]
 	},
 

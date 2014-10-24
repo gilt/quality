@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.quality.models.{PlanForm, Task, User}
+import com.gilt.quality.models.{AdjournForm, PlanForm, Task, User}
 import db.{AgendaItemsDao, FullIncidentForm, IncidentsDao, MeetingsDao, UsersDao, Util}
 import org.joda.time.DateTime
 import java.util.UUID
@@ -89,19 +89,34 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
 
     val meeting1 = Util.createMeeting(org)
     val meeting2 = MeetingsDao.upsert(org, meeting1.scheduledAt.plusWeeks(1))
+    val meeting3 = MeetingsDao.upsert(org, meeting1.scheduledAt.plusWeeks(2))
 
     MeetingsDao.upsertAgendaItem(meeting1, incident, Task.ReviewTeam)
 
-    // Task remains review team assignment until the incident has a team
-    Database.nextTask(incident) should be(Some(Task.ReviewTeam))
+    // Task remains review team assignment as long as the meeting has
+    // not been adjourned.
+    Database.nextTask(incident) should be(None)
 
-    // Once we have a team assigned, next task is review plan
+    // Assign a team. Task remains none until the meeting is adjourned
     val team = Util.createTeam(org)
     val incidentWithTeam = IncidentsDao.update(UsersDao.Default, incident, FullIncidentForm(org, form.copy(teamKey = Some(team.key))))
+    Database.nextTask(incident) should be(None)
+
+    // Adjourn the first meeting; task should move on to review
+    MeetingsDao.adjourn(UsersDao.Default, meeting1, AdjournForm())
     Database.nextTask(incidentWithTeam) should be(Some(Task.ReviewPlan))
 
     MeetingsDao.upsertAgendaItem(meeting2, incidentWithTeam, Task.ReviewPlan)
+
+    // Adjourn the first meeting. Plan wasn't completed so next task
+    // should remain ReviewPlan
+    MeetingsDao.adjourn(UsersDao.Default, meeting2, AdjournForm())
+
     Database.nextTask(incidentWithTeam) should be(Some(Task.ReviewPlan))
+    MeetingsDao.upsertAgendaItem(meeting3, incidentWithTeam, Task.ReviewPlan)
+
+    // Task remains none until meeting3 is adjourned
+    Database.nextTask(incidentWithTeam) should be(None)
 
     val plan = Util.createPlan(
       org,
@@ -114,11 +129,14 @@ class DatabaseSpec extends FunSpec with ShouldMatchers {
     )
 
     val incidentWithPlan = IncidentsDao.findById(incidentWithTeam.id).get
-    Database.nextTask(incidentWithPlan) should be(Some(Task.ReviewPlan))
+    Database.nextTask(incidentWithPlan) should be(None)
 
     Util.createGrade(plan, 100)
 
     val incidentWithGradedPlan = IncidentsDao.findById(incidentWithTeam.id).get
+    Database.nextTask(incidentWithGradedPlan) should be(None)
+
+    MeetingsDao.adjourn(UsersDao.Default, meeting3, AdjournForm())
     Database.nextTask(incidentWithGradedPlan) should be(None)
   }
 

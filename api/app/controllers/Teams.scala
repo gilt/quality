@@ -6,7 +6,7 @@ import com.gilt.quality.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import db.{FullTeamForm, OrganizationsDao, TeamsDao}
+import db.{FullTeamForm, OrganizationsDao, TeamMemberForm, TeamsDao, TeamMembersDao}
 import lib.Validation
 
 object Teams extends Controller {
@@ -102,4 +102,54 @@ object Teams extends Controller {
     NoContent
   }
 
+  def getMembersByOrgAndKey(
+    org: String,
+    key: String,
+    userGuid: Option[UUID] = None,
+    limit: Int = 25,
+    offset: Int = 0
+  ) = OrgAction { request =>
+    val members = TeamMembersDao.findAll(
+      org = request.org,
+      teamKey = Some(key),
+      userGuid = userGuid,
+      limit = limit,
+      offset = offset
+    )
+    Ok(Json.toJson(members))
+  }
+
+  def putMembersByOrgAndKeyAndUserGuid(
+    org: String,
+    key: String,
+    userGuid: UUID
+  ) = OrgAction { request =>
+    val form = TeamMemberForm(request.org, key, userGuid)
+    form.validate match {
+      case Nil => {
+        val member = TeamMembersDao.upsert(request.user, form)
+        Created(Json.toJson(member))
+      }
+      case errors => {
+        Conflict(Json.toJson(errors))
+      }
+    }
+  }
+
+  def deleteMembersByOrgAndKeyAndUserGuid(
+    org: String,
+    key: String,
+    userGuid: UUID
+  ) = OrgAction { request =>
+    val form = TeamMemberForm(request.org, key, userGuid)
+    form.validate match {
+      case Nil => {
+        TeamMembersDao.remove(request.user, form)
+        NoContent
+      }
+      case errors => {
+        Conflict(Json.toJson(errors))
+      }
+    }
+  }
 }

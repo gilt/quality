@@ -1,0 +1,14 @@
+@(team: com.gilt.quality.models.Team,
+  members: Seq[com.gilt.quality.models.TeamMember]
+)
+
+<table class="table table-hover table-condensed">
+  <tbody>
+    @members.map { member =>
+     <tr>
+       <td>@member.user.email</td>
+       <td><a href="@routes.TeamMembers.postRemove(team.organization.key, team.key, Some(member.user.guid))" class="delete" confirm="Are you sure?">Remove</a></td>
+     </tr>
+   }
+  </tbody>
+</table>
