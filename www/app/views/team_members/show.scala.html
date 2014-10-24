@@ -1,0 +1,35 @@
+@(tpl: lib.MainTemplate,
+  team: com.gilt.quality.models.Team,
+  members: lib.PaginatedCollection[com.gilt.quality.models.TeamMember],
+  isMember: Boolean
+)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some(s"Members of Team ${team.key}"))) {
+
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.TeamMembers.add(team.organization.key, team.key)">Add Member</a>
+    @if(isMember) {
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.TeamMembers.postLeave(team.organization.key, team.key)">Leave team</a>
+    } else {
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.TeamMembers.postJoin(team.organization.key, team.key)">Join team</a>
+    }
+  </div>
+
+  @if(members.isEmpty) {
+    <em>No members found</em>
+  } else {
+    @views.html.team_members.membersTable(team, members.items)
+  
+    @if(members.hasPrevious || members.hasNext) {
+      <ul class="pager">
+        @if(members.hasPrevious) {
+          <li><a href="@routes.Teams.show(team.organization.key, team.key, members.page - 1)">Previous</a></li>
+        }
+        @if(members.hasNext) {
+          <li><a href="@routes.Teams.show(team.organization.key, team.key, members.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}

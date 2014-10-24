@@ -30,6 +30,11 @@ POST    /:org/teams/postEdit                                      controllers.Te
 GET     /:org/teams/:key                                          controllers.Teams.show(org: String, key: String, incidentsPage: Int ?= 0)
 POST    /:org/teams/delete/:key                                   controllers.Teams.postDeleteByKey(org: String, key: String)
 
+GET     /:org/teams/:key/members                                  controllers.TeamMembers.show(org: String, key: String, page: Int ?= 0)
+GET     /:org/teams/:key/members/add                              controllers.TeamMembers.add(org: String, key: String)
+GET     /:org/teams/:key/members/leave                            controllers.TeamMembers.postLeave(org: String, key: String)
+GET     /:org/teams/:key/members/join                             controllers.TeamMembers.postJoin(org: String, key: String)
+
 GET     /:org/subscriptions/                                      controllers.Subscriptions.index(org: String)
 POST    /:org/subscriptions/:publication/toggle                   controllers.Subscriptions.postToggle(org: String, publication: com.gilt.quality.models.Publication)
 

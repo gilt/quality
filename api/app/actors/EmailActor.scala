@@ -44,7 +44,9 @@ class EmailActor extends Actor {
         IncidentsDao.findById(incidentId).map { incident =>
           incident.team match {
             case None => {
-              // Might indicate team was already removed from the incident
+              // Might indicate team was already removed from the
+              // incident in which case we do not send the email
+              // notification
               Logger.warn(s"EmailMessage.IncidentTeamUpdated($publication, $incidentId): No team found for incident")
             }
             case Some(team) => {
