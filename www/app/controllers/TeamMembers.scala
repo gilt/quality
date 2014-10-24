@@ -19,9 +19,8 @@ object TeamMembers extends Controller {
     org: String,
     key: String,
     page: Int = 0
-  ) = OrgAction.async { implicit request =>
+  ) = TeamAction.async { implicit request =>
     for {
-      team <- Api.instance.teams.getByOrgAndKey(org, key)
       members <- Api.instance.teams.getMembersByOrgAndKey(
         org = org,
         key = key,
@@ -36,15 +35,8 @@ object TeamMembers extends Controller {
         offset = Some(page * Pagination.DefaultLimit)
       )
     } yield {
-      team match {
-        case None => {
-          Redirect(routes.Teams.index(org)).flashing("warning" -> s"Team $key not found")
-        }
-        case Some(team: Team) => {
-          val isMember = !isMemberCollection.isEmpty
-          Ok(views.html.team_members.show(request.mainTemplate(), team, PaginatedCollection(page, members), isMember))
-        }
-      }
+      val isMember = !isMemberCollection.isEmpty
+      Ok(views.html.team_members.show(request.mainTemplate(), request.team, PaginatedCollection(page, members), isMember))
     }
   }
 
