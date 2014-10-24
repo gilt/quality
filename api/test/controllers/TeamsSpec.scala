@@ -13,6 +13,7 @@ class TeamsSpec extends BaseSpec {
   import scala.concurrent.ExecutionContext.Implicits.global
   lazy val org = createOrganization()
 
+/*
   "POST /:org/teams" in new WithServer {
     val key = UUID.randomUUID.toString
     val team = createTeam(org, TeamForm(key = key))
@@ -117,5 +118,46 @@ class TeamsSpec extends BaseSpec {
     await(client.teams.getByOrgAndKey(org.key, team.key)) must be(Some(team))
     await(client.teams.getByOrgAndKey(org.key, UUID.randomUUID.toString)) must be(None)
   }
+*/
 
+  "PUT /:org/teams/:key/members/:user_guid" in new WithServer {
+    val team = createTeam(org)
+    val user = createUser()
+    await(client.teams.getMembersByOrgAndKey(org.key, team.key)).map(_.user.guid) must be(Seq.empty)
+
+    val member = await(client.teams.putMembersByOrgAndKeyAndUserGuid(org.key, team.key, user.guid))
+    member.team must be(team)
+    member.user must be(user)
+
+    await(client.teams.getMembersByOrgAndKey(org.key, team.key)).map(_.user.guid) must be(Seq(user.guid))
+  }
+
+  "DELETE /:org/teams/:key/members/:user_guid" in new WithServer {
+    val team = createTeam(org)
+    val user = createUser()
+
+    await(client.teams.putMembersByOrgAndKeyAndUserGuid(org.key, team.key, user.guid))
+    await(client.teams.getMembersByOrgAndKey(org.key, team.key)).map(_.user.guid) must be(Seq(user.guid))
+
+    await(client.teams.deleteMembersByOrgAndKeyAndUserGuid(org.key, team.key, user.guid))
+    await(client.teams.getMembersByOrgAndKey(org.key, team.key)).map(_.user.guid) must be(Seq.empty)
+
+    await(client.teams.deleteMembersByOrgAndKeyAndUserGuid(org.key, team.key, user.guid))
+    await(client.teams.getMembersByOrgAndKey(org.key, team.key)).map(_.user.guid) must be(Seq.empty)
+  }
+
+  "GET /:org/teams/:key/members" in new WithServer {
+    val team = createTeam(org)
+    val user1 = createUser()
+    val user2 = createUser()
+
+    await(client.teams.putMembersByOrgAndKeyAndUserGuid(org.key, team.key, user1.guid))
+    await(client.teams.putMembersByOrgAndKeyAndUserGuid(org.key, team.key, user2.guid))
+
+    await(client.teams.getMembersByOrgAndKey(org.key, UUID.randomUUID.toString)).map(_.user.guid) must be(Seq.empty)
+    await(client.teams.getMembersByOrgAndKey(org.key, team.key)).map(_.user.guid).sorted must be(Seq(user1.guid, user2.guid).sorted)
+
+    await(client.teams.getMembersByOrgAndKey(org.key, team.key, userGuid = Some(UUID.randomUUID))).map(_.user.guid) must be(Seq.empty)
+    await(client.teams.getMembersByOrgAndKey(org.key, team.key, userGuid = Some(user1.guid))).map(_.user.guid) must be(Seq(user1.guid))
+  }
 }

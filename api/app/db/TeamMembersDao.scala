@@ -41,8 +41,8 @@ object TeamMembersDao {
            users.guid as user_guid,
            users.email as user_email
       from team_members
-      join teams on teams.id = teams.deleted_at is null and team_members.team_id
-      join users on users.guid = users.deleted_at is null and team_members.user_guid
+      join teams on teams.deleted_at is null and teams.id = team_members.team_id
+      join users on users.deleted_at is null and users.guid = team_members.user_guid
       join organizations on organizations.deleted_at is null and organizations.id = teams.organization_id
      where team_members.deleted_at is null
   """
@@ -106,7 +106,7 @@ object TeamMembersDao {
       Some(BaseQuery.trim),
       Some("and teams.organization_id = (select id from organizations where deleted_at is null and key = lower(trim({org_key})))"),
       teamKey.map { v => "and teams.key = lower(trim({team_key}))" },
-      userGuid.map { v => "and team_members.user_guid = {user_guid}" },
+      userGuid.map { v => "and team_members.user_guid = {user_guid}::uuid" },
       Some("order by teams.key, lower(users.email), team_members.id"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
