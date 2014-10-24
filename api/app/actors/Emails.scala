@@ -33,7 +33,7 @@ private[actors] object Emails {
     }
   }
 
-  def deliver(
+  def deliverToAllSubscribers(
     org: Organization,
     publication: Publication,
     subject: String,

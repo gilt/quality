@@ -1,9 +1,10 @@
 package actors
 
-import com.gilt.quality.models.Publication
+import com.gilt.quality.models.{Publication, Subscription}
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
-import db.{IncidentsDao, PlansDao}
+import db.{IncidentsDao, Pager, PlansDao, SubscriptionsDao}
+import lib.{Email, Person}
 import akka.actor._
 import play.api.Logger
 import play.api.Play.current
@@ -22,7 +23,7 @@ class EmailActor extends Actor {
       println(s"EmailActor EmailMessage.Incident($publication, $incidentId)")
       try {
         IncidentsDao.findById(incidentId).map { incident =>
-          Emails.deliver(
+          Emails.deliverToAllSubscribers(
             org = incident.organization,
             publication = publication,
             subject = s"[PerfectDay] Incident ${incident.id} ${Emails.action(publication)}",
@@ -34,6 +35,9 @@ class EmailActor extends Actor {
       }
     }
 
+    /**
+      * Notify all team members that an incident has been assigned to their team.
+      */
     case EmailMessage.IncidentTeamUpdated(publication: Publication, incidentId: Long) => {
       println(s"EmailActor EmailMessage.IncidentTeamUpdated($publication, $incidentId)")
       try {
@@ -44,12 +48,25 @@ class EmailActor extends Actor {
               Logger.warn(s"EmailMessage.IncidentTeamUpdated($publication, $incidentId): No team found for incident")
             }
             case Some(team) => {
-              Emails.deliver(
-                org = incident.organization,
-                publication = publication,
-                subject = s"[PerfectDay] Incident ${incident.id} Assigned to Team ${team.key}",
-                body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString
-              )
+              val subject = s"[PerfectDay] Incident ${incident.id} Assigned to Team ${team.key}"
+              val body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString
+
+              Pager.eachPage[Subscription] { offset =>
+                SubscriptionsDao.findAll(
+                  organizationKey = Some(team.organization.key),
+                  publication = Some(publication),
+                  team = Some(team),
+                  limit = 100,
+                  offset = offset
+                )
+              } { subscription =>
+                Logger.info(s"Emails: delivering email for subscription[$subscription]")
+                Email.sendHtml(
+                  to = Person(email = subscription.user.email),
+                  subject = subject,
+                  body = body
+                )
+              }
             }
           }
         }
@@ -63,7 +80,7 @@ class EmailActor extends Actor {
       try {
         PlansDao.findById(planId).map { plan =>
           IncidentsDao.findById(plan.incidentId).map { incident =>
-            Emails.deliver(
+            Emails.deliverToAllSubscribers(
               org = incident.organization,
               publication = publication,
               subject = s"[PerfectDay] Incident ${incident.id} Plan ${Emails.action(publication)}",
