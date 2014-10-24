@@ -9,6 +9,11 @@ import akka.actor._
 import play.api.Logger
 import play.api.Play.current
 
+case class EmailMessage(
+  subject: String,
+  body: String
+)
+
 private[actors] object EmailMessage {
   case class Incident(publication: Publication, incidentId: Long)
   case class IncidentTeamUpdated(publication: Publication, incidentId: Long)
@@ -87,7 +92,7 @@ class EmailActor extends Actor {
     case EmailMessage.MeetingAdjourned(meetingId: Long) => {
       println(s"EmailActor EmailMessage.MeetingAdjourned($meetingId)")
       try {
-        MeetingAdjournedEmail.process(meetingId)
+        MeetingAdjournedEmail(meetingId).send()
       } catch {
         case t: Throwable => Logger.error(s"EmailMessage.MeetingAdjourned($meetingId): ${t}" , t)
       }

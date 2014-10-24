@@ -1,6 +1,7 @@
 package actors
 
-import db.MeetingsDao
+import com.gilt.quality.models._
+import db._
 import java.util.UUID
 import play.api.test.Helpers._
 import org.scalatest.{FunSpec, ShouldMatchers}
@@ -9,8 +10,21 @@ class MeetingAdjournedEmailSpec extends FunSpec with ShouldMatchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-  it("processAdjourned") {
+  it("process") {
+    val org = Util.createOrganization()
+    val meeting = Util.createMeeting(org)
+    val user = Util.createUser()
+    val team = Util.createTeam(org)
+    TeamMembersDao.upsert(UsersDao.Default, TeamMemberForm(org, team.key, user.guid))
+    Util.createSubscription(org, user, Publication.IncidentsTeamUpdate)
+    val incident = Util.createIncident(
+      org = org,
+      form = Util.createIncidentForm().copy(teamKey = Some(team.key))
+    )
 
+    val email = MeetingAdjournedEmail(meeting.id).email
+    email.subject should be("test")
+    test.TestHelper.assertEqualsFile("foo.txt", email.body)
   }
 
 }

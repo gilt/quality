@@ -20,21 +20,6 @@ class EmailsSpec extends FunSpec with ShouldMatchers {
     subs
   }
 
-  def createSubscription(
-    org: Organization,
-    user: User,
-    publication: Publication
-  ): Subscription = {
-    SubscriptionsDao.create(
-      UsersDao.Default,
-      SubscriptionForm(
-        organizationKey = org.key,
-        userGuid = user.guid,
-        publication = publication
-      )
-    )
-  }
-
   it("eachSubscriber for different publications") {
     val org = Util.createOrganization()
     val user1 = Util.createUser()
@@ -42,15 +27,15 @@ class EmailsSpec extends FunSpec with ShouldMatchers {
 
     subscriptions(org, Publication.IncidentsCreate).map(_.user.guid) should be(Seq.empty)
 
-    createSubscription(org, user1, Publication.IncidentsCreate)
+    Util.createSubscription(org, user1, Publication.IncidentsCreate)
     subscriptions(org, Publication.IncidentsCreate).map(_.user.guid) should be(Seq(user1.guid))
     subscriptions(org, Publication.IncidentsUpdate).map(_.user.guid) should be(Seq.empty)
 
-    createSubscription(org, user2, Publication.IncidentsUpdate)
+    Util.createSubscription(org, user2, Publication.IncidentsUpdate)
     subscriptions(org, Publication.IncidentsCreate).map(_.user.guid) should be(Seq(user1.guid))
     subscriptions(org, Publication.IncidentsUpdate).map(_.user.guid) should be(Seq(user2.guid))
 
-    createSubscription(org, user2, Publication.IncidentsCreate)
+    Util.createSubscription(org, user2, Publication.IncidentsCreate)
     subscriptions(org, Publication.IncidentsCreate).map(_.user.guid).sorted should be(Seq(user1.guid, user2.guid).sorted)
     subscriptions(org, Publication.IncidentsUpdate).map(_.user.guid) should be(Seq(user2.guid))
   }
@@ -60,8 +45,8 @@ class EmailsSpec extends FunSpec with ShouldMatchers {
     val user1 = Util.createUser()
     val user2 = Util.createUser()
 
-    createSubscription(org, user1, Publication.IncidentsTeamUpdate)
-    createSubscription(org, user2, Publication.IncidentsTeamUpdate)
+    Util.createSubscription(org, user1, Publication.IncidentsTeamUpdate)
+    Util.createSubscription(org, user2, Publication.IncidentsTeamUpdate)
 
     val team = Util.createTeam(org)
 

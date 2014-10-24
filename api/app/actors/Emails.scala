@@ -67,5 +67,4 @@ private[actors] object Emails {
     }
   }
 
-
 }

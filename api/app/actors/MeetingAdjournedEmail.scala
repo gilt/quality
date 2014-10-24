@@ -3,11 +3,21 @@ package actors
 import com.gilt.quality.models.Meeting
 import db.MeetingsDao
 
-object MeetingAdjournedEmail {
+case class MeetingAdjournedEmail(meetingId: Long) {
 
-  def process(meetingId: Long) {
-    MeetingsDao.findById(meetingId).map { meeting =>
-      require(!meeting.adjournedAt.isEmpty, s"Meeting[${meeting.id}] must be adjourned")
+  private lazy val meeting = MeetingsDao.findById(meetingId)
+
+  lazy val email = {
+    EmailMessage(
+      subject = "test",
+      body = "test"
+    )
+  }
+
+  def send() {
+    meeting.map { m =>
+      require(!m.adjournedAt.isEmpty, s"Meeting[${m.id}] must be adjourned")
+      println("EMAIL: " + email)
     }
   }
 

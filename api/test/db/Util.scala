@@ -84,4 +84,19 @@ object Util {
     GradesDao.upsert(UsersDao.Default, GradeForm(plan.id, score))
   }
 
+  def createSubscription(
+    org: Organization,
+    user: User,
+    publication: Publication
+  ): Subscription = {
+    SubscriptionsDao.create(
+      UsersDao.Default,
+      SubscriptionForm(
+        organizationKey = org.key,
+        userGuid = user.guid,
+        publication = publication
+      )
+    )
+  }
+
 }
