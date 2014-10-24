@@ -1,0 +1,30 @@
+@(tpl: lib.MainTemplate,
+  team: com.gilt.quality.models.Team,
+  form: Form[controllers.TeamMembers.MemberForm],
+  errorMessage: Option[String] = None
+)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some(s"Add Member to Team ${team.key}")), errorMessage = errorMessage) {
+
+  <div class="container">
+
+    @helper.form(action = routes.TeamMembers.postAdd(team.organization.key, team.key)) {
+
+      <fieldset>
+          @helper.inputText(
+              form("email"),
+              '_label -> "Email Address",
+              '_error -> form.error("email")
+          )
+      </fieldset>
+      
+      <div class="actions">
+        <button class="btn btn-large btn-primary" type="submit">Submit</button>
+        <a href="@routes.TeamMembers.show(team.organization.key, team.key)" class="btn">Cancel</a>
+      </div>
+
+    }
+
+  </div>
+
+}

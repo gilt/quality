@@ -32,8 +32,9 @@ POST    /:org/teams/delete/:key                                   controllers.Te
 
 GET     /:org/teams/:key/members                                  controllers.TeamMembers.show(org: String, key: String, page: Int ?= 0)
 GET     /:org/teams/:key/members/add                              controllers.TeamMembers.add(org: String, key: String)
-GET     /:org/teams/:key/members/postAdd                          controllers.TeamMembers.postAdd(org: String, key: String, userGuid: Option[java.util.UUID] ?= None)
-GET     /:org/teams/:key/members/postRemove                       controllers.TeamMembers.postRemove(org: String, key: String, userGuid: Option[java.util.UUID] ?= None)
+POST    /:org/teams/:key/members/postAdd                          controllers.TeamMembers.postAdd(org: String, key: String)
+POST    /:org/teams/:key/members/postJoin                         controllers.TeamMembers.postJoin(org: String, key: String)
+POST    /:org/teams/:key/members/postRemove                       controllers.TeamMembers.postRemove(org: String, key: String, userGuid: Option[java.util.UUID] ?= None)
 
 GET     /:org/subscriptions/                                      controllers.Subscriptions.index(org: String)
 POST    /:org/subscriptions/:publication/toggle                   controllers.Subscriptions.postToggle(org: String, publication: com.gilt.quality.models.Publication)

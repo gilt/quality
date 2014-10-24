@@ -9,9 +9,9 @@
   <div class="pull-right">
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.TeamMembers.add(team.organization.key, team.key)">Add Member</a>
     @if(isMember) {
-      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.TeamMembers.postRemove(team.organization.key, team.key)">Leave team</a>
+      <span class="glyphicon glyphicon-plus"></span> <a class="postForm" href="@routes.TeamMembers.postRemove(team.organization.key, team.key)">Leave team</a>
     } else {
-      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.TeamMembers.postAdd(team.organization.key, team.key, tpl.user.map(_.guid))">Join team</a>
+      <span class="glyphicon glyphicon-plus"></span> <a class="postForm" href="@routes.TeamMembers.postJoin(team.organization.key, team.key)">Join team</a>
     }
   </div>
 
