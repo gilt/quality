@@ -5,6 +5,7 @@ import com.gilt.quality.models.Team
 import lib.{ Pagination, PaginatedCollection }
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import java.util.UUID
 
 import play.api._
 import play.api.mvc._
@@ -45,14 +46,36 @@ object TeamMembers extends Controller {
     key: String
   ) = TODO
 
-  def postLeave(
+  def postRemove(
     org: String,
-    key: String
-  ) = TODO
+    key: String,
+    userGuid: Option[UUID] = None
+  ) = TeamAction.async { request =>
+    for {
+      member <- Api.instance.teams.deleteMembersByOrgAndKeyAndUserGuid(
+        org = request.org.key,
+        key = request.team.key,
+        userGuid = userGuid.getOrElse(request.user.guid)
+      )
+    } yield {
+      Redirect(routes.TeamMembers.show(request.org.key, request.team.key)).flashing("success" -> "Team member removed")
+    }
+  }
 
-  def postJoin(
+  def postAdd(
     org: String,
-    key: String
-  ) = TODO
+    key: String,
+    userGuid: Option[UUID] = None
+  ) = TeamAction.async { request =>
+    for {
+      member <- Api.instance.teams.putMembersByOrgAndKeyAndUserGuid(
+        org = request.org.key,
+        key = request.team.key,
+        userGuid = userGuid.getOrElse(request.user.guid)
+      )
+    } yield {
+      Redirect(routes.TeamMembers.show(request.org.key, request.team.key)).flashing("success" -> "You are on this team")
+    }
+  }
 
 }
