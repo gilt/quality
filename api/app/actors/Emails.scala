@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.quality.models.{Organization, Publication, Subscription, Task}
+import com.gilt.quality.models.{Organization, Publication, Subscription, Task, Team}
 import db.{Pager, SubscriptionsDao}
 import lib.{Email, Person}
 import akka.actor._
@@ -21,8 +21,6 @@ private[actors] object Emails {
     }
   }
 
-
-
   def action(publication: Publication): String = {
     publication match {
       case Publication.IncidentsCreate | Publication.PlansCreate => "Created"
@@ -33,27 +31,41 @@ private[actors] object Emails {
     }
   }
 
-  def deliverToAllSubscribers(
+  def deliver(
     org: Organization,
     publication: Publication,
     subject: String,
-    body: String
+    body: String,
+    team: Option[Team] = None
   ) {
-    Pager.eachPage[Subscription] { offset =>
-      SubscriptionsDao.findAll(
-        organizationKey = Some(org.key),
-        publication = Some(publication),
-        limit = 100,
-        offset = offset
-      )
-    } { subscription =>
+    eachSubscription(org, publication, team, { subscription =>
       Logger.info(s"Emails: delivering email for subscription[$subscription]")
       Email.sendHtml(
         to = Person(email = subscription.user.email),
         subject = subject,
         body = body
       )
+    })
+  }
+
+  def eachSubscription(
+    organization: Organization,
+    publication: Publication,
+    team: Option[Team] = None,
+    f: Subscription => Unit
+  ) {
+    Pager.eachPage[Subscription] { offset =>
+      SubscriptionsDao.findAll(
+        organizationKey = Some(organization.key),
+        publication = Some(publication),
+        team = team,
+        limit = 100,
+        offset = offset
+      )
+    } { subscription =>
+      f(subscription)
     }
   }
+
 
 }

@@ -25,7 +25,7 @@ object Util {
     MeetingsDao.upsert(org, dateTime)
   }
 
-  def createTeam(
+   def createTeam(
     org: Organization = createOrganization(),
     form: TeamForm = createTeamForm()
   ): Team = {
@@ -34,6 +34,16 @@ object Util {
 
   def createTeamForm() = TeamForm(
     key = UUID.randomUUID.toString
+  )
+
+   def createUser(
+    form: UserForm = createUserForm()
+  ): User = {
+    UsersDao.create(UsersDao.Default, form)
+  }
+
+  def createUserForm() = UserForm(
+    email = UUID.randomUUID.toString + "@gilttest.com"
   )
 
   def createIncident(
