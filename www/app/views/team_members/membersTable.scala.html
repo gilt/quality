@@ -7,7 +7,7 @@
     @members.map { member =>
      <tr>
        <td>@member.user.email</td>
-       <td><a href="">Remove</a></td>
+       <td><a href="@routes.TeamMembers.postRemove(team.organization.key, team.key, Some(member.user.guid))" class="delete" confirm="Are you sure?">Remove</a></td>
      </tr>
    }
   </tbody>
