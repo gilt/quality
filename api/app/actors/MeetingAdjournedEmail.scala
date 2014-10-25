@@ -10,11 +10,13 @@ case class MeetingAdjournedEmail(meetingId: Long) {
 
   private lazy val meeting = MeetingsDao.findById(meetingId)
 
-  lazy val email = {
+  lazy val email = meeting.map { m =>
     EmailMessage(
-      subject = "Meeting on ${DateHelper.mediumDateTime(meeting.organization, meeting.scheduledAt)} has been adjourned",
+      subject = s"Meeting on ${DateHelper.mediumDateTime(m.organization, m.scheduledAt)} has been adjourned",
       body = "TODO"
     )
+  }.getOrElse {
+    sys.error(s"Meeting $meetingId not found")
   }
 
   def send() {

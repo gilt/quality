@@ -1,6 +1,7 @@
 package actors
 
 import com.gilt.quality.models._
+import core.DateHelper
 import db._
 import java.util.UUID
 import play.api.test.Helpers._
@@ -23,7 +24,7 @@ class MeetingAdjournedEmailSpec extends FunSpec with ShouldMatchers {
     )
 
     val email = MeetingAdjournedEmail(meeting.id).email
-    email.subject should be("test")
+    email.subject should be(s"Meeting on ${DateHelper.mediumDateTime(org, meeting.scheduledAt)} has been adjourned")
     test.TestHelper.assertEqualsFile("test/resources/MeetingAdjournedEmailSpec.body.txt", email.body)
   }
 
