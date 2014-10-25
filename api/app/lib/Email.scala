@@ -20,6 +20,8 @@ object Email {
     value
   }
 
+  private val subjectPrefix = config("mail.subjectPrefix")
+
   private val from = Person(
     email = config("mail.defaultFromEmail"),
     name = Some(config("mail.defaultFromName"))
@@ -47,7 +49,7 @@ object Email {
     to.name.map { n => email.addToName(n) }
     email.setFrom(from.email)
     from.name.map { n => email.setFromName(n) }
-    email.setSubject(subject)
+    email.setSubject(subjectPrefix + " " + subject)
     email.setHtml(body)
 
     localDeliveryDir match {

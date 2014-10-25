@@ -32,7 +32,7 @@ class EmailActor extends Actor {
           Emails.deliver(
             org = incident.organization,
             publication = publication,
-            subject = s"[PerfectDay] Incident ${incident.id} ${Emails.action(publication)}",
+            subject = s"Incident ${incident.id} ${Emails.action(publication)}",
             body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString
           )
         }
@@ -59,7 +59,7 @@ class EmailActor extends Actor {
               Emails.deliver(
                 org = incident.organization,
                 publication = publication,
-                subject = s"[PerfectDay] Incident ${incident.id} Assigned to Team ${team.key}",
+                subject = s"Incident ${incident.id} Assigned to Team ${team.key}",
                 body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString,
                 team = Some(team)
               )
@@ -79,7 +79,7 @@ class EmailActor extends Actor {
             Emails.deliver(
               org = incident.organization,
               publication = publication,
-              subject = s"[PerfectDay] Incident ${incident.id} Plan ${Emails.action(publication)}",
+              subject = s"Incident ${incident.id} Plan ${Emails.action(publication)}",
               body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString
             )
           }

@@ -2,6 +2,7 @@ package test
 
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 object TestHelper {
 
@@ -12,12 +13,12 @@ object TestHelper {
   }
 
   def readFile(path: String): String = {
-    scala.io.Source.fromFile("/web/quality/" + path).getLines.mkString("\n")
+    scala.io.Source.fromFile(path).getLines.mkString("\n")
   }
 
   def assertEqualsFile(filename: String, contents: String) {
     if (contents.trim != readFile(filename).trim) {
-      val tmpPath = "/tmp/quality.tmp"
+      val tmpPath = "/tmp/quality.tmp.%s".format(UUID.randomUUID.toString)
       TestHelper.writeToFile(tmpPath, contents.trim)
       sys.error(s"Test output did not match. diff $tmpPath $filename")
     }

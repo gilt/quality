@@ -42,7 +42,7 @@ class EmailSpec extends FunSpec with ShouldMatchers {
     val file = Files.newDirectoryStream(targetDir).head
     val contents = io.Source.fromFile(file.toFile).mkString
 
-    val subject = s"Subject: [PerfectDay] Incident ${incident.id} Added"
+    val subject = s"Incident ${incident.id} Added"
     (contents.indexOf(subject) > 0) should be(true)
   }
 
