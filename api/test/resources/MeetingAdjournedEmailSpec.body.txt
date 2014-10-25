@@ -3,4 +3,4 @@
   at Oct 30, 2014 3:00:00 PM EST.
 </p>
 
-<a href="http://localhost:8000/38b5cba0-a00c-4522-948b-65bb08ff8139/meetings/4821">View meeting details</a>
+<a href="http://localhost:8000/meeting-adjourned-email-spec/meetings/4821">View meeting details</a>
