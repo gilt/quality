@@ -1,0 +1,9 @@
+@(host: String,
+  meeting: com.gilt.quality.models.Meeting)
+
+<p>
+  Meeting on @{core.DateHelper.mediumDateTime(meeting.organization, meeting.scheduledAt)} was adjourned
+  at @{core.DateHelper.mediumDateTime(meeting.organization, meeting.adjournedAt.get)}.
+</p>
+
+<a href="@host/@meeting.organization.key/meetings/@meeting.id">View meeting details</a>

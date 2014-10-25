@@ -7,6 +7,16 @@
 
 @main(tpl.copy(title = Some(s"Meeting on ${core.DateHelper.shortDate(org, meeting.scheduledAt)}"))) {
 
+  @meeting.adjournedAt.map { adjournedAt =>
+    <em>Meeting adjourned: @core.DateHelper.longDateTime(org, adjournedAt)</em>
+  }
+
+  @if(meeting.adjournedAt.isEmpty && meeting.scheduledAt.isBeforeNow) {
+    <p>
+      <a class="btn btn-primary postForm" href="@routes.Meetings.postAdjournById(org.key, meeting.id)">Adjourn this meeting</a>
+    </p>
+  }
+
   <ul>
     <li><a href="@routes.Meetings.postDeleteById(org.key, meeting.id)" class="delete" data-confirm="Are you sure to delete this meeting?">Delete</a></li>
   </ul>

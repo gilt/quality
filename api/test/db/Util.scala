@@ -25,7 +25,7 @@ object Util {
     MeetingsDao.upsert(org, dateTime)
   }
 
-  def createTeam(
+   def createTeam(
     org: Organization = createOrganization(),
     form: TeamForm = createTeamForm()
   ): Team = {
@@ -34,6 +34,16 @@ object Util {
 
   def createTeamForm() = TeamForm(
     key = UUID.randomUUID.toString
+  )
+
+   def createUser(
+    form: UserForm = createUserForm()
+  ): User = {
+    UsersDao.create(UsersDao.Default, form)
+  }
+
+  def createUserForm() = UserForm(
+    email = UUID.randomUUID.toString + "@gilttest.com"
   )
 
   def createIncident(
@@ -72,6 +82,21 @@ object Util {
     score: Int
   ) {
     GradesDao.upsert(UsersDao.Default, GradeForm(plan.id, score))
+  }
+
+  def createSubscription(
+    org: Organization,
+    user: User,
+    publication: Publication
+  ): Subscription = {
+    SubscriptionsDao.create(
+      UsersDao.Default,
+      SubscriptionForm(
+        organizationKey = org.key,
+        userGuid = user.guid,
+        publication = publication
+      )
+    )
   }
 
 }

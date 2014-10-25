@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import com.gilt.quality.models.{Meeting, Task}
+import com.gilt.quality.models.{AdjournForm, Meeting, Task}
 import lib.{ Pagination, PaginatedCollection }
 import java.util.UUID
 import scala.concurrent.{ Await, Future }
@@ -81,6 +81,21 @@ object Meetings extends Controller {
       result <- Api.instance.meetings.deleteByOrgAndId(org, id)
     } yield {
       Redirect(routes.Meetings.index(org)).flashing("success" -> s"Meeting $id deleted")
+    }
+  }
+
+  def postAdjournById(
+    org: String,
+    id: Long
+  ) = OrgAction.async { implicit request =>
+    for {
+      result <- Api.instance.meetings.postAdjournByOrgAndId(
+        org = org,
+        id = id,
+        adjournForm = com.gilt.quality.models.AdjournForm()
+      )
+    } yield {
+      Redirect(routes.Meetings.show(org, id)).flashing("success" -> s"Meeting $id adjourned")
     }
   }
 

@@ -9,10 +9,16 @@ import akka.actor._
 import play.api.Logger
 import play.api.Play.current
 
+case class EmailMessage(
+  subject: String,
+  body: String
+)
+
 private[actors] object EmailMessage {
   case class Incident(publication: Publication, incidentId: Long)
   case class IncidentTeamUpdated(publication: Publication, incidentId: Long)
   case class Plan(publication: Publication, planId: Long)
+  case class MeetingAdjourned(meetingId: Long)
 }
 
 class EmailActor extends Actor {
@@ -23,10 +29,10 @@ class EmailActor extends Actor {
       println(s"EmailActor EmailMessage.Incident($publication, $incidentId)")
       try {
         IncidentsDao.findById(incidentId).map { incident =>
-          Emails.deliverToAllSubscribers(
+          Emails.deliver(
             org = incident.organization,
             publication = publication,
-            subject = s"[PerfectDay] Incident ${incident.id} ${Emails.action(publication)}",
+            subject = s"Incident ${incident.id} ${Emails.action(publication)}",
             body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString
           )
         }
@@ -50,25 +56,13 @@ class EmailActor extends Actor {
               Logger.warn(s"EmailMessage.IncidentTeamUpdated($publication, $incidentId): No team found for incident")
             }
             case Some(team) => {
-              val subject = s"[PerfectDay] Incident ${incident.id} Assigned to Team ${team.key}"
-              val body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString
-
-              Pager.eachPage[Subscription] { offset =>
-                SubscriptionsDao.findAll(
-                  organizationKey = Some(team.organization.key),
-                  publication = Some(publication),
-                  team = Some(team),
-                  limit = 100,
-                  offset = offset
-                )
-              } { subscription =>
-                Logger.info(s"Emails: delivering email for subscription[$subscription]")
-                Email.sendHtml(
-                  to = Person(email = subscription.user.email),
-                  subject = subject,
-                  body = body
-                )
-              }
+              Emails.deliver(
+                org = incident.organization,
+                publication = publication,
+                subject = s"Incident ${incident.id} Assigned to Team ${team.key}",
+                body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString,
+                team = Some(team)
+              )
             }
           }
         }
@@ -82,16 +76,25 @@ class EmailActor extends Actor {
       try {
         PlansDao.findById(planId).map { plan =>
           IncidentsDao.findById(plan.incidentId).map { incident =>
-            Emails.deliverToAllSubscribers(
+            Emails.deliver(
               org = incident.organization,
               publication = publication,
-              subject = s"[PerfectDay] Incident ${incident.id} Plan ${Emails.action(publication)}",
+              subject = s"Incident ${incident.id} Plan ${Emails.action(publication)}",
               body = views.html.emails.incident(Emails.qualityWebHostname, incident).toString
             )
           }
         }
       } catch {
         case t: Throwable => Logger.error(s"EmailMessage.Plan($publication, $planId): ${t}" , t)
+      }
+    }
+
+    case EmailMessage.MeetingAdjourned(meetingId: Long) => {
+      println(s"EmailActor EmailMessage.MeetingAdjourned($meetingId)")
+      try {
+        MeetingAdjournedEmail(meetingId).send()
+      } catch {
+        case t: Throwable => Logger.error(s"EmailMessage.MeetingAdjourned($meetingId): ${t}" , t)
       }
     }
 

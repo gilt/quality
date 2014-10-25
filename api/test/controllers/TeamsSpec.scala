@@ -13,7 +13,6 @@ class TeamsSpec extends BaseSpec {
   import scala.concurrent.ExecutionContext.Implicits.global
   lazy val org = createOrganization()
 
-/*
   "POST /:org/teams" in new WithServer {
     val key = UUID.randomUUID.toString
     val team = createTeam(org, TeamForm(key = key))
@@ -118,7 +117,6 @@ class TeamsSpec extends BaseSpec {
     await(client.teams.getByOrgAndKey(org.key, team.key)) must be(Some(team))
     await(client.teams.getByOrgAndKey(org.key, UUID.randomUUID.toString)) must be(None)
   }
-*/
 
   "PUT /:org/teams/:key/members/:user_guid" in new WithServer {
     val team = createTeam(org)
