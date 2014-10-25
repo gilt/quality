@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.quality.models.{Publication, Subscription}
+import com.gilt.quality.models.{EmailMessage, Publication, Subscription}
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
 import db.{IncidentsDao, Pager, PlansDao, SubscriptionsDao}
@@ -9,12 +9,7 @@ import akka.actor._
 import play.api.Logger
 import play.api.Play.current
 
-case class EmailMessage(
-  subject: String,
-  body: String
-)
-
-private[actors] object EmailMessage {
+private[actors] object EmailActorMessage {
   case class Incident(publication: Publication, incidentId: Long)
   case class IncidentTeamUpdated(publication: Publication, incidentId: Long)
   case class Plan(publication: Publication, planId: Long)
@@ -25,8 +20,8 @@ class EmailActor extends Actor {
 
   def receive = {
 
-    case EmailMessage.Incident(publication: Publication, incidentId: Long) => {
-      withErrorHandler(s"EmailActor EmailMessage.Incident($publication, $incidentId)", {
+    case EmailActorMessage.Incident(publication: Publication, incidentId: Long) => {
+      withErrorHandler(s"EmailActor EmailActorMessage.Incident($publication, $incidentId)", {
         IncidentsDao.findById(incidentId).map { incident =>
           Emails.deliver(
             org = incident.organization,
@@ -41,15 +36,15 @@ class EmailActor extends Actor {
     /**
       * Notify all team members that an incident has been assigned to their team.
       */
-    case EmailMessage.IncidentTeamUpdated(publication: Publication, incidentId: Long) => {
-      withErrorHandler(s"EmailActor EmailMessage.IncidentTeamUpdated($publication, $incidentId)", {
+    case EmailActorMessage.IncidentTeamUpdated(publication: Publication, incidentId: Long) => {
+      withErrorHandler(s"EmailActor EmailActorMessage.IncidentTeamUpdated($publication, $incidentId)", {
         IncidentsDao.findById(incidentId).map { incident =>
           incident.team match {
             case None => {
               // Might indicate team was already removed from the
               // incident in which case we do not send the email
               // notification
-              Logger.warn(s"EmailMessage.IncidentTeamUpdated($publication, $incidentId): No team found for incident")
+              Logger.warn(s"EmailActorMessage.IncidentTeamUpdated($publication, $incidentId): No team found for incident")
             }
             case Some(team) => {
               Emails.deliver(
@@ -65,8 +60,8 @@ class EmailActor extends Actor {
       })
     }
 
-    case EmailMessage.Plan(publication: Publication, planId: Long) => {
-      withErrorHandler(s"EmailActor EmailMessage.Plan($publication, $planId)", {
+    case EmailActorMessage.Plan(publication: Publication, planId: Long) => {
+      withErrorHandler(s"EmailActor EmailActorMessage.Plan($publication, $planId)", {
         PlansDao.findById(planId).map { plan =>
           IncidentsDao.findById(plan.incidentId).map { incident =>
             Emails.deliver(
@@ -80,8 +75,8 @@ class EmailActor extends Actor {
       })
     }
 
-    case EmailMessage.MeetingAdjourned(meetingId: Long) => {
-      withErrorHandler(s"EmailActor EmailMessage.MeetingAdjourned($meetingId)", {
+    case EmailActorMessage.MeetingAdjourned(meetingId: Long) => {
+      withErrorHandler(s"EmailActor EmailActorMessage.MeetingAdjourned($meetingId)", {
         MeetingAdjournedEmail(meetingId).send()
       })
     }

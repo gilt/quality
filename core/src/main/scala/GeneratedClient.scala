@@ -22,6 +22,11 @@ package com.gilt.quality.models {
     email: String
   )
 
+  case class EmailMessage(
+    subject: String,
+    body: String
+  )
+
   case class Error(
     code: String,
     message: String
@@ -541,6 +546,20 @@ package com.gilt.quality.models {
       )
     }
 
+    implicit def jsonReadsQualityEmailMessage: play.api.libs.json.Reads[EmailMessage] = {
+      (
+        (__ \ "subject").read[String] and
+        (__ \ "body").read[String]
+      )(EmailMessage.apply _)
+    }
+
+    implicit def jsonWritesQualityEmailMessage: play.api.libs.json.Writes[EmailMessage] = {
+      (
+        (__ \ "subject").write[String] and
+        (__ \ "body").write[String]
+      )(unlift(EmailMessage.unapply _))
+    }
+
     implicit def jsonReadsQualityError: play.api.libs.json.Reads[Error] = {
       (
         (__ \ "code").read[String] and
@@ -945,6 +964,8 @@ package com.gilt.quality {
 
     def agendaItems: AgendaItems = AgendaItems
 
+    def emailMessages: EmailMessages = EmailMessages
+
     def events: Events = Events
 
     def healthchecks: Healthchecks = Healthchecks
@@ -1018,6 +1039,19 @@ package com.gilt.quality {
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${meetingId}/agenda_items/${id}").map {
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
+    object EmailMessages extends EmailMessages {
+      override def getEmailMessagesAndMeetingAdjournedByOrgAndMeetingId(
+        org: String,
+        meetingId: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/email_messages/meeting_adjourned/${meetingId}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
@@ -1671,6 +1705,13 @@ package com.gilt.quality {
       org: String,
       meetingId: Long,
       id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+  }
+
+  trait EmailMessages {
+    def getEmailMessagesAndMeetingAdjournedByOrgAndMeetingId(
+      org: String,
+      meetingId: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }
 
