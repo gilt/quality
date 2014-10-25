@@ -13,7 +13,7 @@ case class MeetingAdjournedEmail(meetingId: Long) {
   lazy val email = meeting.map { m =>
     EmailMessage(
       subject = s"Meeting on ${DateHelper.mediumDateTime(m.organization, m.scheduledAt)} has been adjourned",
-      body = "TODO"
+      body = views.html.emails.meetingAdjourned(Emails.qualityWebHostname, meeting.get).toString
     )
   }.getOrElse {
     sys.error(s"Meeting $meetingId not found")

@@ -2,6 +2,8 @@ package actors
 
 import com.gilt.quality.models._
 import core.DateHelper
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 import db._
 import java.util.UUID
 import play.api.test.Helpers._
@@ -13,7 +15,10 @@ class MeetingAdjournedEmailSpec extends FunSpec with ShouldMatchers {
 
   it("process") {
     val org = Util.createOrganization()
-    val meeting = Util.createMeeting(org)
+    val dateTime = DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss").parseDateTime("10/23/2014 15:00:00")
+    val meeting = MeetingsDao.upsert(org, dateTime)
+    MeetingsDao.adjourn(UsersDao.Default, meeting, AdjournForm(adjournedAt = Some(dateTime.plusWeeks(1))))
+
     val user = Util.createUser()
     val team = Util.createTeam(org)
     TeamMembersDao.upsert(UsersDao.Default, TeamMemberForm(org, team.key, user.guid))

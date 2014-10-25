@@ -1,1 +1,6 @@
-TODO
+<p>
+  Meeting on Oct 23, 2014 3:00:00 PM EST was adjourned
+  at Oct 30, 2014 3:00:00 PM EST.
+</p>
+
+<a href="http://localhost:8000/38b5cba0-a00c-4522-948b-65bb08ff8139/meetings/4821">View meeting details</a>
