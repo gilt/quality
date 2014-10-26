@@ -289,6 +289,13 @@
 		{ "name": "user_guid", "type": "uuid" },
 		{ "name": "publication", "type": "publication" }
 	    ]
+	},
+
+	"email_message": {
+	    "fields": [
+		{ "name": "subject", "type": "string" },
+		{ "name": "body", "type": "string" }
+	    ]
 	}
 
     },
@@ -816,6 +823,22 @@
 		    "path": "/:id"
                 }
             ]
-        }
+        },
+
+	"email_message": {
+	    "path": "/:org/email_messages",
+	    "operations": [
+		{
+		    "method": "GET",
+		    "path": "/meeting_adjourned/:meeting_id",
+		    "parameters": [
+			{ "name": "meeting_id", "type": "long" }
+		    ],
+		    "responses": {
+			"200": { "type": "email_message" }
+		    }
+		}
+	    ]
+	}
     }
 }

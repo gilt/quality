@@ -1,9 +1,8 @@
-@(host: String,
-  incident: com.gilt.quality.models.Incident)
+@(incident: com.gilt.quality.models.Incident)
 
 <ul>
-  <li>Org: <a href="@host/@incident.organization.key">@incident.organization.key</a></li>
-  <li>Id: <a href="@host/@incident.organization.key/incidents/@{incident.id}">@incident.id</a></li>
+  <li>Org: <a href="@lib.Email.qualityWebHostname/@incident.organization.key">@incident.organization.key</a></li>
+  <li>Id: <a href="@lib.Email.qualityWebHostname/@incident.organization.key/incidents/@{incident.id}">@incident.id</a></li>
   <li>Summary: @incident.summary</li>
   <li>Team: 
       @if(incident.team.isEmpty) {

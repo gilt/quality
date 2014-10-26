@@ -34,34 +34,34 @@ class MainActor(name: String) extends Actor with ActorLogging {
     case MainActor.IncidentCreated(incidentId) => {
       Logger.info(s"MainActor: Received MainActor.IncidentCreated($incidentId)")
       meetingActor ! MeetingMessage.SyncIncident(incidentId)
-      emailActor ! EmailMessage.Incident(Publication.IncidentsCreate, incidentId)
+      emailActor ! EmailActorMessage.Incident(Publication.IncidentsCreate, incidentId)
     }
 
     case MainActor.IncidentUpdated(incidentId) => {
       Logger.info(s"MainActor: Received MainActor.IncidentUpdated($incidentId)")
       meetingActor ! MeetingMessage.SyncIncident(incidentId)
-      emailActor ! EmailMessage.Incident(Publication.IncidentsUpdate, incidentId)
+      emailActor ! EmailActorMessage.Incident(Publication.IncidentsUpdate, incidentId)
     }
 
     case MainActor.PlanCreated(planId) => {
       Logger.info(s"MainActor: Received MainActor.PlanCreated($planId)")
-      emailActor ! EmailMessage.Plan(Publication.PlansCreate, planId)
+      emailActor ! EmailActorMessage.Plan(Publication.PlansCreate, planId)
     }
 
     case MainActor.PlanUpdated(planId) => {
       Logger.info(s"MainActor: Received MainActor.PlanUpdated($planId)")
-      emailActor ! EmailMessage.Plan(Publication.PlansUpdate, planId)
+      emailActor ! EmailActorMessage.Plan(Publication.PlansUpdate, planId)
     }
 
     case MainActor.IncidentTeamUpdated(incidentId) => {
       Logger.info(s"MainActor: Received MainActor.IncidentTeamUpdated($incidentId)")
-      emailActor ! EmailMessage.IncidentTeamUpdated(Publication.IncidentsTeamUpdate, incidentId)
+      emailActor ! EmailActorMessage.IncidentTeamUpdated(Publication.IncidentsTeamUpdate, incidentId)
     }
 
     case MainActor.MeetingAdjourned(meetingId: Long) => {
       Logger.info(s"MainActor: Received MainActor.MeetingAdjourned($meetingId)")
       meetingActor ! MeetingMessage.SyncMeeting(meetingId)
-      emailActor ! EmailMessage.MeetingAdjourned(meetingId)
+      emailActor ! EmailActorMessage.MeetingAdjourned(meetingId)
     }
 
     case MainActor.AgendaItemCreated(agendaItemId) => {

@@ -16,13 +16,12 @@ case class FullAgendaItemForm(
 
 object AgendaItemsDao {
 
-  private val BaseQuery = """
+  private val BaseQuery = s"""
     select agenda_items.id, agenda_items,task,
            incidents.id as incident_id,
            organizations.key as organization_key, 
            organizations.name as organization_name,
-           teams.key as team_key,
-           teams.email as team_email,
+           ${TeamsDao.select(Some("team"))},
            incidents.severity as incident_severity,
            incidents.summary as incident_summary,
            incidents.description as incident_description,
@@ -149,17 +148,7 @@ object AgendaItemsDao {
           incident = Incident(
             id = incidentId,
             organization = OrganizationsDao.fromRow(row, Some("organization")),
-            team = row[Option[String]]("team_key").map { teamKey =>
-              Team(
-                key = teamKey,
-                email = row[Option[String]]("team_email"),
-                icons = core.Defaults.Icons,
-                organization = Organization(
-                  key = row[String]("organization_key"),
-                  name = row[String]("organization_name")
-                )
-              )
-            },
+            team = row[Option[String]]("team_key").map { _ => TeamsDao.fromRow(row, Some("team")) },
             severity = Severity(row[String]("incident_severity")),
             summary = row[String]("incident_summary"),
             description = row[Option[String]]("incident_description"),

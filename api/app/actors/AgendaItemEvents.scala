@@ -25,11 +25,8 @@ object AgendaItemEvents {
             to = Person(teamEmail, item.incident.team.map(_.key)),
             subject = s"Incident ${item.incident.id} Added to ${dateTime} Meeting to ${Emails.taskLabel(item.task)}",
             body = views.html.emails.agendaItemTeamChanged(
-              Emails.qualityWebHostname,
-              item.incident.organization,
               meeting,
-              item,
-              Emails.taskLabel(item.task)
+              item
             ).toString
           )
         }

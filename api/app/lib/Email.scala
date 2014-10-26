@@ -20,6 +20,8 @@ object Email {
     value
   }
 
+  val qualityWebHostname = config("quality.webHostname")
+
   private val subjectPrefix = config("mail.subjectPrefix")
 
   private val from = Person(
