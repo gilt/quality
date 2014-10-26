@@ -44,6 +44,8 @@ GET     /:org/meetings/:id                                        controllers.Me
 POST    /:org/meetings/:id/delete                                 controllers.Meetings.postDeleteById(org: String, id: Long)
 POST    /:org/meetings/:id/adjourn                                controllers.Meetings.postAdjournById(org: String, id: Long)
 
+GET     /:org/emails/meeting_adjourned/:meeting_id                controllers.EmailsController.meetingAdjourned(org: String, meeting_id: Long)
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                                             controllers.Assets.at(path="/public", file)
 

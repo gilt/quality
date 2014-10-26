@@ -1,0 +1,9 @@
+@(tpl: lib.MainTemplate,
+  email: com.gilt.quality.models.EmailMessage
+)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some(email.subject))) {
+
+  @Html(email.body)
+
+}

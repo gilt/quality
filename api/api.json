@@ -833,7 +833,10 @@
 		    "path": "/meeting_adjourned/:meeting_id",
 		    "parameters": [
 			{ "name": "meeting_id", "type": "long" }
-		    ]
+		    ],
+		    "responses": {
+			"200": { "type": "email_message" }
+		    }
 		}
 	    ]
 	}

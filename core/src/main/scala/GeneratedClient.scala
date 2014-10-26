@@ -1050,9 +1050,9 @@ package com.gilt.quality {
       override def getEmailMessagesAndMeetingAdjournedByOrgAndMeetingId(
         org: String,
         meetingId: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.EmailMessage]] = {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/email_messages/meeting_adjourned/${meetingId}").map {
-          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.EmailMessage])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -1712,7 +1712,7 @@ package com.gilt.quality {
     def getEmailMessagesAndMeetingAdjournedByOrgAndMeetingId(
       org: String,
       meetingId: Long
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.EmailMessage]]
   }
 
   trait Events {
