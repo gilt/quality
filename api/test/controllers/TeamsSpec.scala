@@ -118,6 +118,18 @@ class TeamsSpec extends BaseSpec {
     await(client.teams.getByOrgAndKey(org.key, UUID.randomUUID.toString)) must be(None)
   }
 
+  "GET /:org/teams by userGuid" in new WithServer {
+    val team = createTeam(org)
+    val user1 = createUser()
+    val user2 = createUser()
+
+    await(client.teams.putMembersByOrgAndKeyAndUserGuid(org.key, team.key, user1.guid))
+
+    await(client.teams.getByOrg(org.key, key = Some(team.key), userGuid = Some(UUID.randomUUID))).map(_.key) must be(Seq.empty)
+    await(client.teams.getByOrg(org.key, key = Some(team.key), userGuid = Some(user1.guid))).map(_.key) must be(Seq(team.key))
+    await(client.teams.getByOrg(org.key, key = Some(team.key), userGuid = Some(user2.guid))).map(_.key) must be(Seq.empty)
+  }
+
   "PUT /:org/teams/:key/members/:user_guid" in new WithServer {
     val team = createTeam(org)
     val user = createUser()

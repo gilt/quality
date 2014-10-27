@@ -957,7 +957,7 @@ package com.gilt.quality {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
-    private val UserAgent = "apidoc:0.6.9 http://www.apidoc.me/gilt/code/quality/0.0.10-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.10 http://www.apidoc.me/gilt/code/quality/0.0.10-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.quality.client")
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
@@ -1466,11 +1466,13 @@ package com.gilt.quality {
       override def getByOrg(
         org: String,
         key: scala.Option[String] = None,
+        userGuid: scala.Option[java.util.UUID] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Team]] = {
         val queryParameters = Seq(
           key.map("key" -> _),
+          userGuid.map("user_guid" -> _.toString),
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
@@ -1648,7 +1650,7 @@ package com.gilt.quality {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       method.toUpperCase match {
         case "GET" => {
-          _logRequest("GET", _requestHolder(path).withQueryString(queryParameters:_*)).get()      
+          _logRequest("GET", _requestHolder(path).withQueryString(queryParameters:_*)).get()
         }
         case "POST" => {
           _logRequest("POST", _requestHolder(path).withQueryString(queryParameters:_*)).post(body.getOrElse(play.api.libs.json.Json.obj()))
@@ -1952,6 +1954,7 @@ package com.gilt.quality {
     def getByOrg(
       org: String,
       key: scala.Option[String] = None,
+      userGuid: scala.Option[java.util.UUID] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Team]]
@@ -2076,7 +2079,7 @@ package com.gilt.quality {
 
     // Type: date-iso8601
     implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29"
+      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
     // Enum: Action

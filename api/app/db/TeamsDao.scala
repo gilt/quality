@@ -193,7 +193,7 @@ object TeamsDao {
   def findAll(
     org: Organization,
     key: Option[String] = None,
-    memberUserGuid: Option[UUID] = None,
+    userGuid: Option[UUID] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Team] = {
@@ -201,7 +201,7 @@ object TeamsDao {
       Some(BaseQuery.trim),
       Some("and teams.organization_id = (select id from organizations where deleted_at is null and key = {org_key})"),
       key.map { v => "and teams.key = {key}" },
-      memberUserGuid.map { v => "and teams.id in (select team_id from team_members where deleted_at is null and user_guid = {user_guid}::uuid)" },
+      userGuid.map { v => "and teams.id in (select team_id from team_members where deleted_at is null and user_guid = {user_guid}::uuid)" },
       Some("order by teams.key"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -209,7 +209,7 @@ object TeamsDao {
     val bind = Seq(
       Some(NamedParameter("org_key", toParameterValue(org.key))),
       key.map { v => NamedParameter("key", toParameterValue(v.trim.toLowerCase)) },
-      memberUserGuid.map { v => NamedParameter("user_guid", toParameterValue(v.toString)) }
+      userGuid.map { v => NamedParameter("user_guid", toParameterValue(v.toString)) }
     ).flatten
 
     DB.withConnection { implicit c =>

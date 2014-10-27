@@ -46,7 +46,7 @@ case class MeetingAdjournedEmail(meetingId: Long) {
     Pager.eachPage[Team] { offset =>
       TeamsDao.findAll(
         org = meeting.get.organization,
-        memberUserGuid = Some(user.guid),
+        userGuid = Some(user.guid),
         limit = 100
       )
     } { team =>
