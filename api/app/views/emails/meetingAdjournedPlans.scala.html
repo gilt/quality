@@ -10,6 +10,7 @@
     <ul>
       @incidents.map { incident =>
         <li> <a href="@lib.Email.qualityWebHostname/@meeting.organization.key/incidents/@incident.id?meetingId=@meeting.id">@incident.team.map(_.key).getOrElse("") #@incident.id</a>: @incident.summary
+             <p><b>Severity</b>: @incident.severity</p>
              @preventionPlan(incident)
         </li>
       }
