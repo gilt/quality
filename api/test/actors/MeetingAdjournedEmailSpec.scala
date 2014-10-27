@@ -38,7 +38,7 @@ class MeetingAdjournedEmailSpec extends FunSpec with ShouldMatchers {
       form = Util.createIncidentForm().copy(teamKey = Some(team.key))
     )
 
-    val email = MeetingAdjournedEmail(meeting.id).email
+    val email = MeetingAdjournedEmail(meeting.id).email(user)
     email.subject should be(s"Meeting on ${DateHelper.mediumDateTime(org, meeting.scheduledAt)} has been adjourned")
 
 

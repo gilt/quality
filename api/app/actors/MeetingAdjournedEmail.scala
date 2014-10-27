@@ -1,9 +1,10 @@
 package actors
 
 import core.DateHelper
-import db.MeetingsDao
+import db.{MeetingsDao, Pager, TeamsDao}
 import lib.{Email, Person}
-import com.gilt.quality.models.{EmailMessage, Meeting, Publication, User}
+import java.util.UUID
+import com.gilt.quality.models.{EmailMessage, Meeting, Publication, Team, User}
 import play.api.Logger
 
 case class MeetingAdjournedEmail(meetingId: Long) {
@@ -28,6 +29,7 @@ case class MeetingAdjournedEmail(meetingId: Long) {
     meeting.map { m =>
       Emails.eachSubscription(m.organization, Publication.MeetingsAdjourned, None, { subscription =>
         Logger.info(s"Emails: delivering email for subscription[$subscription]")
+
         val msg = email(subscription.user)
         Email.sendHtml(
           to = Person(email = subscription.user.email),
@@ -36,6 +38,22 @@ case class MeetingAdjournedEmail(meetingId: Long) {
         )
       })
     }
+  }
+
+  private def allTeamsForUser(user: User): Seq[Team] = {
+    val teams = scala.collection.mutable.ListBuffer[Team]()
+
+    Pager.eachPage[Team] { offset =>
+      TeamsDao.findAll(
+        org = meeting.get.organization,
+        memberUserGuid = Some(user.guid),
+        limit = 100
+      )
+    } { team =>
+      teams.append(team)
+    }
+
+    teams
   }
 
 }
