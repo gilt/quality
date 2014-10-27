@@ -1,8 +1,10 @@
 @(
   user: com.gilt.quality.models.User,
   meeting: com.gilt.quality.models.Meeting,
-  items: Seq[com.gilt.quality.models.AgendaItem],
-  userTeams: Seq[com.gilt.quality.models.Team]
+  allItems: Seq[com.gilt.quality.models.AgendaItem],
+  userTeams: Seq[com.gilt.quality.models.Team],
+  userItems: Seq[com.gilt.quality.models.AgendaItem],
+  otherItems: Seq[com.gilt.quality.models.AgendaItem]
 )
 
 <p>
@@ -20,7 +22,7 @@
 <ul>
 
   @com.gilt.quality.models.Task.all.map { task =>
-    <li> # of incidents in @actors.Emails.taskLabel(task): @java.text.NumberFormat.getIntegerInstance.format(items.filter(_.task == task).size) </li>
+    <li> # of incidents in @actors.Emails.taskLabel(task): @java.text.NumberFormat.getIntegerInstance.format(allItems.filter(_.task == task).size) </li>
   }
 </ul>
 
@@ -28,39 +30,36 @@
   <a href="@lib.Email.qualityWebHostname/@meeting.organization.key/meetings/@meeting.id">View meeting details</a>
 </p>
 
-<h2>Summary for your teams</h2>
-
-@if(userTeams.isEmpty) {
-  <p>
-    You are not currently a member of any teams. If you join a team,
-    this email will highlight specific activity for your teams.
-  </p>
-  <p>
-    <a href="@lib.Email.qualityWebHostname/@meeting.organization.key/teams">View teams</a>
-  </p>
-} else {
-
-  @userTeams.map { team =>
-    <h3>@team.key</h3>
-    TODO
-  }
-
-}
-
 <h2>Team Assignments</h2>
 
-@items.filter(_.task == com.gilt.quality.models.Task.ReviewTeam).groupBy(_.incident.team).map { case (team, items) =>
-  <p>
-    @if(team.isEmpty) {
-      Pending
-    } else {
-      <a href="@lib.Email.qualityWebHostname/@meeting.organization.key/teams/@team.get.key">@team.get.key</a>
+<p>
+  <b>Your teams</b>
+
+  @if(userTeams.isEmpty) {
+    <p>
+      You are not currently a member of any teams. If you join a team,
+      this email will highlight the specific incidents assigned to your
+      teams.
+    </p>
+    <p>
+      <a href="@lib.Email.qualityWebHostname/@meeting.organization.key/teams">View teams</a>
+    </p>
+  } else {
+    @userItems.groupBy(_.incident.team).map { case (team, items) =>
+      @meetingAdjournedTeamAssignment(meeting, team, items)
     }
-    <ul>
-      @items.map { item =>
-        <li><a href="@lib.Email.qualityWebHostname/@meeting.organization.key/incidents/@item.incident.id?meetingId=@meeting.id">#@item.incident.id</a>: @item.incident.summary</li>
-      }
-    <ul>
-  </p>
-}
+  }
+</p>
+
+<p>
+  <b>Other teams</b>
+
+  @if(otherItems.isEmpty) {
+    <p><em>There were no other team assignments</em></p>
+  } else {
+    @otherItems.filter(_.task == com.gilt.quality.models.Task.ReviewTeam).groupBy(_.incident.team).map { case (team, items) =>
+      @meetingAdjournedTeamAssignment(meeting, team, items)
+    }
+  }
+</p>
 

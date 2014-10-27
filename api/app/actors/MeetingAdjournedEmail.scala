@@ -19,13 +19,18 @@ case class MeetingAdjournedEmail(meetingId: Long) {
   def email(user: User) = meeting.map { m =>
     require(!m.adjournedAt.isEmpty, s"Meeting[${m.id}] must be adjourned")
 
+    val userTeams = allTeamsForUser(user)
+    val userTeamKeys = userTeams.map(_.key)
+
     EmailMessage(
       subject = s"Meeting on ${DateHelper.mediumDateTime(m.organization, m.scheduledAt)} has been adjourned",
       body = views.html.emails.meetingAdjourned(
         user,
         meeting.get,
         allAgendaItems,
-        allTeamsForUser(user)
+        userTeams,
+        allAgendaItems.filter(item => !item.incident.team.isEmpty && userTeamKeys.contains(item.incident.team.get.key)),
+        allAgendaItems.filter(item => item.incident.team.isEmpty || !userTeamKeys.contains(item.incident.team.get.key))
       ).toString
     )
   }.getOrElse {
