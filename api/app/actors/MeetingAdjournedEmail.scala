@@ -1,15 +1,17 @@
 package actors
 
 import core.DateHelper
-import db.{MeetingsDao, Pager, TeamsDao}
+import db.{AgendaItemsDao, MeetingsDao, Pager, TeamsDao}
 import lib.{Email, Person}
 import java.util.UUID
-import com.gilt.quality.models.{EmailMessage, Meeting, Publication, Team, User}
+import com.gilt.quality.models.{AgendaItem, EmailMessage, Meeting, Publication, Team, User}
 import play.api.Logger
 
 case class MeetingAdjournedEmail(meetingId: Long) {
 
   private lazy val meeting = MeetingsDao.findById(meetingId)
+
+  private lazy val allAgendaItems = allAgendaItemsForMeeting(meeting.get)
 
   /**
     * Generates the email message for this particular User.
@@ -19,7 +21,12 @@ case class MeetingAdjournedEmail(meetingId: Long) {
 
     EmailMessage(
       subject = s"Meeting on ${DateHelper.mediumDateTime(m.organization, m.scheduledAt)} has been adjourned",
-      body = views.html.emails.meetingAdjourned(user, meeting.get).toString
+      body = views.html.emails.meetingAdjourned(
+        user,
+        meeting.get,
+        allAgendaItems,
+        allTeamsForUser(user)
+      ).toString
     )
   }.getOrElse {
     sys.error(s"Meeting $meetingId not found")
@@ -47,13 +54,30 @@ case class MeetingAdjournedEmail(meetingId: Long) {
       TeamsDao.findAll(
         org = meeting.get.organization,
         userGuid = Some(user.guid),
-        limit = 100
+        limit = 100,
+        offset = offset
       )
     } { team =>
       teams.append(team)
     }
 
     teams
+  }
+
+  private def allAgendaItemsForMeeting(meeting: Meeting): Seq[AgendaItem] = {
+    val agendaItems = scala.collection.mutable.ListBuffer[AgendaItem]()
+
+    Pager.eachPage[AgendaItem] { offset =>
+      AgendaItemsDao.findAll(
+        meetingId = Some(meeting.id),
+        limit = 100,
+        offset = offset
+      )
+    } { agendaItem =>
+      agendaItems.append(agendaItem)
+    }
+
+    agendaItems
   }
 
 }
