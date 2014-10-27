@@ -1,0 +1,22 @@
+@(incident: com.gilt.quality.models.Incident)
+
+@if(incident.plan.isEmpty) {
+  <em>No plan uploaded</em>
+} else {
+  <p>
+    <b>Grade:</b>
+    @if(incident.plan.get.grade.isEmpty) {
+      <em>N/A</em>
+    } else {
+      @if(core.Defaults.isGoodGrade(incident.plan.get.grade.get)) {
+        Smiley
+      } else {
+        Frowny
+      }
+    }
+  </p>
+  <div class="markdown">
+    @Html(core.Markdown.toHtml(incident.plan.get.body))
+  </div>
+  <p><em>Created: @core.DateHelper.longDateTime(incident.organization, incident.plan.get.createdAt)</em></p>
+}

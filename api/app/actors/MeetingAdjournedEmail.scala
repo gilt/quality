@@ -1,16 +1,28 @@
 package actors
 
-import core.DateHelper
+import core.{DateHelper, Defaults}
 import db.{AgendaItemsDao, MeetingsDao, Pager, TeamsDao}
 import lib.{Email, Person}
 import java.util.UUID
-import com.gilt.quality.models.{AgendaItem, EmailMessage, Meeting, Publication, Team, User}
+import com.gilt.quality.models.{AgendaItem, EmailMessage, Incident, Meeting, Publication, Task, Team, User}
 import play.api.Logger
+
+case class MeetingIncidents(incidents: Seq[Incident]) {
+  private val withGrade = incidents.filter(!_.plan.flatMap(_.grade).isEmpty)
+
+  val withSmiley: Seq[Incident] = withGrade.filter(i => Defaults.isGoodGrade(i.plan.get.grade.get))
+  val withFrowny: Seq[Incident] = withGrade.filter(i => !Defaults.isGoodGrade(i.plan.get.grade.get))
+  val withNoGrade: Seq[Incident] = incidents.filter(_.plan.flatMap(_.grade).isEmpty)
+
+  require(
+    (withSmiley ++ withFrowny ++ withNoGrade).map(_.id).sorted == incidents.map(_.id).sorted
+  )
+
+}
 
 case class MeetingAdjournedEmail(meetingId: Long) {
 
   private lazy val meeting = MeetingsDao.findById(meetingId)
-
   private lazy val allAgendaItems = allAgendaItemsForMeeting(meeting.get)
 
   /**
@@ -27,6 +39,7 @@ case class MeetingAdjournedEmail(meetingId: Long) {
       body = views.html.emails.meetingAdjourned(
         user,
         meeting.get,
+        MeetingIncidents(allAgendaItems.filter(_.task == Task.ReviewPlan).map(_.incident)),
         allAgendaItems,
         userTeams,
         allAgendaItems.filter(item => !item.incident.team.isEmpty && userTeamKeys.contains(item.incident.team.get.key)),
