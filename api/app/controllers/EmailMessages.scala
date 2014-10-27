@@ -17,7 +17,7 @@ object EmailMessages extends Controller {
     MeetingsDao.findByOrganizationAndId(request.org, meetingId) match {
       case None => NotFound
       case Some(meeting) => {
-        val email = MeetingAdjournedEmail(meeting.id).email
+        val email = MeetingAdjournedEmail(meeting.id).email(request.user)
         Ok(Json.toJson(email))
       }
     }

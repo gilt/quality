@@ -1,4 +1,7 @@
-@(meeting: com.gilt.quality.models.Meeting)
+@(
+  user: com.gilt.quality.models.User,
+  meeting: com.gilt.quality.models.Meeting
+)
 
 <p>
   Meeting on @{core.DateHelper.mediumDateTime(meeting.organization, meeting.scheduledAt)} was adjourned
