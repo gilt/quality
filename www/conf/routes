@@ -27,10 +27,9 @@ GET     /:org/teams/create                                        controllers.Te
 POST    /:org/teams/postCreate                                    controllers.Teams.postCreate(org: String)
 GET     /:org/teams/edit                                          controllers.Teams.edit(org: String, key: String)
 POST    /:org/teams/postEdit                                      controllers.Teams.postEdit(org: String, key: String)
-GET     /:org/teams/:key                                          controllers.Teams.show(org: String, key: String, incidentsPage: Int ?= 0)
+GET     /:org/teams/:key                                          controllers.Teams.show(org: String, key: String, incidentsPage: Int ?= 0, membersPage: Int ?= 0)
 POST    /:org/teams/delete/:key                                   controllers.Teams.postDeleteByKey(org: String, key: String)
 
-GET     /:org/teams/:key/members                                  controllers.TeamMembers.show(org: String, key: String, page: Int ?= 0)
 GET     /:org/teams/:key/members/add                              controllers.TeamMembers.add(org: String, key: String)
 POST    /:org/teams/:key/members/postAdd                          controllers.TeamMembers.postAdd(org: String, key: String)
 POST    /:org/teams/:key/members/postJoin                         controllers.TeamMembers.postJoin(org: String, key: String)

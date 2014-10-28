@@ -48,7 +48,8 @@ object Teams extends Controller {
   def show(
     org: String,
     key: String,
-    incidentsPage: Int = 0
+    incidentsPage: Int = 0,
+    membersPage: Int = 0
   ) = TeamAction.async { implicit request =>
     for {
       stats <- Api.instance.Statistics.getByOrg(org = org, teamKey = Some(key), numberHours = Some(Dashboard.OneWeekInHours * 12))
@@ -58,8 +59,28 @@ object Teams extends Controller {
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(incidentsPage * Pagination.DefaultLimit)
       )
+      members <- Api.instance.teams.getMembersByOrgAndKey(
+        org = org,
+        key = key,
+        limit = Some(Pagination.DefaultLimit+1),
+        offset = Some(membersPage * Pagination.DefaultLimit)
+      )
+      isMemberCollection <- Api.instance.teams.getMembersByOrgAndKey(
+        org = org,
+        key = key,
+        userGuid = Some(request.user.guid)
+      )
     } yield {
-      Ok(views.html.teams.show(request.mainTemplate(), request.team, stats.headOption, PaginatedCollection(incidentsPage, incidents)))
+      Ok(
+        views.html.teams.show(
+          request.mainTemplate(),
+          request.team,
+          stats.headOption,
+          PaginatedCollection(incidentsPage, incidents),
+          PaginatedCollection(membersPage, members),
+          isMember = !isMemberCollection.isEmpty
+        )
+      )
     }
   }
 

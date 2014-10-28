@@ -16,31 +16,6 @@ object TeamMembers extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(
-    org: String,
-    key: String,
-    page: Int = 0
-  ) = TeamAction.async { implicit request =>
-    for {
-      members <- Api.instance.teams.getMembersByOrgAndKey(
-        org = org,
-        key = key,
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(page * Pagination.DefaultLimit)
-      )
-      isMemberCollection <- Api.instance.teams.getMembersByOrgAndKey(
-        org = org,
-        key = key,
-        userGuid = Some(request.user.guid),
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(page * Pagination.DefaultLimit)
-      )
-    } yield {
-      val isMember = !isMemberCollection.isEmpty
-      Ok(views.html.team_members.show(request.mainTemplate(), request.team, PaginatedCollection(page, members), isMember))
-    }
-  }
-
   def add(
     org: String,
     key: String
@@ -70,7 +45,7 @@ object TeamMembers extends Controller {
               key = request.team.key,
               userGuid = user.guid
             ).map { member =>
-              Redirect(routes.TeamMembers.show(request.org.key, request.team.key)).flashing("success" -> "Member added")
+              Redirect(routes.Teams.show(request.org.key, request.team.key)).flashing("success" -> "Member added")
             }.recover {
               case response: com.gilt.quality.error.ErrorsResponse => {
                 Ok(views.html.team_members.add(request.mainTemplate(), request.team, boundForm, Some(response.errors.map(_.message).mkString(", "))))
@@ -94,7 +69,7 @@ object TeamMembers extends Controller {
         userGuid = userGuid.getOrElse(request.user.guid)
       )
     } yield {
-      Redirect(routes.TeamMembers.show(request.org.key, request.team.key)).flashing("success" -> "Team member removed")
+      Redirect(routes.Teams.show(request.org.key, request.team.key)).flashing("success" -> "Team member removed")
     }
   }
 
@@ -109,7 +84,7 @@ object TeamMembers extends Controller {
         userGuid = request.user.guid
       )
     } yield {
-      Redirect(routes.TeamMembers.show(request.org.key, request.team.key)).flashing("success" -> "You are on this team")
+      Redirect(routes.Teams.show(request.org.key, request.team.key)).flashing("success" -> "You are on this team")
     }
   }
 
