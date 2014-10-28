@@ -1467,12 +1467,14 @@ package com.gilt.quality {
         org: String,
         key: scala.Option[String] = None,
         userGuid: scala.Option[java.util.UUID] = None,
+        excludeUserGuid: scala.Option[java.util.UUID] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Team]] = {
         val queryParameters = Seq(
           key.map("key" -> _),
           userGuid.map("user_guid" -> _.toString),
+          excludeUserGuid.map("exclude_user_guid" -> _.toString),
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
@@ -1955,6 +1957,7 @@ package com.gilt.quality {
       org: String,
       key: scala.Option[String] = None,
       userGuid: scala.Option[java.util.UUID] = None,
+      excludeUserGuid: scala.Option[java.util.UUID] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Team]]

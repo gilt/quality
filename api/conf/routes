@@ -35,7 +35,7 @@ PUT        /:org/plans/:id/grade                                  controllers.Pl
 GET        /:org/plans/:id                                        controllers.Plans.getByOrgAndId(org: String, id: Long)
 DELETE     /:org/plans/:id                                        controllers.Plans.deleteByOrgAndId(org: String, id: Long)
 GET        /:org/statistics                                       controllers.Statistics.getByOrg(org: String, team_key: Option[String], number_hours: Int ?= 168)
-GET        /:org/teams                                            controllers.Teams.getByOrg(org: String, key: Option[String], user_guid: Option[java.util.UUID], limit: Int ?= 25, offset: Int ?= 0)
+GET        /:org/teams                                            controllers.Teams.getByOrg(org: String, key: Option[String], user_guid: Option[java.util.UUID], exclude_user_guid: Option[java.util.UUID], limit: Int ?= 25, offset: Int ?= 0)
 GET        /:org/teams/:key                                       controllers.Teams.getByOrgAndKey(org: String, key: String)
 POST       /:org/teams                                            controllers.Teams.postByOrg(org: String)
 PUT        /:org/teams/:key                                       controllers.Teams.putByOrgAndKey(org: String, key: String)

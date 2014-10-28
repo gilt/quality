@@ -15,6 +15,7 @@ object Teams extends Controller {
     org: String,
     key: Option[String],
     userGuid: Option[UUID],
+    excludeUserGuid: Option[UUID],
     limit: Int = 25,
     offset: Int = 0
   ) = OrgAction { request =>
@@ -22,6 +23,7 @@ object Teams extends Controller {
       request.org,
       key = key,
       userGuid = userGuid,
+      excludeUserGuid = excludeUserGuid,
       limit = limit,
       offset = offset
     )
