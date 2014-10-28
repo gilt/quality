@@ -24,7 +24,8 @@ lazy val api = project
       jdbc,
       anorm,
       "org.postgresql" % "postgresql" % "9.3-1101-jdbc4",
-      "com.sendgrid" % "sendgrid-java" % "1.3.0"
+      "com.sendgrid" % "sendgrid-java" % "1.3.0",
+      "net.rcarz" % "jira-client" % "0.5"
     ),
     routesImport += "com.gilt.quality.Bindables._"
   )
