@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.quality.FailedRequest
-import com.gilt.quality.models.{AdjournForm, AgendaItem, AgendaItemForm, Task}
+import com.gilt.quality.models.{AdjournForm, AgendaItem, AgendaItemForm, Task, Team}
 import com.gilt.quality.error.ErrorsResponse
 import org.joda.time.DateTime
 import java.util.UUID
@@ -15,17 +15,25 @@ class AgendaItemsSpec extends BaseSpec {
 
   lazy val org = createOrganization()
 
+  "GET /agenda_items by userGuid" in new WithServer {
+    val team = createTeam(org)
+    val user1 = createUser()
+    val user2 = createUser()
+    val item = createAgendaItemForTeam(team)
+
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), userGuid = Some(UUID.randomUUID))) must be(Seq.empty)
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), userGuid = Some(user1.guid))) must be(Seq.empty)
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), userGuid = Some(user2.guid))) must be(Seq.empty)
+
+    await(client.teams.putMembersByOrgAndKeyAndUserGuid(org.key, team.key, user1.guid))
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), userGuid = Some(user1.guid))).map(_.id) must be(Seq(item.id))
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), userGuid = Some(user2.guid))) must be(Seq.empty)
+  }
+
   "GET /agenda_items by teamKey" in new WithServer {
     val team = createTeam(org)
     val otherTeam = createTeam(org)
-    val incident = createIncident(
-      org,
-      Some(createIncidentForm.copy(teamKey = Some(team.key)))
-    )
-    val item = createAgendaItem(
-      org,
-      Some(createAgendaItemForm(org, incident = Some(incident)))
-    )
+    val item = createAgendaItemForTeam(team)
 
     await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), teamKey = Some(UUID.randomUUID.toString))) must be(Seq.empty)
     await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), teamKey = Some(otherTeam.key))) must be(Seq.empty)
