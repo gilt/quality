@@ -18,6 +18,9 @@ object AgendaItemsDao {
 
   private val BaseQuery = s"""
     select agenda_items.id, agenda_items,task,
+           meetings.id as meeting_id,
+           meetings.scheduled_at as meeting_scheduled_at,
+           meeting_adjournments.adjourned_at as meeting_adjourned_at,
            incidents.id as incident_id,
            organizations.key as organization_key, 
            organizations.name as organization_name,
@@ -31,6 +34,8 @@ object AgendaItemsDao {
            plans.created_at as plan_created_at,
            grades.score as grade
       from agenda_items
+      join meetings on meetings.deleted_at is null and meetings.id = agenda_items.meeting_id
+      left join meeting_adjournments on meeting_adjournments.deleted_at is null and meeting_adjournments.meeting_id = meetings.id      
       join incidents on incidents.id = agenda_items.incident_id and incidents.deleted_at is null
       join organizations on organizations.deleted_at is null and organizations.id = incidents.organization_id
       left join teams on teams.deleted_at is null and teams.id = incidents.team_id
@@ -130,32 +135,11 @@ object AgendaItemsDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        val incidentId = row[Long]("incident_id")
-
-        val plan = row[Option[Long]]("plan_id").map { planId =>
-          Plan(
-            id = planId,
-            incidentId = incidentId,
-            body = row[String]("plan_body"),
-            grade = row[Option[Int]]("grade"),
-            createdAt = row[DateTime]("plan_created_at")
-          )
-        }
-
         AgendaItem(
           id = row[Long]("id"),
           task = Task(row[String]("task")),
-          incident = Incident(
-            id = incidentId,
-            organization = OrganizationsDao.fromRow(row, Some("organization")),
-            team = row[Option[String]]("team_key").map { _ => TeamsDao.fromRow(row, Some("team")) },
-            severity = Severity(row[String]("incident_severity")),
-            summary = row[String]("incident_summary"),
-            description = row[Option[String]]("incident_description"),
-            tags = Seq.empty,
-            plan = plan,
-            createdAt = row[DateTime]("incident_created_at")
-          )
+          meeting = MeetingsDao.fromRow(row, Some("meeting")),
+          incident = IncidentsDao.fromRow(row, Some("incident"))
         )
       }.toSeq
     }

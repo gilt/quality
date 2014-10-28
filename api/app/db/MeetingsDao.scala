@@ -204,18 +204,22 @@ object MeetingsDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
-        Meeting(
-          id = row[Long]("id"),
-          scheduledAt = row[DateTime]("scheduled_at"),
-          adjournedAt = row[Option[DateTime]]("adjourned_at"),
-          organization = Organization(
-            key = row[String]("organization_key"),
-            name = row[String]("organization_name")
-          )
-        )
-      }.toSeq
+      SQL(sql).on(bind: _*)().toList.map(fromRow(_)).toSeq
     }
+  }
+
+  private[db] def fromRow(
+    row: anorm.Row,
+    prefix: Option[String] = None,
+    organizationPrefix: String = "organization"
+  ): Meeting = {
+    val p = prefix.map( _ + "_").getOrElse("")
+    Meeting(
+      id = row[Long](s"${p}id"),
+      scheduledAt = row[DateTime](s"${p}scheduled_at"),
+      adjournedAt = row[Option[DateTime]](s"${p}adjourned_at"),
+      organization = OrganizationsDao.fromRow(row, Some(organizationPrefix))
+    )
   }
 
   def findPager(

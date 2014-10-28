@@ -242,7 +242,7 @@ object TeamsDao {
         smileyUrl = icons.find(_.name == TeamIconsDao.Smiley).map(_.url).getOrElse(Defaults.Icons.smileyUrl),
         frownyUrl = icons.find(_.name == TeamIconsDao.Frowny).map(_.url).getOrElse(Defaults.Icons.frownyUrl)
       ),
-      organization = OrganizationsDao.fromRow(row, Some("organization"))
+      organization = OrganizationsDao.fromRow(row, Some(organizationPrefix))
     )
   }
 
