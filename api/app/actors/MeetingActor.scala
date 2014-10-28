@@ -19,15 +19,6 @@ class MeetingActor extends Actor {
 
   def receive = {
 
-    case MainActor.AgendaItemCreated(agendaItemId: Long) => {
-      println(s"MeetingActor MainActor.AgendaItemCreated($agendaItemId)")
-      try {
-        AgendaItemEvents.processCreated(agendaItemId)
-      } catch {
-        case t: Throwable => Logger.error(s"MeetingMessage.AgendaItemCreated($agendaItemId): ${t}" , t)
-      }
-    }
-
     /**
       * Creates upcoming meetings for all organizations.
       */

@@ -89,8 +89,6 @@ object AgendaItemsDao {
       ).executeInsert().getOrElse(sys.error("Missing id"))
     }
 
-    global.Actors.mainActor ! actors.MainActor.AgendaItemCreated(id)
-
     findById(id).getOrElse {
       sys.error("Failed to create agenda item")
     }
