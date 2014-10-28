@@ -17,7 +17,7 @@ case class FullTeamForm(
 ) {
 
   lazy val orgId = OrganizationsDao.lookupId(org.key).getOrElse {
-    sys.error(s"Could not find organizations with key[${org.key}]")
+    sys.error(s"Could not find organization with key[${org.key}]")
   }
 
   lazy val validate: Seq[Error] = {
