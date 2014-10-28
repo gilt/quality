@@ -1,7 +1,7 @@
 package controllers
 
 import core.Defaults
-import com.gilt.quality.models.{Icons, Team, TeamForm, UpdateTeamForm}
+import com.gilt.quality.models.{Icons, Team, TeamForm, TeamMemberSummary, UpdateTeamForm}
 import com.gilt.quality.error.ErrorsResponse
 import java.util.UUID
 
@@ -181,6 +181,26 @@ class TeamsSpec extends BaseSpec {
 
     await(client.teams.getMembersByOrgAndKey(org.key, team.key, userGuid = Some(UUID.randomUUID))).map(_.user.guid) must be(Seq.empty)
     await(client.teams.getMembersByOrgAndKey(org.key, team.key, userGuid = Some(user1.guid))).map(_.user.guid) must be(Seq(user1.guid))
+  }
+
+  "GET /:org/teams/:key/member_summary" in new WithServer {
+    val team = createTeam(org)
+    val otherTeam = createTeam(org)
+    val user1 = createUser()
+    val user2 = createUser()
+
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).get.numberMembers must be(0)
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).get.numberMembers must be(0)
+
+    await(client.teams.putMembersByOrgAndKeyAndUserGuid(org.key, team.key, user1.guid))
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, otherTeam.key)).get.numberMembers must be(0)
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).get.numberMembers must be(1)
+
+    await(client.teams.putMembersByOrgAndKeyAndUserGuid(org.key, team.key, user2.guid))
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, otherTeam.key)).get.numberMembers must be(0)
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).get.numberMembers must be(2)
+
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, UUID.randomUUID.toString)) must be(None)
   }
 
 }

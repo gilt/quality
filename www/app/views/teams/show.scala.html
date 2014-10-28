@@ -1,6 +1,7 @@
 @(tpl: lib.MainTemplate,
   team: com.gilt.quality.models.Team,
   stats: Option[com.gilt.quality.models.Statistic],
+  memberSummary: com.gilt.quality.models.TeamMemberSummary,
   agendaItems: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem],
   members: lib.PaginatedCollection[com.gilt.quality.models.TeamMember],
   isMember: Boolean
@@ -53,7 +54,7 @@
 
   }
 
-  <h3>Members</h3>
+  <h3>Members (@java.text.NumberFormat.getIntegerInstance.format(memberSummary.numberMembers))</h3>
   <div class="pull-right">
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.TeamMembers.add(team.organization.key, team.key)">Add Member</a>
     @if(isMember) {

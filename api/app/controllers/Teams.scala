@@ -106,6 +106,20 @@ object Teams extends Controller {
     NoContent
   }
 
+  def getMemberSummaryByOrgAndKey(
+    org: String,
+    key: String
+  ) = OrgAction { request =>
+    TeamsDao.findByKey(request.org, key) match {
+      case None => NotFound
+      case Some(team) => {
+        val summary = TeamMembersDao.summary(request.org, team)
+        Ok(Json.toJson(summary))
+      }
+    }
+
+  }
+
   def getMembersByOrgAndKey(
     org: String,
     key: String,

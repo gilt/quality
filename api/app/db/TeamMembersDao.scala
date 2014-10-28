@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{Error, Organization, Team, TeamMember, User}
+import com.gilt.quality.models.{Error, Organization, Team, TeamMember, TeamMemberSummary, User}
 import lib.Validation
 import anorm._
 import anorm.ParameterValue._
@@ -63,6 +63,14 @@ object TeamMembersDao {
        and user_guid = {user_guid}::uuid
   """
 
+  private val MemberSummaryQuery = s"""
+    select count(*) as number_members
+      from team_members
+      join teams on teams.deleted_at is null and team_members.team_id = teams.id and teams.organization_id = {organization_id}
+     where teams.key = {team_key}
+       and team_members.deleted_at is null
+  """
+
   def upsert(user: User, form: TeamMemberForm): TeamMember = {
     val errors = form.validate
     assert(errors.isEmpty, errors.map(_.message).mkString(" "))
@@ -92,6 +100,30 @@ object TeamMembersDao {
         'user_guid -> form.userGuid,
         'deleted_by_guid -> user.guid
       ).execute()
+    }
+  }
+
+  def summary(
+    org: Organization,
+    team: Team
+  ): TeamMemberSummary = {
+    OrganizationsDao.lookupId(org.key) match {
+      case None => TeamMemberSummary(team = team, numberMembers = 0)
+      case Some(orgId) => {
+        val bind = Seq(
+          NamedParameter("organization_id", toParameterValue(orgId)),
+          NamedParameter("team_key", toParameterValue(team.key))
+        )
+
+        DB.withConnection { implicit c =>
+          SQL(MemberSummaryQuery).on(bind: _*)().toList.map { row =>
+            TeamMemberSummary(
+              team = team,
+              numberMembers = row[Long]("number_members")
+            )
+          }.toSeq.head
+        }
+      }
     }
   }
 

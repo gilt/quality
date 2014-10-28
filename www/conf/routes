@@ -34,6 +34,7 @@ POST    /:org/teams/postEdit                                      controllers.Te
 GET     /:org/teams/:key                                          controllers.Teams.show(org: String, key: String, agendaItemsPage: Int ?= 0, membersPage: Int ?= 0)
 POST    /:org/teams/delete/:key                                   controllers.Teams.postDeleteByKey(org: String, key: String)
 
+GET     /:org/teams/:key/member_summary                           controllers.TeamMembers.memberSummary(org: String, key: String)
 GET     /:org/teams/:key/members/add                              controllers.TeamMembers.add(org: String, key: String)
 POST    /:org/teams/:key/members/postAdd                          controllers.TeamMembers.postAdd(org: String, key: String)
 POST    /:org/teams/:key/members/postJoin                         controllers.TeamMembers.postJoin(org: String, key: String)
