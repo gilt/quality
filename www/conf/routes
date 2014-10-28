@@ -13,7 +13,7 @@ POST    /:org/incidents/postCreate                                controllers.In
 GET     /:org/incidents/edit                                      controllers.Incidents.edit(org: String, id: Long)
 POST    /:org/incidents/postEdit                                  controllers.Incidents.postEdit(org: String, id: Long)
 POST    /:org/incidents/delete/:id                                controllers.Incidents.postDeleteById(org: String, id: Long)
-GET     /:org/incidents/:id                                       controllers.Incidents.show(org: String, id: Long, meetingId: Option[Long] ?= None)
+GET     /:org/incidents/:id                                       controllers.Incidents.show(org: String, id: Long, agendaItemsPage: Int ?= 0, meetingId: Option[Long] ?= None)
 
 GET     /:org/plans/:id                                           controllers.Plans.getById(org: String, id: Long)
 GET     /:org/plans/uploadByIncidentId/:incident_id               controllers.Plans.uploadByIncidentId(org: String, incident_id: Long)

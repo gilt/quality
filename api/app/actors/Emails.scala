@@ -9,14 +9,6 @@ import play.api.Play.current
 
 object Emails {
 
- def taskLabel(task: Task): String = {
-    task match {
-      case Task.ReviewTeam => "review team assignment"
-      case Task.ReviewPlan => "review the prevention plan"
-      case Task.UNDEFINED(key) => key
-    }
-  }
-
   def action(publication: Publication): String = {
     publication match {
       case Publication.IncidentsCreate | Publication.PlansCreate => "Created"
