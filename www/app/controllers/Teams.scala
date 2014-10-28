@@ -21,18 +21,27 @@ object Teams extends Controller {
   def index(
     org: String,
     key: Option[String] = None,
-    page: Int = 0
+    myPage: Int = 0,
+    otherPage: Int = 0
   ) = OrgAction.async { implicit request =>
     val filters = Filters(key = lib.Filters.toOption(key))
     for {
-      teams <- Api.instance.teams.getByOrg(
+      myTeams <- Api.instance.teams.getByOrg(
         org = org,
         key = filters.key,
+        userGuid = Some(request.user.guid),
         limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(page * Pagination.DefaultLimit)
+        offset = Some(myPage * Pagination.DefaultLimit)
+      )
+      otherTeams <- Api.instance.teams.getByOrg(
+        org = org,
+        key = filters.key,
+        excludeUserGuid = Some(request.user.guid),
+        limit = Some(Pagination.DefaultLimit+1),
+        offset = Some(otherPage * Pagination.DefaultLimit)
       )
     } yield {
-      Ok(views.html.teams.index(request.mainTemplate(), request.org, filters, PaginatedCollection(page, teams)))
+      Ok(views.html.teams.index(request.mainTemplate(), request.org, filters, PaginatedCollection(myPage, myTeams), PaginatedCollection(otherPage, otherTeams)))
     }
   }
 

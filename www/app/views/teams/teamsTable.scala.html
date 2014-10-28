@@ -1,0 +1,29 @@
+@(
+  org: com.gilt.quality.models.Organization,
+  teams: Seq[com.gilt.quality.models.Team]
+)
+
+@if(teams.isEmpty) {
+  <em>No teams found</em>
+} else {
+  <table class="table table-hover table-condensed">
+    <thead>
+     <tr>
+       <td>Team</td>
+       <td>Email</td>
+       <td>Smiley</td>
+       <td>Frowny</td>
+     </tr>
+    </thead>
+    <tbody>
+      @teams.map { team =>
+       <tr>
+         <td><a href="@routes.Teams.show(org.key, team.key)">@team.key</a></td>
+         <td>@team.email.getOrElse("N/A")</td>
+         <td>@Html(lib.GradeImage.imageTag(Some(team), Some(lib.GradeImage.Good)))</td>
+         <td>@Html(lib.GradeImage.imageTag(Some(team), Some(lib.GradeImage.Bad)))</td>
+       </tr>
+     }
+    </tbody>
+  </table>
+}

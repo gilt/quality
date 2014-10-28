@@ -1,7 +1,8 @@
 @(tpl: lib.MainTemplate,
   org: com.gilt.quality.models.Organization,
   filters: controllers.Teams.Filters,
-  teams: lib.PaginatedCollection[com.gilt.quality.models.Team]
+  myTeams: lib.PaginatedCollection[com.gilt.quality.models.Team],
+  otherTeams: lib.PaginatedCollection[com.gilt.quality.models.Team]
 )(implicit flash: Flash)
 
 @main(tpl.copy(title = Some("Teams")), section = Some("teams")) {
@@ -18,29 +19,30 @@
     </div>
   </form>
 
-  @if(teams.isEmpty) {
-    <em>No teams found</em>
-  } else {
-    <table class="table table-hover table-condensed">
-      <tbody>
-        @teams.items.map { team =>
-         <tr>
-           <td><a href="@routes.Teams.show(org.key, team.key)">@team.key</a></td>
-         </tr>
-       }
-      </tbody>
-    </table>
+  <h3>Your teams</h3>
+  @teamsTable(org, myTeams.items)
+  @if(myTeams.hasPrevious || myTeams.hasNext) {
+    <ul class="pager">
+      @if(myTeams.hasPrevious) {
+        <li><a href="@routes.Teams.index(org.key, filters.key, myTeams.page - 1, otherTeams.page)">Previous</a></li>
+      }
+      @if(myTeams.hasNext) {
+        <li><a href="@routes.Teams.index(org.key, filters.key, myTeams.page + 1, otherTeams.page)">Next</a></li>
+      }
+    </ul>
+  }
 
-   @if(teams.hasPrevious || teams.hasNext) {
-     <ul class="pager">
-       @if(teams.hasPrevious) {
-         <li><a href="@routes.Teams.index(org.key, filters.key, teams.page - 1)">Previous</a></li>
-       }
-       @if(teams.hasNext) {
-         <li><a href="@routes.Teams.index(org.key, filters.key, teams.page + 1)">Next</a></li>
-       }
-      </ul>
-    }
+  <h3>Other teams</h3>
+  @teamsTable(org, otherTeams.items)
+  @if(otherTeams.hasPrevious || otherTeams.hasNext) {
+    <ul class="pager">
+      @if(otherTeams.hasPrevious) {
+        <li><a href="@routes.Teams.index(org.key, filters.key, myTeams.page, otherTeams.page - 1)">Previous</a></li>
+      }
+      @if(otherTeams.hasNext) {
+        <li><a href="@routes.Teams.index(org.key, filters.key, myTeams.page, otherTeams.page + 1)">Next</a></li>
+      }
+    </ul>
   }
 
 }

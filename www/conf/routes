@@ -22,7 +22,7 @@ POST    /:org/plans/postNoPlan/:incident_id                       controllers.Pl
 POST    /:org/plans/deleteById/:id                                controllers.Plans.postDeleteById(org: String, id: Long, incident_id: Long)
 POST    /:org/plans/grade/:id                                     controllers.Plans.postGrade(org: String, id: Long, score: Int)
 
-GET     /:org/teams/                                              controllers.Teams.index(org: String, key: Option[String] ?= None, page: Int ?= 0)
+GET     /:org/teams/                                              controllers.Teams.index(org: String, key: Option[String] ?= None, myPage: Int ?= 0, otherPage: Int ?= 0)
 GET     /:org/teams/create                                        controllers.Teams.create(org: String)
 POST    /:org/teams/postCreate                                    controllers.Teams.postCreate(org: String)
 GET     /:org/teams/edit                                          controllers.Teams.edit(org: String, key: String)
