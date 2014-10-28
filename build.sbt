@@ -10,10 +10,7 @@ lazy val core = project
   .settings(commonSettings: _*)
   .settings(
     // play-json needs this to resolve correctly when not using Gilt's internal mirrors
-    resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
-    libraryDependencies ++= Seq(
-      "org.apache.commons" % "commons-email" % "1.3.3"
-    )
+    resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/"
   )
 
 lazy val api = project
