@@ -14,10 +14,11 @@ object EmailMessages extends Controller {
     org: String,
     meetingId: Long
   ) = OrgAction { request =>
+    val user = db.UsersDao.findByEmail("michael@gilt.com").getOrElse(request.user)
     MeetingsDao.findByOrganizationAndId(request.org, meetingId) match {
       case None => NotFound
       case Some(meeting) => {
-        val email = MeetingAdjournedEmail(meeting.id).email
+        val email = MeetingAdjournedEmail(meeting.id).email(user)
         Ok(Json.toJson(email))
       }
     }

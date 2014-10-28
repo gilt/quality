@@ -14,12 +14,14 @@ object Teams extends Controller {
   def getByOrg(
     org: String,
     key: Option[String],
+    userGuid: Option[UUID],
     limit: Int = 25,
     offset: Int = 0
   ) = OrgAction { request =>
     val matches = TeamsDao.findAll(
       request.org,
       key = key,
+      userGuid = userGuid,
       limit = limit,
       offset = offset
     )

@@ -1,8 +1,80 @@
-@(meeting: com.gilt.quality.models.Meeting)
+@(
+  user: com.gilt.quality.models.User,
+  meeting: com.gilt.quality.models.Meeting,
+  incidents: actors.MeetingIncidents,
+  allItems: Seq[com.gilt.quality.models.AgendaItem],
+  userTeams: Seq[com.gilt.quality.models.Team],
+  userItems: Seq[com.gilt.quality.models.AgendaItem],
+  otherItems: Seq[com.gilt.quality.models.AgendaItem]
+)
 
 <p>
-  Meeting on @{core.DateHelper.mediumDateTime(meeting.organization, meeting.scheduledAt)} was adjourned
-  at @{core.DateHelper.mediumDateTime(meeting.organization, meeting.adjournedAt.get)}.
+  Dear @user.email,
 </p>
 
-<a href="@lib.Email.qualityWebHostname/@meeting.organization.key/meetings/@meeting.id">View meeting details</a>
+<p>
+  The Perfect Day meeting on @{core.DateHelper.mediumDateTime(meeting.organization, meeting.scheduledAt)}
+  was adjourned at @{core.DateHelper.mediumDateTime(meeting.organization, meeting.adjournedAt.get)}.
+</p>
+
+<h2>Meeting Summary</h2>
+
+<ul>
+
+  @com.gilt.quality.models.Task.all.map { task =>
+    <li> # of incidents in @actors.Emails.taskLabel(task): @java.text.NumberFormat.getIntegerInstance.format(allItems.filter(_.task == task).size) </li>
+    @if(task == com.gilt.quality.models.Task.ReviewPlan) {
+      <ul>
+        <li> Smileys: @java.text.NumberFormat.getIntegerInstance.format(incidents.withSmiley.size)</li>
+        <li> Frownies: @java.text.NumberFormat.getIntegerInstance.format(incidents.withFrowny.size)</li>
+        <li> Not reviewed: @java.text.NumberFormat.getIntegerInstance.format(incidents.withNoGrade.size)</li>
+      </ul>
+    }
+  }
+</ul>
+
+<p>
+  <a href="@lib.Email.qualityWebHostname/@meeting.organization.key/meetings/@meeting.id">View meeting details</a>
+</p>
+
+<h2>Team Assignments</h2>
+
+<h3>Your teams</h3>
+
+@if(userTeams.isEmpty) {
+  <p>
+    You are not currently a member of any teams. If you join a team,
+    this email will highlight the specific incidents assigned to your
+    teams.
+  </p>
+  <p>
+    <a href="@lib.Email.qualityWebHostname/@meeting.organization.key/teams">View teams</a>
+  </p>
+} else {
+  @userItems.groupBy(_.incident.team).map { case (team, items) =>
+    @meetingAdjournedTeamAssignment(meeting, team, items)
+  }
+}
+
+<h3>Other teams</h3>
+
+@if(otherItems.isEmpty) {
+  <p><em>There were no other team assignments</em></p>
+} else {
+  @otherItems.filter(_.task == com.gilt.quality.models.Task.ReviewTeam).groupBy(_.incident.team).map { case (team, items) =>
+    @meetingAdjournedTeamAssignment(meeting, team, items)
+  }
+}
+
+<h2>Plans</h2>
+
+<h3>Smileys</h3>
+@meetingAdjournedPlans(meeting, incidents.withSmiley)
+
+<h3>Frownies</h3>
+@meetingAdjournedPlans(meeting, incidents.withFrowny)
+
+<h3>Not reviewed</h3>
+@meetingAdjournedPlans(meeting, incidents.withNoGrade)
+
+

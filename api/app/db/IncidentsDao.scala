@@ -206,7 +206,7 @@ object IncidentsDao {
       org.map { v => "and organizations.id = {organization_id}" },
       id.map { v => "and incidents.id = {id}" },
       meetingId.map { v => "and incidents.id in (select incident_id from agenda_items where deleted_at is null and meeting_id = {meeting_id})" },
-      teamKey.map { v => "and incidents.team_id = (select id from teams where deleted_at is null and key = lower(trim({team_key})))" },
+      teamKey.map { v => "and teams.key = lower(trim({team_key}))" },
       hasTeam.map { v =>
         v match {
           case true => "and teams.id is not null"

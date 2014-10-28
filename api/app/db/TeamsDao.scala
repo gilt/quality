@@ -5,6 +5,7 @@ import com.gilt.quality.models.{Error, Icons, Organization, Team, TeamForm, User
 import lib.{UrlKey, Validation}
 import anorm._
 import anorm.ParameterValue._
+import java.util.UUID
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -94,9 +95,9 @@ object TeamsDao {
   private val LookupIdQuery = """
     select teams.id
       from teams
-      left join organizations on organizations.id = teams.organization_id and organizations.key = {org_key}
      where teams.deleted_at is null
        and teams.key = {key}
+       and teams.organization_id = {organization_id}
   """
 
   def create(user: User, fullForm: FullTeamForm): Team = {
@@ -179,33 +180,38 @@ object TeamsDao {
     org: Organization,
     key: String
   ): Option[Long] = {
-    DB.withConnection { implicit c =>
-      SQL(LookupIdQuery).on(
-        'org_key -> org.key,
-        'key -> key.trim.toLowerCase
-      )().toList.map { row =>
-        row[Long]("id")
-      }.toSeq.headOption
+    OrganizationsDao.lookupId(org.key).flatMap { orgId =>
+      DB.withConnection { implicit c =>
+        SQL(LookupIdQuery).on(
+          'organization_id -> orgId,
+          'key -> key.trim.toLowerCase
+        )().toList.map { row =>
+          row[Long]("id")
+        }.toSeq.headOption
+      }
     }
   }
 
   def findAll(
     org: Organization,
     key: Option[String] = None,
+    userGuid: Option[UUID] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Team] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       Some("and teams.organization_id = (select id from organizations where deleted_at is null and key = {org_key})"),
-      key.map { v => "and teams.key = {key}" },
+      key.map { v => "and teams.key = lower(trim({key}))" },
+      userGuid.map { v => "and teams.id in (select team_id from team_members where deleted_at is null and user_guid = {user_guid}::uuid)" },
       Some("order by teams.key"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
       Some(NamedParameter("org_key", toParameterValue(org.key))),
-      key.map { v => NamedParameter("key", toParameterValue(v.trim.toLowerCase)) }
+      key.map { v => NamedParameter("key", toParameterValue(v)) },
+      userGuid.map { v => NamedParameter("user_guid", toParameterValue(v.toString)) }
     ).flatten
 
     DB.withConnection { implicit c =>

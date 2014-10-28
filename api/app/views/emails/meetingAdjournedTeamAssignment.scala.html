@@ -1,0 +1,20 @@
+@(
+  meeting: com.gilt.quality.models.Meeting,
+  team: Option[com.gilt.quality.models.Team],
+  items: Seq[com.gilt.quality.models.AgendaItem]
+)
+
+<p>
+  @if(team.isEmpty) {
+    Pending
+  } else {
+    <a href="@lib.Email.qualityWebHostname/@meeting.organization.key/teams/@team.get.key">@team.get.key</a>
+  }
+  <ul>
+    @items.map { item =>
+      <li><a href="@lib.Email.qualityWebHostname/@meeting.organization.key/incidents/@item.incident.id?meetingId=@meeting.id">#@item.incident.id</a>: @item.incident.summary</li>
+    }
+  </ul>
+</p>
+
+
