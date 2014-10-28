@@ -6,15 +6,32 @@ import lib.{ Pagination, PaginatedCollection }
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import java.util.UUID
+import java.text.NumberFormat
 
 import play.api._
 import play.api.mvc._
+import play.api.libs.json._
 import play.api.data._
 import play.api.data.Forms._
 
 object TeamMembers extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
+
+  def memberSummary(
+    org: String,
+    key: String
+  ) = OrgAction.async { implicit request =>
+    for {
+      memberSummary <- Api.instance.teams.getMemberSummaryByOrgAndKey(
+        org = org,
+        key = key
+      )
+    } yield {
+      val numberMembers = memberSummary.map(_.numberMembers).getOrElse(0l)
+      Ok(Json.toJson(Map("number_members" -> NumberFormat.getIntegerInstance.format(numberMembers))))
+    }
+  }
 
   def add(
     org: String,

@@ -5,7 +5,7 @@
   otherTeams: lib.PaginatedCollection[com.gilt.quality.models.Team]
 )(implicit flash: Flash)
 
-@main(tpl.copy(title = Some("Teams")), section = Some("teams")) {
+@main(tpl.copy(title = Some("Teams")), section = Some("teams"), jsFiles = Seq("teams.js")) {
 
   <div class="pull-right">
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Teams.create(org.key)">Add team</a>
