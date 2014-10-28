@@ -23,7 +23,7 @@
          <td>@team.email.getOrElse("N/A")</td>
          <td>@Html(lib.GradeImage.imageTag(Some(team), Some(lib.GradeImage.Good)))</td>
          <td>@Html(lib.GradeImage.imageTag(Some(team), Some(lib.GradeImage.Bad)))</td>
-         <td><span id="team_architecture_number_members"><em>pending</em></span></td>
+         <td><span class="team_number_members" teamKey="@{team.key}" id="team_@{team.key}_number_members"><em>pending</em></span></td>
        </tr>
      }
     </tbody>

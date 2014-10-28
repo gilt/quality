@@ -1,10 +1,13 @@
 $(function(){
-  $.ajax({
-            type: 'GET',
-            url: '/gilt/teams/architecture/member_summary',
-            dataType: 'json',
-            success: function(data) {
-                $('#team_architecture_number_members').html(data.number_members);
-            }
-          });
+  $('.team_number_members').each(function(el) {
+    var teamKey = this.getAttribute("teamKey");
+    $.ajax({
+      type: 'GET',
+      url: '/gilt/teams/' + teamKey + '/member_summary',
+      dataType: 'json',
+      success: function(data) {
+        $('#team_' + teamKey + '_number_members').html(data.number_members);
+      }
+    });
+  });
 });
