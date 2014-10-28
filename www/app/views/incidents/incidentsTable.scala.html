@@ -21,7 +21,13 @@
        <td>@core.DateHelper.shortDate(org, incident.createdAt)</td>
        <td>@incident.severity</td>
        <td>@incidentPlan(incident)</td>
-       <td>@incident.team.map(_.key).getOrElse("")</td>
+       <td>
+         @if(incident.team.isEmpty) {
+	   "N/A"
+         } else {
+           <a href="@routes.Teams.show(org.key, incident.team.get.key)">@incident.team.get.key</a>
+         }
+       </td>
        <td>@incident.summary</td>
      </tr>
    }
