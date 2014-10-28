@@ -6,6 +6,10 @@ GET     /login                                                    controllers.Lo
 GET     /login/                                                   controllers.LoginController.index(return_url: Option[String] ?= None)
 POST    /login/                                                   controllers.LoginController.postIndex
 
+GET     /logout                                                   controllers.LogoutController.index
+GET     /logout/                                                  controllers.LogoutController.index
+GET     /logout/confirmation                                      controllers.LogoutController.confirmation
+
 GET     /:org                                                     controllers.Dashboard.index(org: String)
 GET     /:org/incidents/                                          controllers.Incidents.index(org: String, team_key: Option[String] ?= None, has_team: Option[String] ?= None, has_plan: Option[String] ?= None, has_grade: Option[String] ?= None, page: Int ?= 0)
 GET     /:org/incidents/create                                    controllers.Incidents.create(org: String, teamKey: Option[String] ?= None)

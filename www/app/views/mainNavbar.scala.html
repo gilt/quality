@@ -14,15 +14,17 @@
           <li><a href="/login">Login/Register</a></li>
         </ul>
       } else {
-        <ul class="nav navbar-nav navbar-right">
-          <li class="dropdown">
-            @user.get.email <b class="caret"></b></a>
-            <ul class="dropdown-menu">
-              <li><a href="/logout">Logout</a></li>
-            </ul>
-          </li>
-        </ul>
+        <div class="dropdown nav navbar-nav navbar-right">
+          <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
+            @user.get.email <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="/logout">Logout</a></li>
+          </ul>
+        </div>
       }
     </div>
   </div>
 </div>
+
+
