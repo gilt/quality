@@ -16,6 +16,8 @@ trait AgendaItems {
     id: Option[Long],
     meetingId: Option[Long],
     incidentId: Option[Long],
+    teamKey: Option[String],
+    isAdjourned: Option[Boolean],
     task: Option[com.gilt.quality.models.Task],
     limit: Int = 25,
     offset: Int = 0
@@ -24,6 +26,8 @@ trait AgendaItems {
       meetingId = meetingId,
       id = id,
       incidentId = incidentId,
+      teamKey = teamKey,
+      isAdjourned = isAdjourned,
       task = task,
       limit = limit,
       offset = offset

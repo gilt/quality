@@ -998,6 +998,8 @@ package com.gilt.quality {
         id: scala.Option[Long] = None,
         meetingId: scala.Option[Long] = None,
         incidentId: scala.Option[Long] = None,
+        teamKey: scala.Option[String] = None,
+        isAdjourned: scala.Option[Boolean] = None,
         task: scala.Option[com.gilt.quality.models.Task] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
@@ -1006,6 +1008,8 @@ package com.gilt.quality {
           id.map("id" -> _.toString),
           meetingId.map("meeting_id" -> _.toString),
           incidentId.map("incident_id" -> _.toString),
+          teamKey.map("team_key" -> _),
+          isAdjourned.map("is_adjourned" -> _.toString),
           task.map("task" -> _.toString),
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
@@ -1693,6 +1697,8 @@ package com.gilt.quality {
       id: scala.Option[Long] = None,
       meetingId: scala.Option[Long] = None,
       incidentId: scala.Option[Long] = None,
+      teamKey: scala.Option[String] = None,
+      isAdjourned: scala.Option[Boolean] = None,
       task: scala.Option[com.gilt.quality.models.Task] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None

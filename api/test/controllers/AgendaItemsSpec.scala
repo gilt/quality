@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.quality.FailedRequest
-import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Task}
+import com.gilt.quality.models.{AdjournForm, AgendaItem, AgendaItemForm, Task}
 import com.gilt.quality.error.ErrorsResponse
 import org.joda.time.DateTime
 import java.util.UUID
@@ -15,7 +15,44 @@ class AgendaItemsSpec extends BaseSpec {
 
   lazy val org = createOrganization()
 
-  "POST /:org/meetings/:meeting_id/agenda_items" in new WithServer {
+  "GET /agenda_items by teamKey" in new WithServer {
+    val team = createTeam(org)
+    val otherTeam = createTeam(org)
+    val incident = createIncident(
+      org,
+      Some(createIncidentForm.copy(teamKey = Some(team.key)))
+    )
+    val item = createAgendaItem(
+      org,
+      Some(createAgendaItemForm(org, incident = Some(incident)))
+    )
+
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), teamKey = Some(UUID.randomUUID.toString))) must be(Seq.empty)
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), teamKey = Some(otherTeam.key))) must be(Seq.empty)
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), teamKey = Some(team.key))).map(_.id) must be(Seq(item.id))
+  }
+
+  "GET /agenda_items by isAdjourned" in new WithServer {
+    val item = createAgendaItem(org)
+
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id))).map(_.id) must be(Seq(item.id))
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), isAdjourned = Some(false))).map(_.id) must be(Seq(item.id))
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), isAdjourned = Some(true))).map(_.id) must be(Seq.empty)
+
+    await(
+      client.meetings.postAdjournByOrgAndId(
+        org = org.key,
+        id = item.meeting.id,
+        adjournForm = AdjournForm()
+      )
+    )
+
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id))).map(_.id) must be(Seq(item.id))
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), isAdjourned = Some(false))).map(_.id) must be(Seq.empty)
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, id = Some(item.id), isAdjourned = Some(true))).map(_.id) must be(Seq(item.id))
+  }
+
+  "POST /:org/agenda_items" in new WithServer {
     val meeting = createMeeting(org)
     val incident = createIncident(org)
     val item = createAgendaItem(
@@ -33,7 +70,7 @@ class AgendaItemsSpec extends BaseSpec {
     item.task must be(Task.ReviewTeam)
   }
 
-  "POST /:org/meetings/:meeting_id/agenda_items validates task" in new WithServer {
+  "POST /:org/agenda_items validates task" in new WithServer {
     val meeting = createMeeting(org)
     val incident = createIncident(org)
 
@@ -51,7 +88,7 @@ class AgendaItemsSpec extends BaseSpec {
     }.errors.map(_.message) must be (Seq("Invalid task[foo]"))
   }
 
-  "GET /meetings/:meeting_id/agenda_items filters by meeting, agenda item" in new WithServer {
+  "GET /agenda_items filters by meeting, agenda item" in new WithServer {
     val org = createOrganization()
     val meeting = createMeeting(org)
     val item1 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
@@ -64,13 +101,13 @@ class AgendaItemsSpec extends BaseSpec {
     await(client.agendaItems.getAgendaItemsByOrg(org.key, meetingId = Some(meeting.id), id = Some(-1))).map(_.id) must be(Seq.empty)
   }
 
-  "GET /meetings/:meeting_id/agenda_items is 404 if org not found" in new WithServer {
+  "GET /agenda_items is 404 if org not found" in new WithServer {
     intercept[FailedRequest] {
       await(client.agendaItems.getAgendaItemsByOrg(UUID.randomUUID.toString))
     }.response.status must be(404)
   }
 
-  "GET /meetings/:meeting_id/agenda_items paginates" in new WithServer {
+  "GET /agenda_items paginates" in new WithServer {
     val org = createOrganization()
     val meeting = createMeeting(org)
     val item1 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
@@ -81,14 +118,14 @@ class AgendaItemsSpec extends BaseSpec {
     await(client.agendaItems.getAgendaItemsByOrg(org.key, meetingId = Some(meeting.id), limit = Some(1), offset = Some(2))) must be(Seq.empty)
   }
 
-  "GET /meetings/:meeting_id/agenda_items/:id" in new WithServer {
+  "GET /agenda_items/:id" in new WithServer {
     val item = createAgendaItem(org)
 
     await(client.agendaItems.getAgendaItemsByOrgAndId(org.key, item.id)).map(_.id) must be(Some(item.id))
     await(client.agendaItems.getAgendaItemsByOrgAndId(org.key, -1)) must be(None)
   }
 
-  "DELETE /meetings/:meeting_id/agenda_items/:id" in new WithServer {
+  "DELETE /agenda_items/:id" in new WithServer {
     val item = createAgendaItem(org)
 
     await(client.agendaItems.getAgendaItemsByOrgAndId(org.key, item.id)).map(_.id) must be(Some(item.id))

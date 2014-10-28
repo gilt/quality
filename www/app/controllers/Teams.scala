@@ -48,11 +48,19 @@ object Teams extends Controller {
   def show(
     org: String,
     key: String,
+    agendaItemsPage: Int = 0,
     incidentsPage: Int = 0,
     membersPage: Int = 0
   ) = TeamAction.async { implicit request =>
     for {
       stats <- Api.instance.Statistics.getByOrg(org = org, teamKey = Some(key), numberHours = Some(Dashboard.OneWeekInHours * 12))
+      agendaItems <- Api.instance.agendaItems.getAgendaItemsByOrg(
+        org = org,
+        teamKey = Some(key),
+        
+        limit = Some(Pagination.DefaultLimit+1),
+        offset = Some(agendaItemsPage * Pagination.DefaultLimit)
+      )
       incidents <- Api.instance.incidents.getByOrg(
         org = org,
         teamKey = Some(key),

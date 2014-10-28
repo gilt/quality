@@ -123,6 +123,8 @@ object AgendaItemsDao {
     org: Option[Organization] = None,
     meetingId: Option[Long] = None,
     incidentId: Option[Long] = None,
+    teamKey: Option[String] = None,
+    isAdjourned: Option[Boolean] = None,
     task: Option[Task] = None,
     limit: Int = 50,
     offset: Int = 0
@@ -133,6 +135,13 @@ object AgendaItemsDao {
       org.map { v => "and organizations.key = {organization_key}" },
       meetingId.map { v => "and agenda_items.meeting_id = {meeting_id}" },
       incidentId.map { v => "and agenda_items.incident_id = {incident_id}" },
+      teamKey.map { v => "and teams.key = {team_key}" },
+      isAdjourned.map { v =>
+        v match {
+          case true => "and meeting_adjournments.adjourned_at is not null"
+          case false => "and meeting_adjournments.adjourned_at is null"
+        }
+      },
       task.map { v => "and agenda_items.task = {task}" },
       Some("order by agenda_items.incident_id"),
       Some(s"limit ${limit} offset ${offset}")
@@ -143,6 +152,7 @@ object AgendaItemsDao {
       org.map { v => NamedParameter("organization_key", toParameterValue(v.key)) },
       meetingId.map { v => NamedParameter("meeting_id", toParameterValue(v)) },
       incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
+      teamKey.map { v => NamedParameter("team_key", toParameterValue(v)) },
       task.map { v => NamedParameter("task", toParameterValue(v.toString)) }
     ).flatten
 
