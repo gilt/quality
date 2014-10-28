@@ -33,7 +33,7 @@ object PlansDao {
            plans.incident_id,
            plans.body,
            plans.created_at,
-           grades.score as grade_score
+           grades.score as grade
       from plans
       join incidents on incidents.deleted_at is null and incidents.id = plans.incident_id
       left join teams on teams.deleted_at is null and teams.id = incidents.team_id
@@ -148,16 +148,26 @@ object PlansDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
-        Plan(
-          id = row[Long]("id"),
-          incidentId = row[Long]("incident_id"),
-          body = row[String]("body"),
-          grade = row[Option[Int]]("grade_score"),
-          createdAt = row[DateTime]("created_at")
-        )
-      }.toSeq
+      SQL(sql).on(bind: _*)().toList.map(row =>
+        fromRow(row, row[Long]("incident_id"))
+      ).toSeq
     }
+  }
+
+  private[db] def fromRow(
+    row: anorm.Row,
+    incidentId: Long,
+    prefix: Option[String] = None
+  ): Plan = {
+    val p = prefix.map( _ + "_").getOrElse("")
+
+    Plan(
+      id = row[Long](s"${p}id"),
+      incidentId = incidentId,
+      body = row[String](s"${p}body"),
+      grade = row[Option[Int]](s"${p}grade"),
+      createdAt = row[DateTime](s"${p}created_at")
+    )
   }
 
 }

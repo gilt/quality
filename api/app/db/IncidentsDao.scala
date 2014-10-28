@@ -251,18 +251,7 @@ object IncidentsDao {
     organizationPrefix: String = "organization"
   ): Incident = {
     val p = prefix.map( _ + "_").getOrElse("")
-
     val incidentId = row[Long](s"${p}id")
-
-    val plan = row[Option[Long]](s"${planPrefix}_id").map { planId =>
-      Plan(
-        id = planId,
-        incidentId = incidentId,
-        body = row[String](s"${planPrefix}_body"),
-        grade = row[Option[Int]](s"${planPrefix}_grade"),
-        createdAt = row[DateTime](s"${planPrefix}_created_at")
-      )
-    }
 
     Incident(
       id = incidentId,
@@ -272,7 +261,7 @@ object IncidentsDao {
       summary = row[String](s"${p}summary"),
       description = row[Option[String]](s"${p}description"),
       tags = Seq.empty,
-      plan = plan,
+      plan = row[Option[Long]](s"${planPrefix}_id").map { _ => PlansDao.fromRow(row, incidentId, Some(planPrefix)) },
       createdAt = row[DateTime](s"${p}created_at")
     )
   }

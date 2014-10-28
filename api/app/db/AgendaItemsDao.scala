@@ -32,7 +32,7 @@ object AgendaItemsDao {
            plans.id as plan_id,
            plans.body as plan_body,
            plans.created_at as plan_created_at,
-           grades.score as grade
+           grades.score as plan_grade
       from agenda_items
       join meetings on meetings.deleted_at is null and meetings.id = agenda_items.meeting_id
       left join meeting_adjournments on meeting_adjournments.deleted_at is null and meeting_adjournments.meeting_id = meetings.id      
