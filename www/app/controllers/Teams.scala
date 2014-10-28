@@ -71,12 +71,17 @@ object Teams extends Controller {
         key = key,
         userGuid = Some(request.user.guid)
       )
+      memberSummary <- Api.instance.teams.getMemberSummaryByOrgAndKey(
+        org = org,
+        key = key
+      )
     } yield {
       Ok(
         views.html.teams.show(
           request.mainTemplate(),
           request.team,
           stats.headOption,
+          memberSummary.head,
           PaginatedCollection(agendaItemsPage, agendaItems),
           PaginatedCollection(membersPage, members),
           isMember = !isMemberCollection.isEmpty

@@ -66,8 +66,9 @@ object TeamMembersDao {
   private val MemberSummaryQuery = s"""
     select count(*) as number_members
       from team_members
-     where team_id = (select id from teams where deleted_at is null and key = {team_key})
-       and deleted_at is null
+      join teams on teams.deleted_at is null and team_members.team_id = teams.id and teams.organization_id = {organization_id}
+     where teams.key = {team_key}
+       and team_members.deleted_at is null
   """
 
   def upsert(user: User, form: TeamMemberForm): TeamMember = {
@@ -106,13 +107,23 @@ object TeamMembersDao {
     org: Organization,
     team: Team
   ): TeamMemberSummary = {
-    DB.withConnection { implicit c =>
-      SQL(MemberSummaryQuery).on('team_key -> team.key)().toList.map { row =>
-        TeamMemberSummary(
-          team = team,
-          numberMembers = row[Long]("number_members")
+    OrganizationsDao.lookupId(org.key) match {
+      case None => TeamMemberSummary(team = team, numberMembers = 0)
+      case Some(orgId) => {
+        val bind = Seq(
+          NamedParameter("organization_id", toParameterValue(orgId)),
+          NamedParameter("team_key", toParameterValue(team.key))
         )
-      }.toSeq.head
+
+        DB.withConnection { implicit c =>
+          SQL(MemberSummaryQuery).on(bind: _*)().toList.map { row =>
+            TeamMemberSummary(
+              team = team,
+              numberMembers = row[Long]("number_members")
+            )
+          }.toSeq.head
+        }
+      }
     }
   }
 
