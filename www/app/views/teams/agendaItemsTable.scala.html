@@ -1,0 +1,28 @@
+@(org: com.gilt.quality.models.Organization,
+  items: Seq[com.gilt.quality.models.AgendaItem]
+)
+
+<table class="table table-hover table-condensed">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Meeting</th>
+      <th>Task</th>
+      <th>Severity</th>
+      <th>Plan</th>
+      <th>Summary</th>
+    </tr>
+  </thead>
+  <tbody>
+    @items.map { item =>
+     <tr>
+       <td><a href="@routes.Incidents.show(org.key, item.incident.id, meetingId = Some(item.meeting.id))">@item.incident.id</a></td>
+       <td><a href="@routes.Meetings.show(org.key, item.meeting.id)">@core.DateHelper.shortDate(org, item.meeting.scheduledAt)</a></td>
+       <td>@core.Defaults.taskLabel(item.task)</td>
+       <td>@item.incident.severity</td>
+       <td>@incidents.incidentPlan(item.incident)</td>
+       <td>@item.incident.summary</td>
+     </tr>
+   }
+  </tbody>
+</table>

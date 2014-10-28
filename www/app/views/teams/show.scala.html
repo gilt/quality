@@ -1,7 +1,7 @@
 @(tpl: lib.MainTemplate,
   team: com.gilt.quality.models.Team,
   stats: Option[com.gilt.quality.models.Statistic],
-  incidents: lib.PaginatedCollection[com.gilt.quality.models.Incident],
+  agendaItems: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem],
   members: lib.PaginatedCollection[com.gilt.quality.models.TeamMember],
   isMember: Boolean
 )(implicit flash: Flash)
@@ -20,6 +20,7 @@
 
 
   <ul>
+    <li><a href="@routes.Incidents.index(team.organization.key, team_key = Some(team.key))">View incidents</a></li>
     <li><a href="@routes.Teams.edit(team.organization.key, team.key)">Edit</a></li>
     <li><a href="@routes.Teams.postDeleteByKey(team.organization.key, team.key)" class="delete" data-confirm="Are you sure to delete this team?">Delete</a></li>
   </ul>
@@ -33,22 +34,23 @@
     <li>Total Open Incidents: <a href="@routes.Incidents.index(team.organization.key, team_key = Some(team.key), has_plan = Some("0"))">@stats.get.totalOpenIncidents</a></li>
   }
 
-  <h3>Incidents</h3>
-  @if(incidents.isEmpty) {
-    <em>No incidents found</em>
+  <h3>Active Incidents</h3>
+  @if(agendaItems.isEmpty) {
+    <em>None</em>
   } else {
-    @views.html.incidents.incidentsTable(team.organization, incidents.items, false)
-  
-    @if(incidents.hasPrevious || incidents.hasNext) {
+    @agendaItemsTable(team.organization, agendaItems.items)
+
+    @if(agendaItems.hasPrevious || agendaItems.hasNext) {
       <ul class="pager">
-        @if(incidents.hasPrevious) {
-          <li><a href="@routes.Teams.show(team.organization.key, team.key, incidents.page - 1, members.page)">Previous</a></li>
+        @if(agendaItems.hasPrevious) {
+          <li><a href="@routes.Teams.show(team.organization.key, team.key, agendaItems.page - 1, members.page)">Previous</a></li>
         }
-        @if(incidents.hasNext) {
-          <li><a href="@routes.Teams.show(team.organization.key, team.key, incidents.page + 1, members.page)">Next</a></li>
+        @if(agendaItems.hasNext) {
+          <li><a href="@routes.Teams.show(team.organization.key, team.key, agendaItems.page + 1, members.page)">Next</a></li>
         }
       </ul>
     }
+
   }
 
   <h3>Members</h3>
@@ -69,10 +71,10 @@
     @if(members.hasPrevious || members.hasNext) {
       <ul class="pager">
         @if(members.hasPrevious) {
-          <li><a href="@routes.Teams.show(team.organization.key, team.key, incidents.page, members.page - 1)">Previous</a></li>
+          <li><a href="@routes.Teams.show(team.organization.key, team.key, agendaItems.page, members.page - 1)">Previous</a></li>
         }
         @if(members.hasNext) {
-          <li><a href="@routes.Teams.show(team.organization.key, team.key, incidents.page, members.page + 1)">Next</a></li>
+          <li><a href="@routes.Teams.show(team.organization.key, team.key, agendaItems.page, members.page + 1)">Next</a></li>
         }
       </ul>
     }

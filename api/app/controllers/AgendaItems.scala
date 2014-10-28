@@ -12,7 +12,8 @@ object AgendaItems extends Controller with AgendaItems
 trait AgendaItems {
   this: Controller =>
 
-  def getByOrg(    org: String,
+  def getByOrg(
+    org: String,
     id: Option[Long],
     meetingId: Option[Long],
     incidentId: Option[Long],
@@ -23,6 +24,7 @@ trait AgendaItems {
     offset: Int = 0
   ) = OrgAction { request =>
     val items = AgendaItemsDao.findAll(
+      org = Some(request.org),
       meetingId = meetingId,
       id = id,
       incidentId = incidentId,
