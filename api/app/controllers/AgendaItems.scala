@@ -16,6 +16,7 @@ trait AgendaItems {
     org: String,
     meetingId: Long,
     id: Option[Long],
+    incidentId: Option[Long],
     task: Option[com.gilt.quality.models.Task],
     limit: Int = 25,
     offset: Int = 0
@@ -23,6 +24,7 @@ trait AgendaItems {
     val items = AgendaItemsDao.findAll(
       meetingId = Some(request.meeting.id),
       id = id,
+      incidentId = incidentId,
       task = task,
       limit = limit,
       offset = offset

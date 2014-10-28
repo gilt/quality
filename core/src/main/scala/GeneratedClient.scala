@@ -9,6 +9,7 @@ package com.gilt.quality.models {
    */
   case class AgendaItem(
     id: Long,
+    meeting: com.gilt.quality.models.Meeting,
     incident: com.gilt.quality.models.Incident,
     task: com.gilt.quality.models.Task
   )
@@ -509,6 +510,7 @@ package com.gilt.quality.models {
     implicit def jsonReadsQualityAgendaItem: play.api.libs.json.Reads[AgendaItem] = {
       (
         (__ \ "id").read[Long] and
+        (__ \ "meeting").read[com.gilt.quality.models.Meeting] and
         (__ \ "incident").read[com.gilt.quality.models.Incident] and
         (__ \ "task").read[com.gilt.quality.models.Task]
       )(AgendaItem.apply _)
@@ -517,6 +519,7 @@ package com.gilt.quality.models {
     implicit def jsonWritesQualityAgendaItem: play.api.libs.json.Writes[AgendaItem] = {
       (
         (__ \ "id").write[Long] and
+        (__ \ "meeting").write[com.gilt.quality.models.Meeting] and
         (__ \ "incident").write[com.gilt.quality.models.Incident] and
         (__ \ "task").write[com.gilt.quality.models.Task]
       )(unlift(AgendaItem.unapply _))
@@ -991,12 +994,14 @@ package com.gilt.quality {
         org: String,
         meetingId: Long,
         id: scala.Option[Long] = None,
+        incidentId: scala.Option[Long] = None,
         task: scala.Option[com.gilt.quality.models.Task] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.AgendaItem]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
+          incidentId.map("incident_id" -> _.toString),
           task.map("task" -> _.toString),
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
@@ -1686,6 +1691,7 @@ package com.gilt.quality {
       org: String,
       meetingId: Long,
       id: scala.Option[Long] = None,
+      incidentId: scala.Option[Long] = None,
       task: scala.Option[com.gilt.quality.models.Task] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None

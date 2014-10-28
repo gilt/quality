@@ -11,7 +11,7 @@ GET        /users                                                 controllers.Us
 GET        /users/:guid                                           controllers.Users.getByGuid(guid: java.util.UUID)
 POST       /users/authenticate                                    controllers.Users.postAuthenticate()
 POST       /users                                                 controllers.Users.post()
-GET        /:org/meetings/:meeting_id/agenda_items                controllers.AgendaItems.getMeetingsByOrgAndMeetingId(org: String, meeting_id: Long, id: Option[Long], task: Option[com.gilt.quality.models.Task], limit: Int ?= 25, offset: Int ?= 0)
+GET        /:org/meetings/:meeting_id/agenda_items                controllers.AgendaItems.getMeetingsByOrgAndMeetingId(org: String, meeting_id: Long, id: Option[Long], incident_id: Option[Long], task: Option[com.gilt.quality.models.Task], limit: Int ?= 25, offset: Int ?= 0)
 GET        /:org/meetings/:meeting_id/agenda_items/:id            controllers.AgendaItems.getMeetingsByOrgAndMeetingIdAndId(org: String, meeting_id: Long, id: Long)
 POST       /:org/meetings/:meeting_id/agenda_items                controllers.AgendaItems.postMeetingsByOrgAndMeetingId(org: String, meeting_id: Long)
 DELETE     /:org/meetings/:meeting_id/agenda_items/:id            controllers.AgendaItems.deleteMeetingsByOrgAndMeetingIdAndId(org: String, meeting_id: Long, id: Long)
