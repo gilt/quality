@@ -39,7 +39,7 @@
   @if(agendaItems.isEmpty) {
     <em>None</em>
   } else {
-    @agendaItemsTable(team.organization, agendaItems.items)
+    @agendaItemsTable(team.organization, agendaItems.items, showTeam = false)
 
     @if(agendaItems.hasPrevious || agendaItems.hasNext) {
       <ul class="pager">
