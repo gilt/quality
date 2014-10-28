@@ -129,8 +129,9 @@ object MeetingsDao {
         AgendaItemsDao.create(
           UsersDao.Actor,
           FullAgendaItemForm(
-            meeting,
+            meeting.organization,
             AgendaItemForm(
+              meetingId = meeting.id,
               incidentId = incident.id,
               task = task
             )

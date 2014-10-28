@@ -15,6 +15,7 @@ package com.gilt.quality.models {
   )
 
   case class AgendaItemForm(
+    meetingId: Long,
     incidentId: Long,
     task: com.gilt.quality.models.Task
   )
@@ -527,6 +528,7 @@ package com.gilt.quality.models {
 
     implicit def jsonReadsQualityAgendaItemForm: play.api.libs.json.Reads[AgendaItemForm] = {
       (
+        (__ \ "meeting_id").read[Long] and
         (__ \ "incident_id").read[Long] and
         (__ \ "task").read[com.gilt.quality.models.Task]
       )(AgendaItemForm.apply _)
@@ -534,6 +536,7 @@ package com.gilt.quality.models {
 
     implicit def jsonWritesQualityAgendaItemForm: play.api.libs.json.Writes[AgendaItemForm] = {
       (
+        (__ \ "meeting_id").write[Long] and
         (__ \ "incident_id").write[Long] and
         (__ \ "task").write[com.gilt.quality.models.Task]
       )(unlift(AgendaItemForm.unapply _))
@@ -990,10 +993,10 @@ package com.gilt.quality {
     def users: Users = Users
 
     object AgendaItems extends AgendaItems {
-      override def getMeetingsAndAgendaItemsByOrgAndMeetingId(
+      override def getAgendaItemsByOrg(
         org: String,
-        meetingId: Long,
         id: scala.Option[Long] = None,
+        meetingId: scala.Option[Long] = None,
         incidentId: scala.Option[Long] = None,
         task: scala.Option[com.gilt.quality.models.Task] = None,
         limit: scala.Option[Int] = None,
@@ -1001,49 +1004,47 @@ package com.gilt.quality {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.AgendaItem]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
+          meetingId.map("meeting_id" -> _.toString),
           incidentId.map("incident_id" -> _.toString),
           task.map("task" -> _.toString),
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
 
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${meetingId}/agenda_items", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/agenda_items", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.AgendaItem]]
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def getMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(
+      override def getAgendaItemsByOrgAndId(
         org: String,
-        meetingId: Long,
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.AgendaItem]] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${meetingId}/agenda_items/${id}").map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/agenda_items/${id}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.AgendaItem])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def postMeetingsAndAgendaItemsByOrgAndMeetingId(agendaItemForm: com.gilt.quality.models.AgendaItemForm, 
-        org: String,
-        meetingId: Long
+      override def postAgendaItemsByOrg(agendaItemForm: com.gilt.quality.models.AgendaItemForm, 
+        org: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.AgendaItem] = {
         val payload = play.api.libs.json.Json.toJson(agendaItemForm)
 
-        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${meetingId}/agenda_items", body = Some(payload)).map {
+        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/agenda_items", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.AgendaItem]
           case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def deleteMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(
+      override def deleteAgendaItemsByOrgAndId(
         org: String,
-        meetingId: Long,
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
-        _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${meetingId}/agenda_items/${id}").map {
+        _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/agenda_items/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
@@ -1687,33 +1688,30 @@ package com.gilt.quality {
     /**
      * Search agenda items for a given meeting. Results are always paginated.
      */
-    def getMeetingsAndAgendaItemsByOrgAndMeetingId(
+    def getAgendaItemsByOrg(
       org: String,
-      meetingId: Long,
       id: scala.Option[Long] = None,
+      meetingId: scala.Option[Long] = None,
       incidentId: scala.Option[Long] = None,
       task: scala.Option[com.gilt.quality.models.Task] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.AgendaItem]]
 
-    def getMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(
+    def getAgendaItemsByOrgAndId(
       org: String,
-      meetingId: Long,
       id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.AgendaItem]]
 
     /**
      * Creates an agenda item for this meeting.
      */
-    def postMeetingsAndAgendaItemsByOrgAndMeetingId(agendaItemForm: com.gilt.quality.models.AgendaItemForm, 
-      org: String,
-      meetingId: Long
+    def postAgendaItemsByOrg(agendaItemForm: com.gilt.quality.models.AgendaItemForm, 
+      org: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.AgendaItem]
 
-    def deleteMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(
+    def deleteAgendaItemsByOrgAndId(
       org: String,
-      meetingId: Long,
       id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }

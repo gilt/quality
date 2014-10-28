@@ -128,21 +128,24 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
 
   def createAgendaItem(
     org: Organization,
-    meeting: Option[Meeting] = None,
     form: Option[AgendaItemForm] = None
   ): AgendaItem = {
     await(
-      client.agendaItems.postMeetingsAndAgendaItemsByOrgAndMeetingId(
+      client.agendaItems.postAgendaItemsByOrg(
         org = org.key,
-        meetingId = meeting.getOrElse(createMeeting(org)).id,
         agendaItemForm = form.getOrElse(createAgendaItemForm(org))
       )
     )
   }
 
-  def createAgendaItemForm(org: Organization) = {
+  def createAgendaItemForm(
+    org: Organization,
+    incident: Option[Incident] = None,
+    meeting: Option[Meeting] = None
+  ) = {
     AgendaItemForm(
-      incidentId = createIncident(org).id,
+      incidentId = incident.getOrElse(createIncident(org)).id,
+      meetingId = meeting.getOrElse(createMeeting(org)).id,
       task = Task.ReviewTeam
     )
   }

@@ -10,9 +10,27 @@ import play.api.Play.current
 import org.joda.time.DateTime
 
 case class FullAgendaItemForm(
-  meeting: Meeting,
+  org: Organization,
   form: AgendaItemForm
-)
+) {
+
+  lazy val meeting = MeetingsDao.findByOrganizationAndId(org, form.meetingId)
+
+  lazy val validate: Seq[Error] = {
+    val meetingErrors = meeting match {
+      case None => Seq(s"Meeting ${form.meetingId} not found")
+      case Some(_) => Seq.empty
+    }
+
+    val taskErrors = form.task match {
+      case Task.UNDEFINED(key) => Seq(s"Invalid task[$key]")
+      case _ => Seq.empty
+    }
+
+    Validation.errors(taskErrors ++ meetingErrors)
+  }
+
+}
 
 object AgendaItemsDao {
 
@@ -58,20 +76,12 @@ object AgendaItemsDao {
        and deleted_at is null
   """
 
-  def validate(fullForm: FullAgendaItemForm): Seq[Error] = {
-    fullForm.form.task match {
-      case Task.UNDEFINED(key) => Validation.error(s"Invalid task[$key]")
-      case _ => Seq.empty
-    }
-  }
-
   def create(user: User, fullForm: FullAgendaItemForm): AgendaItem = {
-    val errors = validate(fullForm)
-    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
+    assert(fullForm.validate.isEmpty, fullForm.validate.map(_.message).mkString("\n"))
 
     val id: Long = DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(
-        'meeting_id -> fullForm.meeting.id,
+        'meeting_id -> fullForm.form.meetingId,
         'task -> fullForm.form.task.toString,
         'incident_id -> fullForm.form.incidentId,
         'user_guid -> user.guid
@@ -101,15 +111,16 @@ object AgendaItemsDao {
     findAll(id = Some(id), limit = 1).headOption
   }
 
-  def findByMeetingIdAndId(
-    meetingId: Long,
+  def findByOrganizationAndId(
+    org: Organization,
     id: Long
   ): Option[AgendaItem] = {
-    findAll(id = Some(id), meetingId = Some(meetingId), limit = 1).headOption
+    findAll(org = Some(org), id = Some(id), limit = 1).headOption
   }
 
   def findAll(
     id: Option[Long] = None,
+    org: Option[Organization] = None,
     meetingId: Option[Long] = None,
     incidentId: Option[Long] = None,
     task: Option[Task] = None,
@@ -119,6 +130,7 @@ object AgendaItemsDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and agenda_items.id = {id}" },
+      org.map { v => "and organizations.key = {organization_key}" },
       meetingId.map { v => "and agenda_items.meeting_id = {meeting_id}" },
       incidentId.map { v => "and agenda_items.incident_id = {incident_id}" },
       task.map { v => "and agenda_items.task = {task}" },
@@ -128,6 +140,7 @@ object AgendaItemsDao {
 
     val bind = Seq(
       id.map { v => NamedParameter("id", toParameterValue(v)) },
+      org.map { v => NamedParameter("organization_key", toParameterValue(v.key)) },
       meetingId.map { v => NamedParameter("meeting_id", toParameterValue(v)) },
       incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
       task.map { v => NamedParameter("task", toParameterValue(v.toString)) }

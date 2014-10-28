@@ -20,9 +20,9 @@ class AgendaItemsSpec extends BaseSpec {
     val incident = createIncident(org)
     val item = createAgendaItem(
       org = org,
-      meeting = Some(meeting),
       form = Some(
         AgendaItemForm(
+          meetingId = meeting.id,
           incidentId = incident.id,
           task = Task.ReviewTeam
         )
@@ -40,9 +40,9 @@ class AgendaItemsSpec extends BaseSpec {
     intercept[ErrorsResponse] {
       createAgendaItem(
         org = org,
-        meeting = Some(meeting),
         form = Some(
           AgendaItemForm(
+            meetingId = meeting.id,
             incidentId = incident.id,
             task = Task.UNDEFINED("foo")
           )
@@ -54,54 +54,46 @@ class AgendaItemsSpec extends BaseSpec {
   "GET /meetings/:meeting_id/agenda_items filters by meeting, agenda item" in new WithServer {
     val org = createOrganization()
     val meeting = createMeeting(org)
-    val item1 = createAgendaItem(org = org, meeting = Some(meeting))
-    val item2 = createAgendaItem(org = org, meeting = Some(meeting))
+    val item1 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
+    val item2 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
 
-    await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingId(org.key, meeting.id)).map(_.id).sorted must be(Seq(item1.id, item2.id))
-    await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingId(org.key, meeting.id, id = Some(item1.id))).map(_.id) must be(Seq(item1.id))
-    await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingId(org.key, meeting.id, id = Some(item2.id))).map(_.id) must be(Seq(item2.id))
-    await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingId(org.key, meeting.id, id = Some(-1))).map(_.id) must be(Seq.empty)
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, meetingId = Some(0))) must be(Seq.empty)
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, meetingId = Some(meeting.id))).map(_.id).sorted must be(Seq(item1.id, item2.id))
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, meetingId = Some(meeting.id), id = Some(item1.id))).map(_.id) must be(Seq(item1.id))
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, meetingId = Some(meeting.id), id = Some(item2.id))).map(_.id) must be(Seq(item2.id))
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, meetingId = Some(meeting.id), id = Some(-1))).map(_.id) must be(Seq.empty)
   }
 
   "GET /meetings/:meeting_id/agenda_items is 404 if org not found" in new WithServer {
-    val meeting = createMeeting(org)
     intercept[FailedRequest] {
-      await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingId(UUID.randomUUID.toString, meetingId = meeting.id))
-    }.response.status must be(404)
-  }
-
-  "GET /meetings/:meeting_id/agenda_items is 404 if meeting not found" in new WithServer {
-    intercept[FailedRequest] {
-      await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingId(org.key, meetingId = -1))
+      await(client.agendaItems.getAgendaItemsByOrg(UUID.randomUUID.toString))
     }.response.status must be(404)
   }
 
   "GET /meetings/:meeting_id/agenda_items paginates" in new WithServer {
     val org = createOrganization()
     val meeting = createMeeting(org)
-    val item1 = createAgendaItem(org = org, meeting = Some(meeting))
-    val item2 = createAgendaItem(org = org, meeting = Some(meeting))
+    val item1 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
+    val item2 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
 
-    await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingId(org.key, meeting.id, limit = Some(1))).map(_.id).sorted must be(Seq(item1.id))
-    await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingId(org.key, meeting.id, limit = Some(1), offset = Some(1))).map(_.id).sorted must be(Seq(item2.id))
-    await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingId(org.key, meeting.id, limit = Some(1), offset = Some(2))).map(_.id).sorted must be(Seq.empty)
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, meetingId = Some(meeting.id), limit = Some(1))).map(_.id) must be(Seq(item1.id))
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, meetingId = Some(meeting.id), limit = Some(1), offset = Some(1))).map(_.id) must be(Seq(item2.id))
+    await(client.agendaItems.getAgendaItemsByOrg(org.key, meetingId = Some(meeting.id), limit = Some(1), offset = Some(2))) must be(Seq.empty)
   }
 
   "GET /meetings/:meeting_id/agenda_items/:id" in new WithServer {
-    val meeting = createMeeting(org)
-    val item = createAgendaItem(org = org, meeting = Some(meeting))
+    val item = createAgendaItem(org)
 
-    await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(org.key, meeting.id, item.id)).map(_.id) must be(Some(item.id))
-    await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(org.key, meeting.id, -1)).map(_.id) must be(None)
+    await(client.agendaItems.getAgendaItemsByOrgAndId(org.key, item.id)).map(_.id) must be(Some(item.id))
+    await(client.agendaItems.getAgendaItemsByOrgAndId(org.key, -1)) must be(None)
   }
 
   "DELETE /meetings/:meeting_id/agenda_items/:id" in new WithServer {
-    val meeting = createMeeting(org)
-    val item = createAgendaItem(org = org, meeting = Some(meeting))
+    val item = createAgendaItem(org)
 
-    await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(org.key, meeting.id, item.id)).map(_.id) must be(Some(item.id))
-    await(client.agendaItems.deleteMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(org.key, meeting.id, item.id))
-    await(client.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingIdAndId(org.key, meeting.id, item.id)).map(_.id) must be(None)
+    await(client.agendaItems.getAgendaItemsByOrgAndId(org.key, item.id)).map(_.id) must be(Some(item.id))
+    await(client.agendaItems.deleteAgendaItemsByOrgAndId(org.key, item.id))
+    await(client.agendaItems.getAgendaItemsByOrgAndId(org.key, item.id)) must be(None)
   }
 
 }
