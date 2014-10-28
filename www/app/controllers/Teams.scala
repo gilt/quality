@@ -21,36 +21,67 @@ object Teams extends Controller {
   def index(
     org: String,
     key: Option[String] = None,
-    page: Int = 0
+    myPage: Int = 0,
+    otherPage: Int = 0
   ) = OrgAction.async { implicit request =>
     val filters = Filters(key = lib.Filters.toOption(key))
     for {
-      teams <- Api.instance.teams.getByOrg(
+      myTeams <- Api.instance.teams.getByOrg(
         org = org,
         key = filters.key,
+        userGuid = Some(request.user.guid),
         limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(page * Pagination.DefaultLimit)
+        offset = Some(myPage * Pagination.DefaultLimit)
+      )
+      otherTeams <- Api.instance.teams.getByOrg(
+        org = org,
+        key = filters.key,
+        excludeUserGuid = Some(request.user.guid),
+        limit = Some(Pagination.DefaultLimit+1),
+        offset = Some(otherPage * Pagination.DefaultLimit)
       )
     } yield {
-      Ok(views.html.teams.index(request.mainTemplate(), request.org, filters, PaginatedCollection(page, teams)))
+      Ok(views.html.teams.index(request.mainTemplate(), request.org, filters, PaginatedCollection(myPage, myTeams), PaginatedCollection(otherPage, otherTeams)))
     }
   }
 
   def show(
     org: String,
     key: String,
-    incidentsPage: Int = 0
+    agendaItemsPage: Int = 0,
+    membersPage: Int = 0
   ) = TeamAction.async { implicit request =>
     for {
       stats <- Api.instance.Statistics.getByOrg(org = org, teamKey = Some(key), numberHours = Some(Dashboard.OneWeekInHours * 12))
-      incidents <- Api.instance.incidents.getByOrg(
+      agendaItems <- Api.instance.agendaItems.getAgendaItemsByOrg(
         org = org,
         teamKey = Some(key),
+        isAdjourned = Some(false),
         limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(incidentsPage * Pagination.DefaultLimit)
+        offset = Some(agendaItemsPage * Pagination.DefaultLimit)
+      )
+      members <- Api.instance.teams.getMembersByOrgAndKey(
+        org = org,
+        key = key,
+        limit = Some(Pagination.DefaultLimit+1),
+        offset = Some(membersPage * Pagination.DefaultLimit)
+      )
+      isMemberCollection <- Api.instance.teams.getMembersByOrgAndKey(
+        org = org,
+        key = key,
+        userGuid = Some(request.user.guid)
       )
     } yield {
-      Ok(views.html.teams.show(request.mainTemplate(), request.team, stats.headOption, PaginatedCollection(incidentsPage, incidents)))
+      Ok(
+        views.html.teams.show(
+          request.mainTemplate(),
+          request.team,
+          stats.headOption,
+          PaginatedCollection(agendaItemsPage, agendaItems),
+          PaginatedCollection(membersPage, members),
+          isMember = !isMemberCollection.isEmpty
+        )
+      )
     }
   }
 

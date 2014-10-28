@@ -55,12 +55,18 @@ object Incidents extends Controller {
   def show(
     org: String,
     id: Long,
+    agendaItemsPage: Int = 0,
     meetingId: Option[Long] = None
   ) = OrgAction.async { implicit request =>
     for {
       incident <- Api.instance.incidents.getByOrgAndId(org, id)
       plans <- Api.instance.Plans.getByOrg(org, incidentId = Some(id))
-      meetings <- Api.instance.Meetings.getByOrg(org, incidentId = Some(id))
+      agendaItems <- Api.instance.agendaItems.getAgendaItemsByOrg(
+        org = org,
+        incidentId = Some(id),
+        limit = Some(Pagination.DefaultLimit+1),
+        offset = Some(agendaItemsPage * Pagination.DefaultLimit)
+      )
     } yield {
       incident match {
         case None => Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $id not found")
@@ -71,7 +77,16 @@ object Incidents extends Controller {
               1000.millis
             )
           }
-          Ok(views.html.incidents.show(request.mainTemplate(), request.org, i, plans.headOption, meetings, pagerOption))
+          Ok(
+            views.html.incidents.show(
+              request.mainTemplate(),
+              request.org,
+              i,
+              plans.headOption,
+              PaginatedCollection(agendaItemsPage, agendaItems),
+              pagerOption
+            )
+          )
         }
       }
     }

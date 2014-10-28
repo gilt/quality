@@ -23,7 +23,7 @@ object AgendaItemEvents {
         ).flatten.foreach { teamEmail =>
           Email.sendHtml(
             to = Person(teamEmail, item.incident.team.map(_.key)),
-            subject = s"Incident ${item.incident.id} Added to ${dateTime} Meeting to ${Emails.taskLabel(item.task)}",
+            subject = s"Incident ${item.incident.id} Added to ${dateTime} Meeting to ${core.Defaults.taskLabel(item.task)}",
             body = views.html.emails.agendaItemTeamChanged(
               meeting,
               item

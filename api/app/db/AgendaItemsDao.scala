@@ -10,14 +10,35 @@ import play.api.Play.current
 import org.joda.time.DateTime
 
 case class FullAgendaItemForm(
-  meeting: Meeting,
+  org: Organization,
   form: AgendaItemForm
-)
+) {
+
+  lazy val meeting = MeetingsDao.findByOrganizationAndId(org, form.meetingId)
+
+  lazy val validate: Seq[Error] = {
+    val meetingErrors = meeting match {
+      case None => Seq(s"Meeting ${form.meetingId} not found")
+      case Some(_) => Seq.empty
+    }
+
+    val taskErrors = form.task match {
+      case Task.UNDEFINED(key) => Seq(s"Invalid task[$key]")
+      case _ => Seq.empty
+    }
+
+    Validation.errors(taskErrors ++ meetingErrors)
+  }
+
+}
 
 object AgendaItemsDao {
 
   private val BaseQuery = s"""
     select agenda_items.id, agenda_items,task,
+           meetings.id as meeting_id,
+           meetings.scheduled_at as meeting_scheduled_at,
+           meeting_adjournments.adjourned_at as meeting_adjourned_at,
            incidents.id as incident_id,
            organizations.key as organization_key, 
            organizations.name as organization_name,
@@ -29,8 +50,10 @@ object AgendaItemsDao {
            plans.id as plan_id,
            plans.body as plan_body,
            plans.created_at as plan_created_at,
-           grades.score as grade
+           grades.score as plan_grade
       from agenda_items
+      join meetings on meetings.deleted_at is null and meetings.id = agenda_items.meeting_id
+      left join meeting_adjournments on meeting_adjournments.deleted_at is null and meeting_adjournments.meeting_id = meetings.id      
       join incidents on incidents.id = agenda_items.incident_id and incidents.deleted_at is null
       join organizations on organizations.deleted_at is null and organizations.id = incidents.organization_id
       left join teams on teams.deleted_at is null and teams.id = incidents.team_id
@@ -53,20 +76,12 @@ object AgendaItemsDao {
        and deleted_at is null
   """
 
-  def validate(fullForm: FullAgendaItemForm): Seq[Error] = {
-    fullForm.form.task match {
-      case Task.UNDEFINED(key) => Validation.error(s"Invalid task[$key]")
-      case _ => Seq.empty
-    }
-  }
-
   def create(user: User, fullForm: FullAgendaItemForm): AgendaItem = {
-    val errors = validate(fullForm)
-    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
+    assert(fullForm.validate.isEmpty, fullForm.validate.map(_.message).mkString("\n"))
 
     val id: Long = DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(
-        'meeting_id -> fullForm.meeting.id,
+        'meeting_id -> fullForm.form.meetingId,
         'task -> fullForm.form.task.toString,
         'incident_id -> fullForm.form.incidentId,
         'user_guid -> user.guid
@@ -96,17 +111,20 @@ object AgendaItemsDao {
     findAll(id = Some(id), limit = 1).headOption
   }
 
-  def findByMeetingIdAndId(
-    meetingId: Long,
+  def findByOrganizationAndId(
+    org: Organization,
     id: Long
   ): Option[AgendaItem] = {
-    findAll(id = Some(id), meetingId = Some(meetingId), limit = 1).headOption
+    findAll(org = Some(org), id = Some(id), limit = 1).headOption
   }
 
   def findAll(
     id: Option[Long] = None,
+    org: Option[Organization] = None,
     meetingId: Option[Long] = None,
     incidentId: Option[Long] = None,
+    teamKey: Option[String] = None,
+    isAdjourned: Option[Boolean] = None,
     task: Option[Task] = None,
     limit: Int = 50,
     offset: Int = 0
@@ -114,8 +132,16 @@ object AgendaItemsDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       id.map { v => "and agenda_items.id = {id}" },
+      org.map { v => "and organizations.key = {organization_key}" },
       meetingId.map { v => "and agenda_items.meeting_id = {meeting_id}" },
       incidentId.map { v => "and agenda_items.incident_id = {incident_id}" },
+      teamKey.map { v => "and teams.key = {team_key}" },
+      isAdjourned.map { v =>
+        v match {
+          case true => "and meeting_adjournments.adjourned_at is not null"
+          case false => "and meeting_adjournments.adjourned_at is null"
+        }
+      },
       task.map { v => "and agenda_items.task = {task}" },
       Some("order by agenda_items.incident_id"),
       Some(s"limit ${limit} offset ${offset}")
@@ -123,39 +149,20 @@ object AgendaItemsDao {
 
     val bind = Seq(
       id.map { v => NamedParameter("id", toParameterValue(v)) },
+      org.map { v => NamedParameter("organization_key", toParameterValue(v.key)) },
       meetingId.map { v => NamedParameter("meeting_id", toParameterValue(v)) },
       incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
+      teamKey.map { v => NamedParameter("team_key", toParameterValue(v)) },
       task.map { v => NamedParameter("task", toParameterValue(v.toString)) }
     ).flatten
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        val incidentId = row[Long]("incident_id")
-
-        val plan = row[Option[Long]]("plan_id").map { planId =>
-          Plan(
-            id = planId,
-            incidentId = incidentId,
-            body = row[String]("plan_body"),
-            grade = row[Option[Int]]("grade"),
-            createdAt = row[DateTime]("plan_created_at")
-          )
-        }
-
         AgendaItem(
           id = row[Long]("id"),
           task = Task(row[String]("task")),
-          incident = Incident(
-            id = incidentId,
-            organization = OrganizationsDao.fromRow(row, Some("organization")),
-            team = row[Option[String]]("team_key").map { _ => TeamsDao.fromRow(row, Some("team")) },
-            severity = Severity(row[String]("incident_severity")),
-            summary = row[String]("incident_summary"),
-            description = row[Option[String]]("incident_description"),
-            tags = Seq.empty,
-            plan = plan,
-            createdAt = row[DateTime]("incident_created_at")
-          )
+          meeting = MeetingsDao.fromRow(row, Some("meeting")),
+          incident = IncidentsDao.fromRow(row, Some("incident"))
         )
       }.toSeq
     }

@@ -13,7 +13,7 @@ POST    /:org/incidents/postCreate                                controllers.In
 GET     /:org/incidents/edit                                      controllers.Incidents.edit(org: String, id: Long)
 POST    /:org/incidents/postEdit                                  controllers.Incidents.postEdit(org: String, id: Long)
 POST    /:org/incidents/delete/:id                                controllers.Incidents.postDeleteById(org: String, id: Long)
-GET     /:org/incidents/:id                                       controllers.Incidents.show(org: String, id: Long, meetingId: Option[Long] ?= None)
+GET     /:org/incidents/:id                                       controllers.Incidents.show(org: String, id: Long, agendaItemsPage: Int ?= 0, meetingId: Option[Long] ?= None)
 
 GET     /:org/plans/:id                                           controllers.Plans.getById(org: String, id: Long)
 GET     /:org/plans/uploadByIncidentId/:incident_id               controllers.Plans.uploadByIncidentId(org: String, incident_id: Long)
@@ -22,15 +22,14 @@ POST    /:org/plans/postNoPlan/:incident_id                       controllers.Pl
 POST    /:org/plans/deleteById/:id                                controllers.Plans.postDeleteById(org: String, id: Long, incident_id: Long)
 POST    /:org/plans/grade/:id                                     controllers.Plans.postGrade(org: String, id: Long, score: Int)
 
-GET     /:org/teams/                                              controllers.Teams.index(org: String, key: Option[String] ?= None, page: Int ?= 0)
+GET     /:org/teams/                                              controllers.Teams.index(org: String, key: Option[String] ?= None, myPage: Int ?= 0, otherPage: Int ?= 0)
 GET     /:org/teams/create                                        controllers.Teams.create(org: String)
 POST    /:org/teams/postCreate                                    controllers.Teams.postCreate(org: String)
 GET     /:org/teams/edit                                          controllers.Teams.edit(org: String, key: String)
 POST    /:org/teams/postEdit                                      controllers.Teams.postEdit(org: String, key: String)
-GET     /:org/teams/:key                                          controllers.Teams.show(org: String, key: String, incidentsPage: Int ?= 0)
+GET     /:org/teams/:key                                          controllers.Teams.show(org: String, key: String, agendaItemsPage: Int ?= 0, membersPage: Int ?= 0)
 POST    /:org/teams/delete/:key                                   controllers.Teams.postDeleteByKey(org: String, key: String)
 
-GET     /:org/teams/:key/members                                  controllers.TeamMembers.show(org: String, key: String, page: Int ?= 0)
 GET     /:org/teams/:key/members/add                              controllers.TeamMembers.add(org: String, key: String)
 POST    /:org/teams/:key/members/postAdd                          controllers.TeamMembers.postAdd(org: String, key: String)
 POST    /:org/teams/:key/members/postJoin                         controllers.TeamMembers.postJoin(org: String, key: String)

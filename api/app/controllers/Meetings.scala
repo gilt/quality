@@ -45,21 +45,16 @@ object Meetings extends Controller {
     org: String,
     id: Long,
     incidentId: Long
-  ) = OrgAction { request =>
-    MeetingsDao.findByOrganizationAndId(request.org, id) match {
-      case None => NotFound
-      case Some(meeting: Meeting) => {
-        val pager = AgendaItemsDao.findAll(
-          meetingId = Some(id),
-          incidentId = Some(incidentId),
-          limit = 1
-        ).headOption match {
-          case None => MeetingPager(meeting = meeting)
-          case Some(item) => MeetingsDao.findPager(meeting, item)
-        }
-        Ok(Json.toJson(pager))
-      }
+  ) = MeetingAction { request =>
+    val pager = AgendaItemsDao.findAll(
+      meetingId = Some(id),
+      incidentId = Some(incidentId),
+      limit = 1
+    ).headOption match {
+      case None => MeetingPager(meeting = request.meeting)
+      case Some(item) => MeetingsDao.findPager(request.meeting, item)
     }
+    Ok(Json.toJson(pager))
   }
 
   def postByOrg(org: String) = OrgAction(parse.json) { request =>

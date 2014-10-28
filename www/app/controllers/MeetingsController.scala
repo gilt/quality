@@ -39,16 +39,16 @@ object Meetings extends Controller {
   ) = OrgAction.async { implicit request =>
     for {
       meeting <- Api.instance.meetings.getByOrgAndId(org, id)
-      reviewTeams <- Api.instance.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingId(
+      reviewTeams <- Api.instance.agendaItems.getAgendaItemsByOrg(
         org = org,
-        meetingId = id,
+        meetingId = Some(id),
         task = Some(Task.ReviewTeam),
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(reviewTeamsPage * Pagination.DefaultLimit)
       )
-      reviewPlans <- Api.instance.agendaItems.getMeetingsAndAgendaItemsByOrgAndMeetingId(
+      reviewPlans <- Api.instance.agendaItems.getAgendaItemsByOrg(
         org = org,
-        meetingId = id,
+        meetingId = Some(id),
         task = Some(Task.ReviewPlan),
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(reviewPlansPage * Pagination.DefaultLimit)

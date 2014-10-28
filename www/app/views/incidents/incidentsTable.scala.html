@@ -1,6 +1,5 @@
 @(org: com.gilt.quality.models.Organization,
   incidents: Seq[com.gilt.quality.models.Incident],
-  showTeam: Boolean = true,
   meeting: Option[com.gilt.quality.models.Meeting] = None
 )
 
@@ -11,28 +10,24 @@
       <th>Created</th>
       <th>Severity</th>
       <th>Plan</th>
-      @if(showTeam) { <th>Team</th> }
+      <th>Team</th>
       <th>Summary</th>
     </tr>
   </thead>
   <tbody>
     @incidents.map { incident =>
      <tr>
-       <td><a href="@routes.Incidents.show(org.key, incident.id, meeting.map(_.id))">@incident.id</a></td>
+       <td><a href="@routes.Incidents.show(org.key, incident.id, meetingId = meeting.map(_.id))">@incident.id</a></td>
        <td>@core.DateHelper.shortDate(org, incident.createdAt)</td>
        <td>@incident.severity</td>
+       <td>@incidentPlan(incident)</td>
        <td>
-         @if(incident.plan.isEmpty) {
-           - 
+         @if(incident.team.isEmpty) {
+	   "N/A"
          } else {
-           @if(incident.plan.get.grade.isEmpty) {
-             Uploaded
-           } else {
-             @Html(lib.GradeImage.imageTag(incident.team, incident.plan.get.grade))
-           }
+           <a href="@routes.Teams.show(org.key, incident.team.get.key)">@incident.team.get.key</a>
          }
        </td>
-       @if(showTeam) { <td>@incident.team.map(_.key).getOrElse("")</td> }
        <td>@incident.summary</td>
      </tr>
    }

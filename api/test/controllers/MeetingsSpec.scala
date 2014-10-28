@@ -57,7 +57,7 @@ class MeetingsSpec extends BaseSpec {
   "GET /:org/meetings for an agenda item" in new WithServer {
     val meeting = createMeeting(org)
     Database.ensureOrganizationHasUpcomingMeetings(org)
-    val item = createAgendaItem(org, Some(meeting))
+    val item = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
 
     await(client.meetings.getByOrg(org.key, agendaItemId = Some(item.id))).map(_.id) must be(Seq(meeting.id))
     await(client.meetings.getByOrg(org.key, agendaItemId = Some(-1))).map(_.id) must be(Seq.empty)
@@ -66,9 +66,9 @@ class MeetingsSpec extends BaseSpec {
   "GET /:org/meetings/:id/pager/:incident_id" in new WithServer {
     val meeting = createMeeting(org)
     Database.ensureOrganizationHasUpcomingMeetings(org)
-    val item1 = createAgendaItem(org, Some(meeting))
-    val item2 = createAgendaItem(org, Some(meeting))
-    val item3 = createAgendaItem(org, Some(meeting))
+    val item1 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
+    val item2 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
+    val item3 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
 
     val pager1 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item1.incident.id)).get
     pager1.meeting must be(meeting)

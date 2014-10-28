@@ -60,7 +60,7 @@ object IncidentsDao {
            plans.id as plan_id,
            plans.body as plan_body,
            plans.created_at as plan_created_at,
-           grades.score as grade
+           grades.score as plan_grade
       from incidents
       join organizations on organizations.deleted_at is null and organizations.id = incidents.organization_id
       left join teams on teams.deleted_at is null and teams.id = incidents.team_id
@@ -239,32 +239,31 @@ object IncidentsDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
-        val incidentId = row[Long]("id")
-
-        val plan = row[Option[Long]]("plan_id").map { planId =>
-          Plan(
-            id = planId,
-            incidentId = incidentId,
-            body = row[String]("plan_body"),
-            grade = row[Option[Int]]("grade"),
-            createdAt = row[DateTime]("plan_created_at")
-          )
-        }
-
-        Incident(
-          id = incidentId,
-          organization = OrganizationsDao.fromRow(row, Some("organization")),
-          team = row[Option[String]]("team_key").map { _ => TeamsDao.fromRow(row, Some("team")) },
-          severity = Severity(row[String]("severity")),
-          summary = row[String]("summary"),
-          description = row[Option[String]]("description"),
-          tags = Seq.empty,
-          plan = plan,
-          createdAt = row[DateTime]("created_at")
-        )
-      }.toSeq
+      SQL(sql).on(bind: _*)().toList.map(fromRow(_)).toSeq
     }
+  }
+
+  private[db] def fromRow(
+    row: anorm.Row,
+    prefix: Option[String] = None,
+    planPrefix: String = "plan",
+    teamPrefix: String = "team",
+    organizationPrefix: String = "organization"
+  ): Incident = {
+    val p = prefix.map( _ + "_").getOrElse("")
+    val incidentId = row[Long](s"${p}id")
+
+    Incident(
+      id = incidentId,
+      organization = OrganizationsDao.fromRow(row, Some(organizationPrefix)),
+      team = row[Option[String]](s"${teamPrefix}_key").map { _ => TeamsDao.fromRow(row, Some(teamPrefix)) },
+      severity = Severity(row[String](s"${p}severity")),
+      summary = row[String](s"${p}summary"),
+      description = row[Option[String]](s"${p}description"),
+      tags = Seq.empty,
+      plan = row[Option[Long]](s"${planPrefix}_id").map { _ => PlansDao.fromRow(row, incidentId, Some(planPrefix)) },
+      createdAt = row[DateTime](s"${p}created_at")
+    )
   }
 
 }

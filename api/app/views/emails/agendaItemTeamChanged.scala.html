@@ -5,7 +5,7 @@
 <p>
   <a href="@lib.Email.qualityWebHostname/@meeting.organization.key/incidents/@{item.incident.id}">Incident
   #@item.incident.id</a>: @item.incident.summary has been added to the
-  agenda to @actors.Emails.taskLabel(item.task) for the Perfect Day meeting scheduled for
+  agenda to @core.Defaults.taskLabel(item.task) for the Perfect Day meeting scheduled for
   @core.DateHelper.mediumDateTime(meeting.organization, meeting.scheduledAt).
 </p>
 

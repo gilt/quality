@@ -1,5 +1,7 @@
 package core
 
+import com.gilt.quality.models.Task
+
 object Defaults {
 
   val GoodGrade = 100
@@ -13,6 +15,14 @@ object Defaults {
     smileyUrl = "/assets/images/smiley.png",
     frownyUrl = "/assets/images/frowny.png"
   )
+
+ def taskLabel(task: Task): String = {
+    task match {
+      case Task.ReviewTeam => "review team assignment"
+      case Task.ReviewPlan => "review the prevention plan"
+      case Task.UNDEFINED(key) => key
+    }
+  }
 
 }
 
