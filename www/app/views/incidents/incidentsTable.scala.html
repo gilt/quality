@@ -23,7 +23,7 @@
        <td>@incidentPlan(incident)</td>
        <td>
          @if(incident.team.isEmpty) {
-	   "N/A"
+	   N/A
          } else {
            <a href="@routes.Teams.show(org.key, incident.team.get.key)">@incident.team.get.key</a>
          }
