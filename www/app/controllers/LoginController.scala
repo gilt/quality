@@ -32,14 +32,14 @@ object LoginController extends Controller {
       },
 
       validForm => {
-        Api.instance.users.postAuthenticate(AuthenticationForm(email = validForm.email)).map { user =>
+        Api.instance.users.postAuthenticate(AuthenticationForm(email = validForm.email.trim)).map { user =>
           Redirect("/").withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case r: ErrorsResponse => {
             // For now, just auto-register the user if the email is valid
             try {
               val user = Await.result(
-                Api.instance.users.post(UserForm(email = validForm.email)),
+                Api.instance.users.post(UserForm(email = validForm.email.trim)),
                 1000.millis
               )
               Redirect("/").withSession { "user_guid" -> user.guid.toString }

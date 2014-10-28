@@ -65,7 +65,7 @@ trait Users {
       }
       case s: JsSuccess[AuthenticationForm] => {
         val form = s.get
-        UsersDao.findByEmail(form.email) match {
+        UsersDao.findByEmail(form.email.trim) match {
           case None => Conflict(Json.toJson(Validation.userAuthorizationFailed()))
           case Some(u) => Ok(Json.toJson(u))
         }
