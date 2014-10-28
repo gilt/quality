@@ -2,6 +2,7 @@ package db
 
 import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Error, Incident, Meeting, Organization, Plan, Severity, Task, Team, User}
 import lib.Validation
+import java.util.UUID
 import anorm._
 import anorm.ParameterValue._
 import AnormHelper._
@@ -124,6 +125,7 @@ object AgendaItemsDao {
     meetingId: Option[Long] = None,
     incidentId: Option[Long] = None,
     teamKey: Option[String] = None,
+    userGuid: Option[UUID] = None,
     isAdjourned: Option[Boolean] = None,
     task: Option[Task] = None,
     limit: Int = 50,
@@ -136,6 +138,7 @@ object AgendaItemsDao {
       meetingId.map { v => "and agenda_items.meeting_id = {meeting_id}" },
       incidentId.map { v => "and agenda_items.incident_id = {incident_id}" },
       teamKey.map { v => "and teams.key = {team_key}" },
+      userGuid.map { v => "and teams.id in (select team_id from team_members where deleted_at is null and user_guid = {user_guid}::uuid)" },
       isAdjourned.map { v =>
         v match {
           case true => "and meeting_adjournments.adjourned_at is not null"
@@ -153,6 +156,7 @@ object AgendaItemsDao {
       meetingId.map { v => NamedParameter("meeting_id", toParameterValue(v)) },
       incidentId.map { v => NamedParameter("incident_id", toParameterValue(v)) },
       teamKey.map { v => NamedParameter("team_key", toParameterValue(v)) },
+      userGuid.map { v => NamedParameter("user_guid", toParameterValue(v.toString)) },
       task.map { v => NamedParameter("task", toParameterValue(v.toString)) }
     ).flatten
 

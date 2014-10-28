@@ -1,7 +1,8 @@
 @(tpl: lib.MainTemplate,
   org: com.gilt.quality.models.Organization,
   statistics: Seq[com.gilt.quality.models.Statistic],
-  events: Seq[com.gilt.quality.models.Event]
+  events: Seq[com.gilt.quality.models.Event],
+  agendaItems: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem]
 )(implicit flash: Flash)
 
 @main(tpl, section = Some("dashboard")) {
@@ -10,6 +11,24 @@
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Incidents.create(org.key)">Create Incident</a>
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Teams.create(org.key)">Add team</a>
   </div>
+
+  <h3>Your Active Incidents</h3>
+  @if(agendaItems.isEmpty) {
+    <em>None</em>
+  } else {
+    @teams.agendaItemsTable(org, agendaItems.items)
+
+    @if(agendaItems.hasPrevious || agendaItems.hasNext) {
+      <ul class="pager">
+        @if(agendaItems.hasPrevious) {
+          <li><a href="@routes.Dashboard.index(org.key, agendaItems.page - 1)">Previous</a></li>
+        }
+        @if(agendaItems.hasNext) {
+          <li><a href="@routes.Dashboard.index(org.key, agendaItems.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
 
   <h3>Latest Events</h3>
   @if(events.isEmpty) {

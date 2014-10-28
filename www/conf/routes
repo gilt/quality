@@ -10,7 +10,7 @@ GET     /logout                                                   controllers.Lo
 GET     /logout/                                                  controllers.LogoutController.index
 GET     /logout/confirmation                                      controllers.LogoutController.confirmation
 
-GET     /:org                                                     controllers.Dashboard.index(org: String)
+GET     /:org                                                     controllers.Dashboard.index(org: String, agendaItemsPage: Int ?= 0)
 GET     /:org/incidents/                                          controllers.Incidents.index(org: String, team_key: Option[String] ?= None, has_team: Option[String] ?= None, has_plan: Option[String] ?= None, has_grade: Option[String] ?= None, page: Int ?= 0)
 GET     /:org/incidents/create                                    controllers.Incidents.create(org: String, teamKey: Option[String] ?= None)
 POST    /:org/incidents/postCreate                                controllers.Incidents.postCreate(org: String)

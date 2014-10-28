@@ -1,6 +1,7 @@
 package controllers
 
 import client.Api
+import lib.{ Pagination, PaginatedCollection }
 
 import play.api._
 import play.api.mvc._
@@ -13,12 +14,30 @@ object Dashboard extends Controller {
   val OneDayInHours = 24
   val OneWeekInHours = OneDayInHours * 7
 
-  def index(org: String) = OrgAction.async { implicit request =>
+  def index(
+    org: String,
+    agendaItemsPage: Int = 0
+  ) = OrgAction.async { implicit request =>
     for {
       stats <- Api.instance.Statistics.getByOrg(org, numberHours = Some(OneWeekInHours))
       events <- Api.instance.Events.getByOrg(org, numberHours = Some(OneDayInHours), limit = Some(10))
+      agendaItems <- Api.instance.agendaItems.getAgendaItemsByOrg(
+        org = org,
+        userGuid = Some(request.user.guid),
+        isAdjourned = Some(false),
+        limit = Some(Pagination.DefaultLimit+1),
+        offset = Some(agendaItemsPage * Pagination.DefaultLimit)
+      )
     } yield {
-      Ok(views.html.dashboard.index(request.mainTemplate(), request.org, stats, events))
+      Ok(
+        views.html.dashboard.index(
+          request.mainTemplate(),
+          request.org,
+          stats,
+          events,
+          PaginatedCollection(agendaItemsPage, agendaItems)
+        )
+      )
     }
   }
 

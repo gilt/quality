@@ -150,6 +150,18 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     )
   }
 
+  def createAgendaItemForTeam(team: Team): AgendaItem = {
+    val incident = createIncident(
+      team.organization,
+      Some(createIncidentForm.copy(teamKey = Some(team.key)))
+    )
+    createAgendaItem(
+      team.organization,
+      Some(createAgendaItemForm(team.organization, incident = Some(incident)))
+    )
+  }
+
+  // TODO: Remove org
   def createIncidentForTeam(org: Organization, team: Team): Incident = {
     createIncident(
       org = org,
@@ -157,6 +169,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     )
   }
 
+  // TODO: Remove org
   def createPlanForIncident(org: Organization, incident: Incident): Plan = {
     createPlan(
       org = org,

@@ -713,6 +713,7 @@
                         { "name": "meeting_id", "type": "long", "description": "Find agenda items for this meeting", "required": false },
                         { "name": "incident_id", "type": "long", "description": "Find agenda items for this incident", "required": false },
                         { "name": "team_key", "type": "string", "description": "Find agenda items for this team", "required": false },
+                        { "name": "user_guid", "type": "uuid", "description": "Find agenda items filtered by the teams this user is on.", "required": false },
                         { "name": "is_adjourned", "type": "boolean", "description": "If false, limit to agenda items for meetings that have not yet been adjourned. If true, limit to agenda items for meetings that have been adjourned", "required": false },
                         { "name": "task", "type": "task", "description": "Find agenda items with this task", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },

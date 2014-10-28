@@ -2,8 +2,9 @@ package controllers
 
 import db.{AgendaItemsDao, FullAgendaItemForm, MeetingsDao}
 import com.gilt.quality.models.{AgendaItemForm, User}
-import lib.Validation
 import com.gilt.quality.models.json._
+import lib.Validation
+import java.util.UUID
 import play.api.mvc._
 import play.api.libs.json._
 
@@ -18,6 +19,7 @@ trait AgendaItems {
     meetingId: Option[Long],
     incidentId: Option[Long],
     teamKey: Option[String],
+    userGuid: Option[UUID],
     isAdjourned: Option[Boolean],
     task: Option[com.gilt.quality.models.Task],
     limit: Int = 25,
@@ -29,6 +31,7 @@ trait AgendaItems {
       id = id,
       incidentId = incidentId,
       teamKey = teamKey,
+      userGuid = userGuid,
       isAdjourned = isAdjourned,
       task = task,
       limit = limit,
