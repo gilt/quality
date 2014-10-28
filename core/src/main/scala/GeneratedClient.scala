@@ -206,6 +206,14 @@ package com.gilt.quality.models {
     user: com.gilt.quality.models.User
   )
 
+  /**
+   * Statistics on each team's quality metrics, number of issues
+   */
+  case class TeamMemberSummary(
+    team: com.gilt.quality.models.Team,
+    numberMembers: Long
+  )
+
   case class UpdateTeamForm(
     email: scala.Option[String] = None,
     smileyUrl: scala.Option[String] = None,
@@ -916,6 +924,20 @@ package com.gilt.quality.models {
       )(unlift(TeamMember.unapply _))
     }
 
+    implicit def jsonReadsQualityTeamMemberSummary: play.api.libs.json.Reads[TeamMemberSummary] = {
+      (
+        (__ \ "team").read[com.gilt.quality.models.Team] and
+        (__ \ "number_members").read[Long]
+      )(TeamMemberSummary.apply _)
+    }
+
+    implicit def jsonWritesQualityTeamMemberSummary: play.api.libs.json.Writes[TeamMemberSummary] = {
+      (
+        (__ \ "team").write[com.gilt.quality.models.Team] and
+        (__ \ "number_members").write[Long]
+      )(unlift(TeamMemberSummary.unapply _))
+    }
+
     implicit def jsonReadsQualityUpdateTeamForm: play.api.libs.json.Reads[UpdateTeamForm] = {
       (
         (__ \ "email").readNullable[String] and
@@ -1542,6 +1564,17 @@ package com.gilt.quality {
         }
       }
 
+      override def getMemberSummaryByOrgAndKey(
+        org: String,
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.TeamMemberSummary]] = {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/member_summary").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.TeamMemberSummary])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
       override def getMembersByOrgAndKey(
         org: String,
         key: String,
@@ -1999,6 +2032,14 @@ package com.gilt.quality {
       org: String,
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+
+    /**
+     * Summary information about this teams members
+     */
+    def getMemberSummaryByOrgAndKey(
+      org: String,
+      key: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.TeamMemberSummary]]
 
     /**
      * Lists the members of this team

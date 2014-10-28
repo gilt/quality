@@ -119,6 +119,14 @@
             ]
         },
 
+        "team_member_summary": {
+            "description": "Statistics on each team's quality metrics, number of issues",
+            "fields": [
+                { "name": "team", "type": "team" },
+		{ "name": "number_members", "type": "long" }
+	    ]
+	},
+
         "update_team_form": {
             "fields": [
                 { "name": "email", "type": "string", "required": false },
@@ -138,7 +146,7 @@
         "statistic": {
             "description": "Statistics on each team's quality metrics, number of issues",
             "fields": [
-                {"name": "team", "type": "team", "description": "Team for statistics. Blank returns all."},
+                {"name": "team", "type": "team", "description": "Team for statistics."},
                 {"name": "total_grades", "type": "long", "description": "Number of graded plans given time span requested."},
                 {"name": "average_grade", "type": "integer", "description": "Average grade for graded plans given time span requested.", "required": false},
                 {"name": "total_open_incidents", "type": "long", "description": "Number of incidents without a plan for this team."},
@@ -430,6 +438,15 @@
 		    "method": "DELETE",
                     "path": "/:key"
 		},
+
+                {
+                    "method": "GET",
+		    "path": "/:key/member_summary",
+                    "description": "Summary information about this teams members",
+                    "responses": {
+                        "200": { "type": "team_member_summary" }
+                    }
+                },
 
                 {
                     "method": "GET",

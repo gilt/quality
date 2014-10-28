@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{Error, Organization, Team, TeamMember, User}
+import com.gilt.quality.models.{Error, Organization, Team, TeamMember, TeamMemberSummary, User}
 import lib.Validation
 import anorm._
 import anorm.ParameterValue._
@@ -63,6 +63,13 @@ object TeamMembersDao {
        and user_guid = {user_guid}::uuid
   """
 
+  private val MemberSummaryQuery = s"""
+    select count(*) as number_members
+      from team_members
+     where team_id = (select id from teams where deleted_at is null and key = {team_key})
+       and deleted_at is null
+  """
+
   def upsert(user: User, form: TeamMemberForm): TeamMember = {
     val errors = form.validate
     assert(errors.isEmpty, errors.map(_.message).mkString(" "))
@@ -92,6 +99,20 @@ object TeamMembersDao {
         'user_guid -> form.userGuid,
         'deleted_by_guid -> user.guid
       ).execute()
+    }
+  }
+
+  def summary(
+    org: Organization,
+    team: Team
+  ): TeamMemberSummary = {
+    DB.withConnection { implicit c =>
+      SQL(MemberSummaryQuery).on('team_key -> team.key)().toList.map { row =>
+        TeamMemberSummary(
+          team = team,
+          numberMembers = row[Long]("number_members")
+        )
+      }.toSeq.head
     }
   }
 
