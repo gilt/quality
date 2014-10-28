@@ -29,6 +29,13 @@
 		{ "name": "meetings.adjourned", "description": "Email notification whenever a meeting is adjourned." },
 		{ "name": "incidents.team_update", "description": "Email notification whenever a team that you are on is assigned to an incident." }
 	    ]
+	},
+
+	"external_service_name": {
+	    "description": "An external service with which an organization can integrate.",
+	    "values": [
+		{ "name": "jira", "description": "Atlassian JIRA. If integration is enabled, an incident can be created by listing the jira ISSUE number directly." }
+	    ]
 	}
 
     },
@@ -268,6 +275,25 @@
 	    "fields": [
 		{ "name": "subject", "type": "string" },
 		{ "name": "body", "type": "string" }
+	    ]
+	},
+
+	"external_service": {
+	    "description": "Stores metadata about external services that can be integrated with the quality app",
+	    "fields": [
+		{ "name": "id", "type": "long" },
+		{ "name": "name", "type": "external_service_name" },
+		{ "name": "url", "type": "string" },
+		{ "name": "username", "type": "string" }
+	    ]
+	},
+
+	"external_service_form": {
+	    "fields": [
+		{ "name": "name", "type": "external_service_name" },
+		{ "name": "url", "type": "string" },
+		{ "name": "username", "type": "string" },
+		{ "name": "password", "type": "string" }
 	    ]
 	}
 
@@ -798,6 +824,49 @@
 		    }
 		}
 	    ]
+	},
+
+	"external_service": {
+	    "path": "/:org/external_services",
+
+	    "operations": [
+		{
+		    "method": "GET",
+		    "parameters": [
+			{ "name": "id", "type": "long", "required": false },
+			{ "name": "name", "type": "external_service_name", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+		    ],
+		    "responses": {
+			"200": { "type": "external_service" }
+		    }
+		},
+
+		{
+		    "method": "GET",
+		    "path": "/:id",
+		    "responses": {
+			"200": { "type": "external_service" }
+		    }
+		},
+
+		{
+		    "method": "POST",
+		    "body": { "type": "external_service_form" },
+		    "responses": {
+			"201": { "type": "external_service" },
+			"409": { "type": "error" }
+		    }
+		},
+
+		{
+		    "method": "DELETE",
+		    "path": "/:id"
+		}
+
+	    ]
+
 	}
     }
 }
