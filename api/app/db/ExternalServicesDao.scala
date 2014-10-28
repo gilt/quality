@@ -62,9 +62,9 @@ object ExternalServicesDao {
       """).on(
         'organization_id -> fullForm.orgId,
         'name -> fullForm.form.name.toString,
-        'url -> fullForm.form.url,
-        'username -> fullForm.form.username,
-        'password -> fullForm.form.password,
+        'url -> fullForm.form.url.trim,
+        'username -> fullForm.form.username.trim,
+        'password -> fullForm.form.password.trim,
         'created_by_guid -> createdBy.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
     }
@@ -85,7 +85,7 @@ object ExternalServicesDao {
     findAll(org, id = Some(id), limit = 1).headOption
   }
 
-  private[db] def lookupPassword(service: ExternalService): String = {
+  def lookupPassword(service: ExternalService): String = {
     DB.withConnection { implicit c =>
       SQL(LookupPasswordQuery).on(
         'id -> service.id

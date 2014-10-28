@@ -1275,7 +1275,7 @@ package com.gilt.quality {
 
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/external_services", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.ExternalService]
-          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorResponse(r)
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -2311,19 +2311,6 @@ package com.gilt.quality {
     response: play.api.libs.ws.WSResponse,
     message: Option[String] = None
   ) extends Exception(message.getOrElse(response.status + ": " + response.body))
-
-  package error {
-
-    import com.gilt.quality.models.json._
-
-    case class ErrorResponse(
-      response: play.api.libs.ws.WSResponse,
-      message: Option[String] = None
-    ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
-      import com.gilt.quality.models.json._
-      lazy val error = response.json.as[com.gilt.quality.models.Error]
-    }
-  }
 
   package error {
 

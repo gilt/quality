@@ -856,7 +856,7 @@
 		    "body": { "type": "external_service_form" },
 		    "responses": {
 			"201": { "type": "external_service" },
-			"409": { "type": "error" }
+			"409": { "type": "[error]" }
 		    }
 		},
 
