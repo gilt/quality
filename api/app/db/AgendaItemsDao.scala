@@ -146,7 +146,7 @@ object AgendaItemsDao {
         }
       },
       task.map { v => "and agenda_items.task = {task}" },
-      Some("order by agenda_items.incident_id"),
+      Some("order by meetings.scheduled_at desc, agenda_items.incident_id, agenda_items.created_at"),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
