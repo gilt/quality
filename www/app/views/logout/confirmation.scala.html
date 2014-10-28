@@ -1,0 +1,7 @@
+@(tpl: lib.MainTemplate)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some("You have been logged out"))) {
+
+<a href="@routes.LoginController.index()">Log back in</a>
+
+}

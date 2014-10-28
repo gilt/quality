@@ -18,6 +18,8 @@
 
                   @helper.form(action = routes.LoginController.postIndex()) {
 
+                    <input type="hidden" name="return_url" value='@loginForm("return_url").value'/>
+
                     @loginForm.globalErrors.map(_.message).map { msg =>
                       <p><span class="error">@msg</span></p>
                     }

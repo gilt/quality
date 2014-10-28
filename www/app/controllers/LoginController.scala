@@ -20,7 +20,8 @@ object LoginController extends Controller {
   }
 
   def index(returnUrl: Option[String]) = Action { implicit request =>
-    Ok(views.html.login.index(MainTemplate(), loginForm))
+    val form = loginForm.fill(LoginData(email = "", returnUrl = returnUrl))
+    Ok(views.html.login.index(MainTemplate(), form))
   }
 
   def postIndex() = Action.async { implicit request =>
@@ -32,8 +33,10 @@ object LoginController extends Controller {
       },
 
       validForm => {
+        val returnUrl = validForm.returnUrl.getOrElse("/")
+
         Api.instance.users.postAuthenticate(AuthenticationForm(email = validForm.email.trim)).map { user =>
-          Redirect("/").withSession { "user_guid" -> user.guid.toString }
+          Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case r: ErrorsResponse => {
             // For now, just auto-register the user if the email is valid
@@ -42,7 +45,7 @@ object LoginController extends Controller {
                 Api.instance.users.post(UserForm(email = validForm.email.trim)),
                 1000.millis
               )
-              Redirect("/").withSession { "user_guid" -> user.guid.toString }
+              Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
             } catch {
               case r: ErrorsResponse => {
                 Ok(views.html.login.index(MainTemplate(), form, Some(r.errors.map(_.message).mkString(", "))))
@@ -55,10 +58,14 @@ object LoginController extends Controller {
     )
   }
 
-  case class LoginData(email: String)
+  case class LoginData(
+    email: String,
+    returnUrl: Option[String]
+  )
   val loginForm = Form(
     mapping(
-      "email" -> nonEmptyText
+      "email" -> nonEmptyText,
+      "return_url" -> optional(text)
     )(LoginData.apply)(LoginData.unapply)
   )
 
