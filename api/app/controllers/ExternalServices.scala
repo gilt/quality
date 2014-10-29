@@ -26,7 +26,7 @@ object ExternalServices extends Controller {
       offset = offset
     )
 
-    Ok(Json.toJson(matches.toSeq))
+    Ok(Json.toJson(matches))
   }
 
   def getByOrgAndId(

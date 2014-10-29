@@ -29,7 +29,12 @@ case class FullExternalServiceForm(
       Seq("URL must start with http")
     }
 
-    Validation.errors(nameErrors ++ urlErrors)
+    val nameExistsErrors = ExternalServicesDao.findAll(org, name = Some(form.name), limit = 1).headOption match {
+      case None => Seq.empty
+      case Some(_) => Seq(s"External service with name[${form.name}] already exists")
+    }
+
+    Validation.errors(nameErrors ++ urlErrors ++ nameExistsErrors)
   }
 
 }
@@ -41,8 +46,11 @@ object ExternalServicesDao {
            external_services.name,
            external_services.url,
            external_services.username,
-           external_services.password
+           external_services.password,
+           organizations.key as organization_key, 
+           organizations.name as organization_name
       from external_services
+      join organizations on organizations.deleted_at is null and organizations.id = external_services.organization_id
      where external_services.deleted_at is null
   """
 
@@ -130,14 +138,16 @@ object ExternalServicesDao {
 
   private[db] def fromRow(
     row: anorm.Row,
-    prefix: Option[String] = None
+    prefix: Option[String] = None,
+    organizationPrefix: String = "organization"
   ): ExternalService = {
     val p = prefix.map( _ + "_").getOrElse("")
     ExternalService(
       id = row[Long](s"${p}id"),
       name = ExternalServiceName(row[String](s"${p}name")),
       url = row[String](s"${p}url"),
-      username = row[String](s"${p}username")
+      username = row[String](s"${p}username"),
+      organization = OrganizationsDao.fromRow(row, Some(organizationPrefix))
     )
   }
 

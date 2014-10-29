@@ -62,6 +62,7 @@ package com.gilt.quality.models {
    */
   case class ExternalService(
     id: Long,
+    organization: com.gilt.quality.models.Organization,
     name: com.gilt.quality.models.ExternalServiceName,
     url: String,
     username: String
@@ -699,6 +700,7 @@ package com.gilt.quality.models {
     implicit def jsonReadsQualityExternalService: play.api.libs.json.Reads[ExternalService] = {
       (
         (__ \ "id").read[Long] and
+        (__ \ "organization").read[com.gilt.quality.models.Organization] and
         (__ \ "name").read[com.gilt.quality.models.ExternalServiceName] and
         (__ \ "url").read[String] and
         (__ \ "username").read[String]
@@ -708,6 +710,7 @@ package com.gilt.quality.models {
     implicit def jsonWritesQualityExternalService: play.api.libs.json.Writes[ExternalService] = {
       (
         (__ \ "id").write[Long] and
+        (__ \ "organization").write[com.gilt.quality.models.Organization] and
         (__ \ "name").write[com.gilt.quality.models.ExternalServiceName] and
         (__ \ "url").write[String] and
         (__ \ "username").write[String]
@@ -1242,7 +1245,7 @@ package com.gilt.quality {
         name: scala.Option[com.gilt.quality.models.ExternalServiceName] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.ExternalService]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.ExternalService]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
           name.map("name" -> _.toString),
@@ -1251,8 +1254,7 @@ package com.gilt.quality {
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/external_services", queryParameters = queryParameters).map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.ExternalService])
-          case r if r.status == 404 => None
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.ExternalService]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1965,7 +1967,7 @@ package com.gilt.quality {
       name: scala.Option[com.gilt.quality.models.ExternalServiceName] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.ExternalService]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.ExternalService]]
 
     def getExternalServicesByOrgAndId(
       org: String,

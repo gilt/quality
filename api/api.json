@@ -282,6 +282,7 @@
 	    "description": "Stores metadata about external services that can be integrated with the quality app",
 	    "fields": [
 		{ "name": "id", "type": "long" },
+		{ "name": "organization", "type": "organization" },
 		{ "name": "name", "type": "external_service_name" },
 		{ "name": "url", "type": "string" },
 		{ "name": "username", "type": "string" }
@@ -839,7 +840,7 @@
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
 		    ],
 		    "responses": {
-			"200": { "type": "external_service" }
+			"200": { "type": "[external_service]" }
 		    }
 		},
 
