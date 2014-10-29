@@ -34,48 +34,6 @@ package com.gilt.quality.models {
     message: String
   )
 
-<<<<<<< HEAD
-=======
-  /**
-   * Represents something that has happened - e.g. a team was created, an incident
-   * created, a plan updated, etc.
-   */
-  case class Event(
-    model: com.gilt.quality.models.Model,
-    action: com.gilt.quality.models.Action,
-    timestamp: _root_.org.joda.time.DateTime,
-    url: scala.Option[String] = None,
-    data: com.gilt.quality.models.EventData
-  )
-
-  /**
-   * Generic, descriptive data about a specific event
-   */
-  case class EventData(
-    modelId: Long,
-    summary: String
-  )
-
-  /**
-   * Stores metadata about external services that can be integrated with the quality
-   * app
-   */
-  case class ExternalService(
-    id: Long,
-    organization: com.gilt.quality.models.Organization,
-    name: com.gilt.quality.models.ExternalServiceName,
-    url: String,
-    username: String
-  )
-
-  case class ExternalServiceForm(
-    name: com.gilt.quality.models.ExternalServiceName,
-    url: String,
-    username: String,
-    password: String
-  )
-
->>>>>>> Add external service to capture information needed for JIRA integration
   case class Healthcheck(
     status: String
   )
@@ -255,134 +213,6 @@ package com.gilt.quality.models {
   )
 
   /**
-<<<<<<< HEAD
-=======
-   * Used in the event system to indicate what happened.
-   */
-  sealed trait Action
-
-  object Action {
-
-    /**
-     * Indicates that an instance of this model was created
-     */
-    case object Created extends Action { override def toString = "created" }
-    /**
-     * Indicates that an instance of this model was updated
-     */
-    case object Updated extends Action { override def toString = "updated" }
-    /**
-     * Indicates that an instance of this model was deleted
-     */
-    case object Deleted extends Action { override def toString = "deleted" }
-
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends Action
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Created, Updated, Deleted)
-
-    private[this]
-    val byName = all.map(x => x.toString -> x).toMap
-
-    def apply(value: String): Action = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): scala.Option[Action] = byName.get(value)
-
-  }
-
-  /**
-   * An external service with which an organization can integrate.
-   */
-  sealed trait ExternalServiceName
-
-  object ExternalServiceName {
-
-    /**
-     * Atlassian JIRA. If integration is enabled, an incident can be created by listing
-     * the jira ISSUE number directly.
-     */
-    case object Jira extends ExternalServiceName { override def toString = "jira" }
-
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends ExternalServiceName
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Jira)
-
-    private[this]
-    val byName = all.map(x => x.toString -> x).toMap
-
-    def apply(value: String): ExternalServiceName = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): scala.Option[ExternalServiceName] = byName.get(value)
-
-  }
-
-  /**
-   * The name of the model that was the subject of the event
-   */
-  sealed trait Model
-
-  object Model {
-
-    case object Incident extends Model { override def toString = "incident" }
-    case object Plan extends Model { override def toString = "plan" }
-    case object Rating extends Model { override def toString = "rating" }
-
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends Model
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Incident, Plan, Rating)
-
-    private[this]
-    val byName = all.map(x => x.toString -> x).toMap
-
-    def apply(value: String): Model = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): scala.Option[Model] = byName.get(value)
-
-  }
-
-  /**
->>>>>>> Add external service to capture information needed for JIRA integration
    * A publication represents something that a user can subscribe to. An example
    * would be subscribing via email to the publication of all new incidents.
    */
@@ -547,24 +377,6 @@ package com.gilt.quality.models {
       }
     }
 
-<<<<<<< HEAD
-=======
-    implicit val jsonReadsQualityEnum_Action = __.read[String].map(Action.apply)
-    implicit val jsonWritesQualityEnum_Action = new Writes[Action] {
-      def writes(x: Action) = JsString(x.toString)
-    }
-
-    implicit val jsonReadsQualityEnum_ExternalServiceName = __.read[String].map(ExternalServiceName.apply)
-    implicit val jsonWritesQualityEnum_ExternalServiceName = new Writes[ExternalServiceName] {
-      def writes(x: ExternalServiceName) = JsString(x.toString)
-    }
-
-    implicit val jsonReadsQualityEnum_Model = __.read[String].map(Model.apply)
-    implicit val jsonWritesQualityEnum_Model = new Writes[Model] {
-      def writes(x: Model) = JsString(x.toString)
-    }
-
->>>>>>> Add external service to capture information needed for JIRA integration
     implicit val jsonReadsQualityEnum_Publication = __.read[String].map(Publication.apply)
     implicit val jsonWritesQualityEnum_Publication = new Writes[Publication] {
       def writes(x: Publication) = JsString(x.toString)
@@ -661,81 +473,6 @@ package com.gilt.quality.models {
       )(unlift(Error.unapply _))
     }
 
-<<<<<<< HEAD
-=======
-    implicit def jsonReadsQualityEvent: play.api.libs.json.Reads[Event] = {
-      (
-        (__ \ "model").read[com.gilt.quality.models.Model] and
-        (__ \ "action").read[com.gilt.quality.models.Action] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "url").readNullable[String] and
-        (__ \ "data").read[com.gilt.quality.models.EventData]
-      )(Event.apply _)
-    }
-
-    implicit def jsonWritesQualityEvent: play.api.libs.json.Writes[Event] = {
-      (
-        (__ \ "model").write[com.gilt.quality.models.Model] and
-        (__ \ "action").write[com.gilt.quality.models.Action] and
-        (__ \ "timestamp").write[_root_.org.joda.time.DateTime] and
-        (__ \ "url").write[scala.Option[String]] and
-        (__ \ "data").write[com.gilt.quality.models.EventData]
-      )(unlift(Event.unapply _))
-    }
-
-    implicit def jsonReadsQualityEventData: play.api.libs.json.Reads[EventData] = {
-      (
-        (__ \ "model_id").read[Long] and
-        (__ \ "summary").read[String]
-      )(EventData.apply _)
-    }
-
-    implicit def jsonWritesQualityEventData: play.api.libs.json.Writes[EventData] = {
-      (
-        (__ \ "model_id").write[Long] and
-        (__ \ "summary").write[String]
-      )(unlift(EventData.unapply _))
-    }
-
-    implicit def jsonReadsQualityExternalService: play.api.libs.json.Reads[ExternalService] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "organization").read[com.gilt.quality.models.Organization] and
-        (__ \ "name").read[com.gilt.quality.models.ExternalServiceName] and
-        (__ \ "url").read[String] and
-        (__ \ "username").read[String]
-      )(ExternalService.apply _)
-    }
-
-    implicit def jsonWritesQualityExternalService: play.api.libs.json.Writes[ExternalService] = {
-      (
-        (__ \ "id").write[Long] and
-        (__ \ "organization").write[com.gilt.quality.models.Organization] and
-        (__ \ "name").write[com.gilt.quality.models.ExternalServiceName] and
-        (__ \ "url").write[String] and
-        (__ \ "username").write[String]
-      )(unlift(ExternalService.unapply _))
-    }
-
-    implicit def jsonReadsQualityExternalServiceForm: play.api.libs.json.Reads[ExternalServiceForm] = {
-      (
-        (__ \ "name").read[com.gilt.quality.models.ExternalServiceName] and
-        (__ \ "url").read[String] and
-        (__ \ "username").read[String] and
-        (__ \ "password").read[String]
-      )(ExternalServiceForm.apply _)
-    }
-
-    implicit def jsonWritesQualityExternalServiceForm: play.api.libs.json.Writes[ExternalServiceForm] = {
-      (
-        (__ \ "name").write[com.gilt.quality.models.ExternalServiceName] and
-        (__ \ "url").write[String] and
-        (__ \ "username").write[String] and
-        (__ \ "password").write[String]
-      )(unlift(ExternalServiceForm.unapply _))
-    }
-
->>>>>>> Add external service to capture information needed for JIRA integration
     implicit def jsonReadsQualityHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
       (__ \ "status").read[String].map { x => new Healthcheck(status = x) }
     }
@@ -1108,13 +845,6 @@ package com.gilt.quality {
 
     def emailMessages: EmailMessages = EmailMessages
 
-<<<<<<< HEAD
-=======
-    def events: Events = Events
-
-    def externalServices: ExternalServices = ExternalServices
-
->>>>>>> Add external service to capture information needed for JIRA integration
     def healthchecks: Healthchecks = Healthchecks
 
     def incidents: Incidents = Incidents
@@ -1212,89 +942,6 @@ package com.gilt.quality {
       }
     }
 
-<<<<<<< HEAD
-=======
-    object Events extends Events {
-      override def getByOrg(
-        org: String,
-        model: scala.Option[com.gilt.quality.models.Model] = None,
-        action: scala.Option[com.gilt.quality.models.Action] = None,
-        numberHours: scala.Option[Int] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Event]] = {
-        val queryParameters = Seq(
-          model.map("model" -> _.toString),
-          action.map("action" -> _.toString),
-          numberHours.map("number_hours" -> _.toString),
-          limit.map("limit" -> _.toString),
-          offset.map("offset" -> _.toString)
-        ).flatten
-
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/events", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Event]]
-          case r => throw new FailedRequest(r)
-        }
-      }
-    }
-
-    object ExternalServices extends ExternalServices {
-      override def getExternalServicesByOrg(
-        org: String,
-        id: scala.Option[Long] = None,
-        name: scala.Option[com.gilt.quality.models.ExternalServiceName] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.ExternalService]] = {
-        val queryParameters = Seq(
-          id.map("id" -> _.toString),
-          name.map("name" -> _.toString),
-          limit.map("limit" -> _.toString),
-          offset.map("offset" -> _.toString)
-        ).flatten
-
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/external_services", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.ExternalService]]
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def getExternalServicesByOrgAndId(
-        org: String,
-        id: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.ExternalService]] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/external_services/${id}").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.ExternalService])
-          case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def postExternalServicesByOrg(externalServiceForm: com.gilt.quality.models.ExternalServiceForm, 
-        org: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.ExternalService] = {
-        val payload = play.api.libs.json.Json.toJson(externalServiceForm)
-
-        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/external_services", body = Some(payload)).map {
-          case r if r.status == 201 => r.json.as[com.gilt.quality.models.ExternalService]
-          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def deleteExternalServicesByOrgAndId(
-        org: String,
-        id: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
-        _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/external_services/${id}").map {
-          case r if r.status == 204 => Some(Unit)
-          case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
-        }
-      }
-    }
-
->>>>>>> Add external service to capture information needed for JIRA integration
     object Healthchecks extends Healthchecks {
       override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]] = {
         _executeRequest("GET", s"/_internal_/healthcheck").map {
@@ -1943,48 +1590,6 @@ package com.gilt.quality {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.EmailMessage]]
   }
 
-<<<<<<< HEAD
-=======
-  trait Events {
-    /**
-     * Search all events. Results are always paginated. Events are sorted in time order
-     * - the first record is the most recent event.
-     */
-    def getByOrg(
-      org: String,
-      model: scala.Option[com.gilt.quality.models.Model] = None,
-      action: scala.Option[com.gilt.quality.models.Action] = None,
-      numberHours: scala.Option[Int] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Event]]
-  }
-
-  trait ExternalServices {
-    def getExternalServicesByOrg(
-      org: String,
-      id: scala.Option[Long] = None,
-      name: scala.Option[com.gilt.quality.models.ExternalServiceName] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.ExternalService]]
-
-    def getExternalServicesByOrgAndId(
-      org: String,
-      id: Long
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.ExternalService]]
-
-    def postExternalServicesByOrg(externalServiceForm: com.gilt.quality.models.ExternalServiceForm, 
-      org: String
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.ExternalService]
-
-    def deleteExternalServicesByOrgAndId(
-      org: String,
-      id: Long
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
-  }
-
->>>>>>> Add external service to capture information needed for JIRA integration
   trait Healthchecks {
     def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]]
   }
@@ -2344,42 +1949,6 @@ package com.gilt.quality {
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
-<<<<<<< HEAD
-=======
-    // Enum: Action
-    private val enumActionNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Action.all.mkString(", ")}"
-
-    implicit val pathBindableEnumAction = new PathBindable.Parsing[Action] (
-      Action.fromString(_).get, _.toString, enumActionNotFound
-    )
-
-    implicit val queryStringBindableEnumAction = new QueryStringBindable.Parsing[Action](
-      Action.fromString(_).get, _.toString, enumActionNotFound
-    )
-
-    // Enum: ExternalServiceName
-    private val enumExternalServiceNameNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${ExternalServiceName.all.mkString(", ")}"
-
-    implicit val pathBindableEnumExternalServiceName = new PathBindable.Parsing[ExternalServiceName] (
-      ExternalServiceName.fromString(_).get, _.toString, enumExternalServiceNameNotFound
-    )
-
-    implicit val queryStringBindableEnumExternalServiceName = new QueryStringBindable.Parsing[ExternalServiceName](
-      ExternalServiceName.fromString(_).get, _.toString, enumExternalServiceNameNotFound
-    )
-
-    // Enum: Model
-    private val enumModelNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Model.all.mkString(", ")}"
-
-    implicit val pathBindableEnumModel = new PathBindable.Parsing[Model] (
-      Model.fromString(_).get, _.toString, enumModelNotFound
-    )
-
-    implicit val queryStringBindableEnumModel = new QueryStringBindable.Parsing[Model](
-      Model.fromString(_).get, _.toString, enumModelNotFound
-    )
-
->>>>>>> Add external service to capture information needed for JIRA integration
     // Enum: Publication
     private val enumPublicationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Publication.all.mkString(", ")}"
 

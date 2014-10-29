@@ -16,14 +16,6 @@ GET        /:org/agenda_items/:id                                 controllers.Ag
 POST       /:org/agenda_items                                     controllers.AgendaItems.postByOrg(org: String)
 DELETE     /:org/agenda_items/:id                                 controllers.AgendaItems.deleteByOrgAndId(org: String, id: Long)
 GET        /:org/email_messages/meeting_adjourned/:meeting_id     controllers.EmailMessages.getMeetingAdjournedByOrgAndMeetingId(org: String, meeting_id: Long)
-<<<<<<< HEAD
-=======
-GET        /:org/events                                           controllers.Events.getByOrg(org: String, model: Option[com.gilt.quality.models.Model], action: Option[com.gilt.quality.models.Action], number_hours: Option[Int], limit: Int ?= 25, offset: Int ?= 0)
-GET        /:org/external_services                                controllers.ExternalServices.getByOrg(org: String, id: Option[Long], name: Option[com.gilt.quality.models.ExternalServiceName], limit: Int ?= 25, offset: Int ?= 0)
-GET        /:org/external_services/:id                            controllers.ExternalServices.getByOrgAndId(org: String, id: Long)
-POST       /:org/external_services                                controllers.ExternalServices.postByOrg(org: String)
-DELETE     /:org/external_services/:id                            controllers.ExternalServices.deleteByOrgAndId(org: String, id: Long)
->>>>>>> Add external service to capture information needed for JIRA integration
 GET        /:org/incidents                                        controllers.Incidents.getByOrg(org: String, id: Option[Long], team_key: Option[String], has_team: Option[Boolean], has_plan: Option[Boolean], has_grade: Option[Boolean], limit: Int ?= 25, offset: Int ?= 0)
 GET        /:org/incidents/:id                                    controllers.Incidents.getByOrgAndId(org: String, id: Long)
 POST       /:org/incidents                                        controllers.Incidents.postByOrg(org: String)
