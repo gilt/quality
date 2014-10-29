@@ -49,7 +49,7 @@ Private IP will look like: 172.16.16.183 and can be obtained from
 
   git clone git://github.com/gilt/schema-evolution-manager.git
   cd schema-evolution-manager
-  git checkout 0.9.12
+  git checkout 0.9.13
   ruby ./configure.rb
   sudo ruby ./install.rb
 
