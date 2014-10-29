@@ -13,7 +13,6 @@ object MainActor {
   case class IncidentCreated(incidentId: Long)
   case class IncidentUpdated(incidentId: Long)
   case class IncidentTeamUpdated(incidentId: Long)
-  case class AgendaItemCreated(agendaItemId: Long)
   case class PlanCreated(planId: Long)
   case class PlanUpdated(planId: Long)
   case class MeetingAdjourned(meetingId: Long)
@@ -62,11 +61,6 @@ class MainActor(name: String) extends Actor with ActorLogging {
       Logger.info(s"MainActor: Received MainActor.MeetingAdjourned($meetingId)")
       meetingActor ! MeetingMessage.SyncMeeting(meetingId)
       emailActor ! EmailActorMessage.MeetingAdjourned(meetingId)
-    }
-
-    case MainActor.AgendaItemCreated(agendaItemId) => {
-      Logger.info(s"MainActor: Received MainActor.AgendaItemCreated($agendaItemId)")
-      meetingActor ! MainActor.AgendaItemCreated(agendaItemId)
     }
 
     case MeetingMessage.SyncIncident(incidentId) => {
