@@ -1,4 +1,4 @@
-FROM giltarchitecture/ubuntu-jvm:0.6
+FROM giltarchitecture/ubuntu-jvm:0.5
 
 MAINTAINER architecture@gilt.com
 
