@@ -43,7 +43,7 @@ object MeetingsDao {
 
   def create(user: User, fullForm: FullMeetingForm): Meeting = {
     val orgId = OrganizationsDao.lookupId(fullForm.org.key).getOrElse {
-      sys.error(s"Could not find organizations with key[${fullForm.org.key}]")
+      sys.error(s"Could not find organization with key[${fullForm.org.key}]")
     }
 
     val id: Long = DB.withConnection { implicit c =>

@@ -1,6 +1,5 @@
 package lib
 
-import play.api.Play.current
 import java.util.UUID
 import java.nio.file.{Path, Paths, Files}
 import java.nio.charset.StandardCharsets
@@ -12,32 +11,24 @@ case class Person(email: String, name: Option[String] = None)
 
 object Email {
 
-  private def config(name: String): String = {
-    val value = current.configuration.getString(name).getOrElse {
-      sys.error(s"configuration parameter[$name] is required")
-    }
-    assert(value.trim != "", "Value for configuration parameter[$name] cannot be blank")
-    value
-  }
+  val qualityWebHostname = Config.requiredString("quality.webHostname")
 
-  val qualityWebHostname = config("quality.webHostname")
-
-  private val subjectPrefix = config("mail.subjectPrefix")
+  private val subjectPrefix = Config.requiredString("mail.subjectPrefix")
 
   private val from = Person(
-    email = config("mail.defaultFromEmail"),
-    name = Some(config("mail.defaultFromName"))
+    email = Config.requiredString("mail.defaultFromEmail"),
+    name = Some(Config.requiredString("mail.defaultFromName"))
   )
 
-  val localDeliveryDir = current.configuration.getString("mail.localDeliveryDir").map(Paths.get(_))
+  val localDeliveryDir = Config.optionalString("mail.localDeliveryDir").map(Paths.get(_))
 
   // Initialize sendgrid on startup to verify that all of our settings
   // are here. If using localDeliveryDir, set password to a test
   // string.
   private val sendgrid = {
     localDeliveryDir match {
-      case None => new SendGrid(config("sendgrid.apiUser"), config("sendgrid.apiKey"))
-      case Some(_) => new SendGrid(config("sendgrid.apiUser"), "development")
+      case None => new SendGrid(Config.requiredString("sendgrid.apiUser"), Config.requiredString("sendgrid.apiKey"))
+      case Some(_) => new SendGrid(Config.requiredString("sendgrid.apiUser"), "development")
     }
   }
 
