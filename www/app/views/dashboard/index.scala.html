@@ -1,7 +1,6 @@
 @(tpl: lib.MainTemplate,
   org: com.gilt.quality.models.Organization,
   statistics: Seq[com.gilt.quality.models.Statistic],
-  events: Seq[com.gilt.quality.models.Event],
   agendaItems: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem]
 )(implicit flash: Flash)
 
@@ -28,33 +27,6 @@
         }
       </ul>
     }
-  }
-
-  <h3>Latest Events</h3>
-  @if(events.isEmpty) {
-     <em>No new events in last 24 hours</em>
-  } else {
-    <table class="table table-hover table-condensed">
-      <tbody>
-        @events.map { event =>
-          <tr>
-            <td>
-            @if(!event.url.isEmpty) {
-              <a href="@event.url.getOrElse("")">
-            }
-            @core.DateHelper.longDateTime(org, event.timestamp)
-            @{event.model match {
-              case com.gilt.quality.models.Model.Incident => Html(s"${event.action} Incident #${event.data.modelId}: ${event.data.summary}")
-              case com.gilt.quality.models.Model.Plan => Html(s"${event.action} ${event.data.summary}")
-              case com.gilt.quality.models.Model.Rating => Html(s"${event.action} ${event.data.summary}")
-              case com.gilt.quality.models.Model.UNDEFINED(name) => s"$name"
-            }}
-            @if(!event.url.isEmpty) {</a>}
-            </td>
-         </tr>
-       }
-      </tbody>
-    </table>
   }
 
   <h3>Team Summary over Past Week</h3>

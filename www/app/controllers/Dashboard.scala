@@ -20,7 +20,6 @@ object Dashboard extends Controller {
   ) = OrgAction.async { implicit request =>
     for {
       stats <- Api.instance.Statistics.getByOrg(org, numberHours = Some(OneWeekInHours))
-      events <- Api.instance.Events.getByOrg(org, numberHours = Some(OneDayInHours), limit = Some(10))
       agendaItems <- Api.instance.agendaItems.getAgendaItemsByOrg(
         org = org,
         userGuid = Some(request.user.guid),
@@ -34,7 +33,6 @@ object Dashboard extends Controller {
           request.mainTemplate(),
           request.org,
           stats,
-          events,
           PaginatedCollection(agendaItemsPage, agendaItems)
         )
       )

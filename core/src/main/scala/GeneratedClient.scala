@@ -34,26 +34,6 @@ package com.gilt.quality.models {
     message: String
   )
 
-  /**
-   * Represents something that has happened - e.g. a team was created, an incident
-   * created, a plan updated, etc.
-   */
-  case class Event(
-    model: com.gilt.quality.models.Model,
-    action: com.gilt.quality.models.Action,
-    timestamp: _root_.org.joda.time.DateTime,
-    url: scala.Option[String] = None,
-    data: com.gilt.quality.models.EventData
-  )
-
-  /**
-   * Generic, descriptive data about a specific event
-   */
-  case class EventData(
-    modelId: Long,
-    summary: String
-  )
-
   case class Healthcheck(
     status: String
   )
@@ -233,91 +213,6 @@ package com.gilt.quality.models {
   )
 
   /**
-   * Used in the event system to indicate what happened.
-   */
-  sealed trait Action
-
-  object Action {
-
-    /**
-     * Indicates that an instance of this model was created
-     */
-    case object Created extends Action { override def toString = "created" }
-    /**
-     * Indicates that an instance of this model was updated
-     */
-    case object Updated extends Action { override def toString = "updated" }
-    /**
-     * Indicates that an instance of this model was deleted
-     */
-    case object Deleted extends Action { override def toString = "deleted" }
-
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends Action
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Created, Updated, Deleted)
-
-    private[this]
-    val byName = all.map(x => x.toString -> x).toMap
-
-    def apply(value: String): Action = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): scala.Option[Action] = byName.get(value)
-
-  }
-
-  /**
-   * The name of the model that was the subject of the event
-   */
-  sealed trait Model
-
-  object Model {
-
-    case object Incident extends Model { override def toString = "incident" }
-    case object Plan extends Model { override def toString = "plan" }
-    case object Rating extends Model { override def toString = "rating" }
-
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends Model
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Incident, Plan, Rating)
-
-    private[this]
-    val byName = all.map(x => x.toString -> x).toMap
-
-    def apply(value: String): Model = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): scala.Option[Model] = byName.get(value)
-
-  }
-
-  /**
    * A publication represents something that a user can subscribe to. An example
    * would be subscribing via email to the publication of all new incidents.
    */
@@ -482,16 +377,6 @@ package com.gilt.quality.models {
       }
     }
 
-    implicit val jsonReadsQualityEnum_Action = __.read[String].map(Action.apply)
-    implicit val jsonWritesQualityEnum_Action = new Writes[Action] {
-      def writes(x: Action) = JsString(x.toString)
-    }
-
-    implicit val jsonReadsQualityEnum_Model = __.read[String].map(Model.apply)
-    implicit val jsonWritesQualityEnum_Model = new Writes[Model] {
-      def writes(x: Model) = JsString(x.toString)
-    }
-
     implicit val jsonReadsQualityEnum_Publication = __.read[String].map(Publication.apply)
     implicit val jsonWritesQualityEnum_Publication = new Writes[Publication] {
       def writes(x: Publication) = JsString(x.toString)
@@ -586,40 +471,6 @@ package com.gilt.quality.models {
         (__ \ "code").write[String] and
         (__ \ "message").write[String]
       )(unlift(Error.unapply _))
-    }
-
-    implicit def jsonReadsQualityEvent: play.api.libs.json.Reads[Event] = {
-      (
-        (__ \ "model").read[com.gilt.quality.models.Model] and
-        (__ \ "action").read[com.gilt.quality.models.Action] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "url").readNullable[String] and
-        (__ \ "data").read[com.gilt.quality.models.EventData]
-      )(Event.apply _)
-    }
-
-    implicit def jsonWritesQualityEvent: play.api.libs.json.Writes[Event] = {
-      (
-        (__ \ "model").write[com.gilt.quality.models.Model] and
-        (__ \ "action").write[com.gilt.quality.models.Action] and
-        (__ \ "timestamp").write[_root_.org.joda.time.DateTime] and
-        (__ \ "url").write[scala.Option[String]] and
-        (__ \ "data").write[com.gilt.quality.models.EventData]
-      )(unlift(Event.unapply _))
-    }
-
-    implicit def jsonReadsQualityEventData: play.api.libs.json.Reads[EventData] = {
-      (
-        (__ \ "model_id").read[Long] and
-        (__ \ "summary").read[String]
-      )(EventData.apply _)
-    }
-
-    implicit def jsonWritesQualityEventData: play.api.libs.json.Writes[EventData] = {
-      (
-        (__ \ "model_id").write[Long] and
-        (__ \ "summary").write[String]
-      )(unlift(EventData.unapply _))
     }
 
     implicit def jsonReadsQualityHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
@@ -994,8 +845,6 @@ package com.gilt.quality {
 
     def emailMessages: EmailMessages = EmailMessages
 
-    def events: Events = Events
-
     def healthchecks: Healthchecks = Healthchecks
 
     def incidents: Incidents = Incidents
@@ -1088,30 +937,6 @@ package com.gilt.quality {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/email_messages/meeting_adjourned/${meetingId}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.EmailMessage])
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
-        }
-      }
-    }
-
-    object Events extends Events {
-      override def getByOrg(
-        org: String,
-        model: scala.Option[com.gilt.quality.models.Model] = None,
-        action: scala.Option[com.gilt.quality.models.Action] = None,
-        numberHours: scala.Option[Int] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Event]] = {
-        val queryParameters = Seq(
-          model.map("model" -> _.toString),
-          action.map("action" -> _.toString),
-          numberHours.map("number_hours" -> _.toString),
-          limit.map("limit" -> _.toString),
-          offset.map("offset" -> _.toString)
-        ).flatten
-
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/events", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Event]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1765,21 +1590,6 @@ package com.gilt.quality {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.EmailMessage]]
   }
 
-  trait Events {
-    /**
-     * Search all events. Results are always paginated. Events are sorted in time order
-     * - the first record is the most recent event.
-     */
-    def getByOrg(
-      org: String,
-      model: scala.Option[com.gilt.quality.models.Model] = None,
-      action: scala.Option[com.gilt.quality.models.Action] = None,
-      numberHours: scala.Option[Int] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Event]]
-  }
-
   trait Healthchecks {
     def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]]
   }
@@ -2137,28 +1947,6 @@ package com.gilt.quality {
     // Type: date-iso8601
     implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
-
-    // Enum: Action
-    private val enumActionNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Action.all.mkString(", ")}"
-
-    implicit val pathBindableEnumAction = new PathBindable.Parsing[Action] (
-      Action.fromString(_).get, _.toString, enumActionNotFound
-    )
-
-    implicit val queryStringBindableEnumAction = new QueryStringBindable.Parsing[Action](
-      Action.fromString(_).get, _.toString, enumActionNotFound
-    )
-
-    // Enum: Model
-    private val enumModelNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Model.all.mkString(", ")}"
-
-    implicit val pathBindableEnumModel = new PathBindable.Parsing[Model] (
-      Model.fromString(_).get, _.toString, enumModelNotFound
-    )
-
-    implicit val queryStringBindableEnumModel = new QueryStringBindable.Parsing[Model](
-      Model.fromString(_).get, _.toString, enumModelNotFound
     )
 
     // Enum: Publication
