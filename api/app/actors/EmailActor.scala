@@ -26,7 +26,7 @@ class EmailActor extends Actor {
           Emails.deliver(
             org = incident.organization,
             publication = publication,
-            subject = s"Incident ${incident.id} ${Emails.action(publication)}",
+            subject = s"Incident ${incident.id} #{incident.summary} ${Emails.action(publication)}",
             body = views.html.emails.incident(incident).toString
           )
         }
