@@ -38,7 +38,7 @@ object Database {
       isUpcoming = Some(false),
       isAdjourned = Some(false),
       scheduledWithinNHours = Some(168),
-      scheduledOnOrBefore = Some((new DateTime()).plusMinutes(-90)),
+      scheduledOnOrBefore = Some((new DateTime()).plusMinutes(-180)),
       limit = limit
     )
     meetings.foreach { meeting =>
