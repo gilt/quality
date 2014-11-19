@@ -1,4 +1,5 @@
 package com.gilt.quality.models {
+
   case class AdjournForm(
     adjournedAt: scala.Option[_root_.org.joda.time.DateTime] = None
   )
@@ -75,7 +76,7 @@ package com.gilt.quality.models {
     description: scala.Option[String] = None,
     team: scala.Option[com.gilt.quality.models.Team] = None,
     severity: com.gilt.quality.models.Severity,
-    tags: scala.collection.Seq[String] = Nil,
+    tags: Seq[String] = Nil,
     plan: scala.Option[com.gilt.quality.models.Plan] = None,
     createdAt: _root_.org.joda.time.DateTime
   )
@@ -85,7 +86,7 @@ package com.gilt.quality.models {
     severity: com.gilt.quality.models.Severity,
     summary: String,
     description: scala.Option[String] = None,
-    tags: scala.collection.Seq[String] = Nil
+    tags: Seq[String] = Nil
   )
 
   case class IncidentSummary(
@@ -163,7 +164,7 @@ package com.gilt.quality.models {
     totalOpenIncidents: Long,
     totalIncidents: Long,
     totalPlans: Long,
-    plans: scala.collection.Seq[com.gilt.quality.models.Plan] = Nil
+    plans: Seq[com.gilt.quality.models.Plan] = Nil
   )
 
   /**
@@ -178,7 +179,7 @@ package com.gilt.quality.models {
 
   case class SubscriptionForm(
     organizationKey: String,
-    userGuid: java.util.UUID,
+    userGuid: _root_.java.util.UUID,
     publication: com.gilt.quality.models.Publication
   )
 
@@ -223,7 +224,7 @@ package com.gilt.quality.models {
    * A user is a top level person.
    */
   case class User(
-    guid: java.util.UUID,
+    guid: _root_.java.util.UUID,
     email: String
   )
 
@@ -408,6 +409,7 @@ package com.gilt.quality.models {
     def fromString(value: String): scala.Option[Task] = byName.get(value)
 
   }
+
 }
 
 package com.gilt.quality.models {
@@ -607,7 +609,7 @@ package com.gilt.quality.models {
         (__ \ "description").readNullable[String] and
         (__ \ "team").readNullable[com.gilt.quality.models.Team] and
         (__ \ "severity").read[com.gilt.quality.models.Severity] and
-        (__ \ "tags").readNullable[scala.collection.Seq[String]].map(_.getOrElse(Nil)) and
+        (__ \ "tags").readNullable[Seq[String]].map(_.getOrElse(Nil)) and
         (__ \ "plan").readNullable[com.gilt.quality.models.Plan] and
         (__ \ "created_at").read[_root_.org.joda.time.DateTime]
       )(Incident.apply _)
@@ -621,7 +623,7 @@ package com.gilt.quality.models {
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "team").write[scala.Option[com.gilt.quality.models.Team]] and
         (__ \ "severity").write[com.gilt.quality.models.Severity] and
-        (__ \ "tags").write[scala.collection.Seq[String]] and
+        (__ \ "tags").write[Seq[String]] and
         (__ \ "plan").write[scala.Option[com.gilt.quality.models.Plan]] and
         (__ \ "created_at").write[_root_.org.joda.time.DateTime]
       )(unlift(Incident.unapply _))
@@ -633,7 +635,7 @@ package com.gilt.quality.models {
         (__ \ "severity").read[com.gilt.quality.models.Severity] and
         (__ \ "summary").read[String] and
         (__ \ "description").readNullable[String] and
-        (__ \ "tags").readNullable[scala.collection.Seq[String]].map(_.getOrElse(Nil))
+        (__ \ "tags").readNullable[Seq[String]].map(_.getOrElse(Nil))
       )(IncidentForm.apply _)
     }
 
@@ -643,7 +645,7 @@ package com.gilt.quality.models {
         (__ \ "severity").write[com.gilt.quality.models.Severity] and
         (__ \ "summary").write[String] and
         (__ \ "description").write[scala.Option[String]] and
-        (__ \ "tags").write[scala.collection.Seq[String]]
+        (__ \ "tags").write[Seq[String]]
       )(unlift(IncidentForm.unapply _))
     }
 
@@ -777,7 +779,7 @@ package com.gilt.quality.models {
         (__ \ "total_open_incidents").read[Long] and
         (__ \ "total_incidents").read[Long] and
         (__ \ "total_plans").read[Long] and
-        (__ \ "plans").readNullable[scala.collection.Seq[com.gilt.quality.models.Plan]].map(_.getOrElse(Nil))
+        (__ \ "plans").readNullable[Seq[com.gilt.quality.models.Plan]].map(_.getOrElse(Nil))
       )(Statistic.apply _)
     }
 
@@ -789,7 +791,7 @@ package com.gilt.quality.models {
         (__ \ "total_open_incidents").write[Long] and
         (__ \ "total_incidents").write[Long] and
         (__ \ "total_plans").write[Long] and
-        (__ \ "plans").write[scala.collection.Seq[com.gilt.quality.models.Plan]]
+        (__ \ "plans").write[Seq[com.gilt.quality.models.Plan]]
       )(unlift(Statistic.unapply _))
     }
 
@@ -814,7 +816,7 @@ package com.gilt.quality.models {
     implicit def jsonReadsQualitySubscriptionForm: play.api.libs.json.Reads[SubscriptionForm] = {
       (
         (__ \ "organization_key").read[String] and
-        (__ \ "user_guid").read[java.util.UUID] and
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
         (__ \ "publication").read[com.gilt.quality.models.Publication]
       )(SubscriptionForm.apply _)
     }
@@ -822,7 +824,7 @@ package com.gilt.quality.models {
     implicit def jsonWritesQualitySubscriptionForm: play.api.libs.json.Writes[SubscriptionForm] = {
       (
         (__ \ "organization_key").write[String] and
-        (__ \ "user_guid").write[java.util.UUID] and
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
         (__ \ "publication").write[com.gilt.quality.models.Publication]
       )(unlift(SubscriptionForm.unapply _))
     }
@@ -909,14 +911,14 @@ package com.gilt.quality.models {
 
     implicit def jsonReadsQualityUser: play.api.libs.json.Reads[User] = {
       (
-        (__ \ "guid").read[java.util.UUID] and
+        (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "email").read[String]
       )(User.apply _)
     }
 
     implicit def jsonWritesQualityUser: play.api.libs.json.Writes[User] = {
       (
-        (__ \ "guid").write[java.util.UUID] and
+        (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "email").write[String]
       )(unlift(User.unapply _))
     }
@@ -938,7 +940,7 @@ package com.gilt.quality {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
-    private val UserAgent = "apidoc:0.6.10 http://www.apidoc.me/gilt/code/quality/0.0.47/play_2_3_client"
+    private val UserAgent = "apidoc:0.7.4 http://www.apidoc.me/gilt/code/quality/0.0.50/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.quality.client")
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
@@ -974,12 +976,12 @@ package com.gilt.quality {
         meetingId: scala.Option[Long] = None,
         incidentId: scala.Option[Long] = None,
         teamKey: scala.Option[String] = None,
-        userGuid: scala.Option[java.util.UUID] = None,
+        userGuid: scala.Option[_root_.java.util.UUID] = None,
         isAdjourned: scala.Option[Boolean] = None,
         task: scala.Option[com.gilt.quality.models.Task] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.AgendaItem]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.AgendaItem]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
           meetingId.map("meeting_id" -> _.toString),
@@ -993,7 +995,7 @@ package com.gilt.quality {
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/agenda_items", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.AgendaItem]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.models.AgendaItem]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1009,7 +1011,7 @@ package com.gilt.quality {
         }
       }
 
-      override def postAgendaItemsByOrg(agendaItemForm: com.gilt.quality.models.AgendaItemForm, 
+      override def postAgendaItemsByOrg(agendaItemForm: com.gilt.quality.models.AgendaItemForm,
         org: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.AgendaItem] = {
         val payload = play.api.libs.json.Json.toJson(agendaItemForm)
@@ -1053,7 +1055,7 @@ package com.gilt.quality {
         name: scala.Option[com.gilt.quality.models.ExternalServiceName] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.ExternalService]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.ExternalService]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
           name.map("name" -> _.toString),
@@ -1062,7 +1064,7 @@ package com.gilt.quality {
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/external_services", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.ExternalService]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.models.ExternalService]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1078,7 +1080,7 @@ package com.gilt.quality {
         }
       }
 
-      override def postExternalServicesByOrg(externalServiceForm: com.gilt.quality.models.ExternalServiceForm, 
+      override def postExternalServicesByOrg(externalServiceForm: com.gilt.quality.models.ExternalServiceForm,
         org: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.ExternalService] = {
         val payload = play.api.libs.json.Json.toJson(externalServiceForm)
@@ -1122,7 +1124,7 @@ package com.gilt.quality {
         hasGrade: scala.Option[Boolean] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Incident]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Incident]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
           teamKey.map("team_key" -> _),
@@ -1134,7 +1136,7 @@ package com.gilt.quality {
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/incidents", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Incident]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.models.Incident]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1150,7 +1152,7 @@ package com.gilt.quality {
         }
       }
 
-      override def postByOrg(incidentForm: com.gilt.quality.models.IncidentForm, 
+      override def postByOrg(incidentForm: com.gilt.quality.models.IncidentForm,
         org: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident] = {
         val payload = play.api.libs.json.Json.toJson(incidentForm)
@@ -1162,7 +1164,7 @@ package com.gilt.quality {
         }
       }
 
-      override def putByOrgAndId(incidentForm: com.gilt.quality.models.IncidentForm, 
+      override def putByOrgAndId(incidentForm: com.gilt.quality.models.IncidentForm,
         org: String,
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident] = {
@@ -1195,7 +1197,7 @@ package com.gilt.quality {
         agendaItemId: scala.Option[Long] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Meeting]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Meeting]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
           incidentId.map("incident_id" -> _.toString),
@@ -1205,7 +1207,7 @@ package com.gilt.quality {
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Meeting]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.models.Meeting]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1221,7 +1223,7 @@ package com.gilt.quality {
         }
       }
 
-      override def postByOrg(meetingForm: com.gilt.quality.models.MeetingForm, 
+      override def postByOrg(meetingForm: com.gilt.quality.models.MeetingForm,
         org: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting] = {
         val payload = play.api.libs.json.Json.toJson(meetingForm)
@@ -1233,7 +1235,7 @@ package com.gilt.quality {
         }
       }
 
-      override def postAdjournByOrgAndId(adjournForm: com.gilt.quality.models.AdjournForm, 
+      override def postAdjournByOrgAndId(adjournForm: com.gilt.quality.models.AdjournForm,
         org: String,
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting] = {
@@ -1276,7 +1278,7 @@ package com.gilt.quality {
         key: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Organization]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Organization]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
           key.map("key" -> _),
@@ -1285,7 +1287,7 @@ package com.gilt.quality {
         ).flatten
 
         _executeRequest("GET", s"/organizations", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Organization]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.models.Organization]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1329,7 +1331,7 @@ package com.gilt.quality {
         teamKey: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Plan]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Plan]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
           incidentId.map("incident_id" -> _.toString),
@@ -1339,12 +1341,12 @@ package com.gilt.quality {
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Plan]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.models.Plan]]
           case r => throw new FailedRequest(r)
         }
       }
 
-      override def postByOrg(planForm: com.gilt.quality.models.PlanForm, 
+      override def postByOrg(planForm: com.gilt.quality.models.PlanForm,
         org: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan] = {
         val payload = play.api.libs.json.Json.toJson(planForm)
@@ -1356,7 +1358,7 @@ package com.gilt.quality {
         }
       }
 
-      override def putByOrgAndId(planForm: com.gilt.quality.models.PlanForm, 
+      override def putByOrgAndId(planForm: com.gilt.quality.models.PlanForm,
         org: String,
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan] = {
@@ -1413,14 +1415,14 @@ package com.gilt.quality {
         org: String,
         teamKey: scala.Option[String] = None,
         numberHours: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Statistic]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Statistic]] = {
         val queryParameters = Seq(
           teamKey.map("team_key" -> _),
           numberHours.map("number_hours" -> _.toString)
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/statistics", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Statistic]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.models.Statistic]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1430,11 +1432,11 @@ package com.gilt.quality {
       override def get(
         id: scala.Option[Long] = None,
         organizationKey: scala.Option[String] = None,
-        userGuid: scala.Option[java.util.UUID] = None,
+        userGuid: scala.Option[_root_.java.util.UUID] = None,
         publication: scala.Option[com.gilt.quality.models.Publication] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Subscription]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Subscription]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
           organizationKey.map("organization_key" -> _),
@@ -1445,7 +1447,7 @@ package com.gilt.quality {
         ).flatten
 
         _executeRequest("GET", s"/subscriptions", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Subscription]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.models.Subscription]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1485,11 +1487,11 @@ package com.gilt.quality {
       override def getByOrg(
         org: String,
         key: scala.Option[String] = None,
-        userGuid: scala.Option[java.util.UUID] = None,
-        excludeUserGuid: scala.Option[java.util.UUID] = None,
+        userGuid: scala.Option[_root_.java.util.UUID] = None,
+        excludeUserGuid: scala.Option[_root_.java.util.UUID] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Team]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Team]] = {
         val queryParameters = Seq(
           key.map("key" -> _),
           userGuid.map("user_guid" -> _.toString),
@@ -1499,7 +1501,7 @@ package com.gilt.quality {
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.Team]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.models.Team]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1515,7 +1517,7 @@ package com.gilt.quality {
         }
       }
 
-      override def postByOrg(teamForm: com.gilt.quality.models.TeamForm, 
+      override def postByOrg(teamForm: com.gilt.quality.models.TeamForm,
         org: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team] = {
         val payload = play.api.libs.json.Json.toJson(teamForm)
@@ -1527,7 +1529,7 @@ package com.gilt.quality {
         }
       }
 
-      override def putByOrgAndKey(updateTeamForm: com.gilt.quality.models.UpdateTeamForm, 
+      override def putByOrgAndKey(updateTeamForm: com.gilt.quality.models.UpdateTeamForm,
         org: String,
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team] = {
@@ -1565,10 +1567,10 @@ package com.gilt.quality {
       override def getMembersByOrgAndKey(
         org: String,
         key: String,
-        userGuid: scala.Option[java.util.UUID] = None,
+        userGuid: scala.Option[_root_.java.util.UUID] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.TeamMember]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.TeamMember]] = {
         val queryParameters = Seq(
           userGuid.map("user_guid" -> _.toString),
           limit.map("limit" -> _.toString),
@@ -1576,7 +1578,7 @@ package com.gilt.quality {
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/members", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.TeamMember]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.models.TeamMember]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1584,7 +1586,7 @@ package com.gilt.quality {
       override def putMembersByOrgAndKeyAndUserGuid(
         org: String,
         key: String,
-        userGuid: java.util.UUID
+        userGuid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.TeamMember] = {
         _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/members/${userGuid}").map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.models.TeamMember]
@@ -1596,7 +1598,7 @@ package com.gilt.quality {
       override def deleteMembersByOrgAndKeyAndUserGuid(
         org: String,
         key: String,
-        userGuid: java.util.UUID
+        userGuid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/members/${userGuid}").map {
           case r if r.status == 204 => Some(Unit)
@@ -1608,22 +1610,22 @@ package com.gilt.quality {
 
     object Users extends Users {
       override def get(
-        guid: scala.Option[java.util.UUID] = None,
+        guid: scala.Option[_root_.java.util.UUID] = None,
         email: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.User]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.User]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
           email.map("email" -> _)
         ).flatten
 
         _executeRequest("GET", s"/users", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.quality.models.User]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.models.User]]
           case r => throw new FailedRequest(r)
         }
       }
 
       override def getByGuid(
-        guid: java.util.UUID
+        guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.User]] = {
         _executeRequest("GET", s"/users/${guid}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.User])
@@ -1718,12 +1720,12 @@ package com.gilt.quality {
       meetingId: scala.Option[Long] = None,
       incidentId: scala.Option[Long] = None,
       teamKey: scala.Option[String] = None,
-      userGuid: scala.Option[java.util.UUID] = None,
+      userGuid: scala.Option[_root_.java.util.UUID] = None,
       isAdjourned: scala.Option[Boolean] = None,
       task: scala.Option[com.gilt.quality.models.Task] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.AgendaItem]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.AgendaItem]]
 
     def getAgendaItemsByOrgAndId(
       org: String,
@@ -1733,7 +1735,7 @@ package com.gilt.quality {
     /**
      * Creates an agenda item for this meeting.
      */
-    def postAgendaItemsByOrg(agendaItemForm: com.gilt.quality.models.AgendaItemForm, 
+    def postAgendaItemsByOrg(agendaItemForm: com.gilt.quality.models.AgendaItemForm,
       org: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.AgendaItem]
 
@@ -1757,14 +1759,14 @@ package com.gilt.quality {
       name: scala.Option[com.gilt.quality.models.ExternalServiceName] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.ExternalService]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.ExternalService]]
 
     def getExternalServicesByOrgAndId(
       org: String,
       id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.ExternalService]]
 
-    def postExternalServicesByOrg(externalServiceForm: com.gilt.quality.models.ExternalServiceForm, 
+    def postExternalServicesByOrg(externalServiceForm: com.gilt.quality.models.ExternalServiceForm,
       org: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.ExternalService]
 
@@ -1791,7 +1793,7 @@ package com.gilt.quality {
       hasGrade: scala.Option[Boolean] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Incident]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Incident]]
 
     /**
      * Returns information about the incident with this specific id.
@@ -1804,14 +1806,14 @@ package com.gilt.quality {
     /**
      * Create a new incident.
      */
-    def postByOrg(incidentForm: com.gilt.quality.models.IncidentForm, 
+    def postByOrg(incidentForm: com.gilt.quality.models.IncidentForm,
       org: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident]
 
     /**
      * Updates an incident.
      */
-    def putByOrgAndId(incidentForm: com.gilt.quality.models.IncidentForm, 
+    def putByOrgAndId(incidentForm: com.gilt.quality.models.IncidentForm,
       org: String,
       id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident]
@@ -1833,7 +1835,7 @@ package com.gilt.quality {
       agendaItemId: scala.Option[Long] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Meeting]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Meeting]]
 
     def getByOrgAndId(
       org: String,
@@ -1843,7 +1845,7 @@ package com.gilt.quality {
     /**
      * Creates a meeting. In general meetings are created automatically
      */
-    def postByOrg(meetingForm: com.gilt.quality.models.MeetingForm, 
+    def postByOrg(meetingForm: com.gilt.quality.models.MeetingForm,
       org: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting]
 
@@ -1851,7 +1853,7 @@ package com.gilt.quality {
      * Records that a meeting has been adjourned. Will return a validation error if the
      * meeting had previously been adjourned
      */
-    def postAdjournByOrgAndId(adjournForm: com.gilt.quality.models.AdjournForm, 
+    def postAdjournByOrgAndId(adjournForm: com.gilt.quality.models.AdjournForm,
       org: String,
       id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Meeting]
@@ -1881,7 +1883,7 @@ package com.gilt.quality {
       key: scala.Option[String] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Organization]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Organization]]
 
     def getByKey(
       key: String
@@ -1905,19 +1907,19 @@ package com.gilt.quality {
       teamKey: scala.Option[String] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Plan]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Plan]]
 
     /**
      * Create a plan.
      */
-    def postByOrg(planForm: com.gilt.quality.models.PlanForm, 
+    def postByOrg(planForm: com.gilt.quality.models.PlanForm,
       org: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan]
 
     /**
      * Update a plan.
      */
-    def putByOrgAndId(planForm: com.gilt.quality.models.PlanForm, 
+    def putByOrgAndId(planForm: com.gilt.quality.models.PlanForm,
       org: String,
       id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Plan]
@@ -1956,7 +1958,7 @@ package com.gilt.quality {
       org: String,
       teamKey: scala.Option[String] = None,
       numberHours: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Statistic]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Statistic]]
   }
 
   trait Subscriptions {
@@ -1966,11 +1968,11 @@ package com.gilt.quality {
     def get(
       id: scala.Option[Long] = None,
       organizationKey: scala.Option[String] = None,
-      userGuid: scala.Option[java.util.UUID] = None,
+      userGuid: scala.Option[_root_.java.util.UUID] = None,
       publication: scala.Option[com.gilt.quality.models.Publication] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Subscription]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Subscription]]
 
     /**
      * Returns information about this subscription.
@@ -1996,11 +1998,11 @@ package com.gilt.quality {
     def getByOrg(
       org: String,
       key: scala.Option[String] = None,
-      userGuid: scala.Option[java.util.UUID] = None,
-      excludeUserGuid: scala.Option[java.util.UUID] = None,
+      userGuid: scala.Option[_root_.java.util.UUID] = None,
+      excludeUserGuid: scala.Option[_root_.java.util.UUID] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.Team]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Team]]
 
     /**
      * Returns information about the team with this specific key.
@@ -2013,14 +2015,14 @@ package com.gilt.quality {
     /**
      * Create a new team.
      */
-    def postByOrg(teamForm: com.gilt.quality.models.TeamForm, 
+    def postByOrg(teamForm: com.gilt.quality.models.TeamForm,
       org: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team]
 
     /**
      * Update a team.
      */
-    def putByOrgAndKey(updateTeamForm: com.gilt.quality.models.UpdateTeamForm, 
+    def putByOrgAndKey(updateTeamForm: com.gilt.quality.models.UpdateTeamForm,
       org: String,
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Team]
@@ -2044,10 +2046,10 @@ package com.gilt.quality {
     def getMembersByOrgAndKey(
       org: String,
       key: String,
-      userGuid: scala.Option[java.util.UUID] = None,
+      userGuid: scala.Option[_root_.java.util.UUID] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.TeamMember]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.TeamMember]]
 
     /**
      * Adds the specified user to this team
@@ -2055,7 +2057,7 @@ package com.gilt.quality {
     def putMembersByOrgAndKeyAndUserGuid(
       org: String,
       key: String,
-      userGuid: java.util.UUID
+      userGuid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.TeamMember]
 
     /**
@@ -2064,7 +2066,7 @@ package com.gilt.quality {
     def deleteMembersByOrgAndKeyAndUserGuid(
       org: String,
       key: String,
-      userGuid: java.util.UUID
+      userGuid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }
 
@@ -2074,15 +2076,15 @@ package com.gilt.quality {
      * guid or email - and will receive back either 0 or 1 users.
      */
     def get(
-      guid: scala.Option[java.util.UUID] = None,
+      guid: scala.Option[_root_.java.util.UUID] = None,
       email: scala.Option[String] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.quality.models.User]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.User]]
 
     /**
      * Returns information about the user with this guid.
      */
     def getByGuid(
-      guid: java.util.UUID
+      guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.User]]
 
     /**
@@ -2112,7 +2114,7 @@ package com.gilt.quality {
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
       import com.gilt.quality.models.json._
-      lazy val errors = response.json.as[scala.collection.Seq[com.gilt.quality.models.Error]]
+      lazy val errors = response.json.as[Seq[com.gilt.quality.models.Error]]
     }
   }
 
