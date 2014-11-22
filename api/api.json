@@ -296,6 +296,14 @@
 		{ "name": "username", "type": "string" },
 		{ "name": "password", "type": "string" }
 	    ]
+	},
+
+	"incident_organization_change": {
+	    "description": "Used to move an incident to another organization",
+	    "fields": [
+		{ "name": "incident_id", "type": "long" },
+		{ "name": "organization_key", "type": "string" }
+	    ]
 	}
 
     },
@@ -868,6 +876,19 @@
 
 	    ]
 
+	},
+
+	"incident_organization_change": {
+	    "operations": [
+		{
+		    "method": "POST",
+		    "body": { "type": "incident_organization_change" },
+		    "responses": {
+			"200": { "type": "incident" },
+			"409": { "type": "[error]" }
+		    }
+		}
+	    ]
 	}
     }
 }

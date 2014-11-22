@@ -87,6 +87,12 @@ object IncidentsDao {
      where id = {id}
   """
 
+  private val UpdateOrganizationQuery = """
+    update incidents
+       set organization_id = {organization_id}
+     where id = {id}
+  """
+
   def findRecentlyModifiedIncidentIds(): Seq[Long] = {
     val query = BaseQuery + " and incidents.updated_at > now() - interval '3 days' "
     DB.withConnection { implicit c =>
@@ -165,6 +171,19 @@ object IncidentsDao {
 
   def findById(id: Long): Option[Incident] = {
     findAll(id = Some(id), limit = 1).headOption.map { i => findDetails(i) }
+  }
+
+  def updateOrganization(incidentId: Long, newOrgKey: String) {
+    val orgId = OrganizationsDao.lookupId(newOrgKey).getOrElse {
+      sys.error("Organization ID not found for key[$newOrgKey]")
+    }
+
+    DB.withConnection { implicit c =>
+      SQL(UpdateOrganizationQuery).on(
+        'id -> incidentId,
+        'organization_id -> orgId
+      ).executeUpdate()
+    }
   }
 
   def findByOrganizationAndId(
