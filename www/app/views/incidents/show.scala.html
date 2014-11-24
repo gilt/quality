@@ -40,7 +40,8 @@
     </li>
     <li>Created: @core.DateHelper.longDateTime(org, incident.createdAt)</li>
     <li><a href="@routes.Incidents.edit(org.key, incident.id)">Edit</a> |
-        <a href="@routes.Incidents.postDeleteById(org.key, incident.id)" class="delete" data-confirm="Are you sure to delete this incident?">Delete</a>
+        <a href="@routes.Incidents.postDeleteById(org.key, incident.id)" class="delete" data-confirm="Are you sure to delete this incident?">Delete</a> |
+        <a href="@routes.Incidents.move(org.key, incident.id)">Move</a>
     </li>
   </ul>
 
