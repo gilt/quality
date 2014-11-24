@@ -54,6 +54,29 @@ package com.gilt.quality.models {
     password: String
   )
 
+  /**
+   * Every n days (e.g. 30) we follow up to see if a given plan has been implemented.
+   * This gives teams the ability to say: Yes, completed. Not yet. or No, won't do.
+   * After 3 consecutive no replies, we assume not doing.
+   */
+  case class Followup(
+    key: String,
+    plan: com.gilt.quality.models.Plan,
+    sentAt: _root_.org.joda.time.DateTime
+  )
+
+  /**
+   * Every n days (e.g. 30) we follow up to see if a given plan has been implemented.
+   * This gives teams the ability to say: Yes, completed. Not yet. or No, won't do.
+   * After 3 consecutive no replies, we assume not doing.
+   */
+  case class FollowupResponse(
+    followup: com.gilt.quality.models.Followup,
+    response: com.gilt.quality.models.Response,
+    createdAt: _root_.org.joda.time.DateTime,
+    createdBy: com.gilt.quality.models.User
+  )
+
   case class Healthcheck(
     status: String
   )
@@ -340,6 +363,41 @@ package com.gilt.quality.models {
 
   }
 
+  sealed trait Response
+
+  object Response {
+
+    case object Complete extends Response { override def toString = "Complete" }
+    case object NotYet extends Response { override def toString = "Not Yet" }
+    case object Willnotcomplete extends Response { override def toString = "Will not complete" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Response
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Complete, NotYet, Willnotcomplete)
+
+    private[this]
+    val byName = all.map(x => x.toString -> x).toMap
+
+    def apply(value: String): Response = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): scala.Option[Response] = byName.get(value)
+
+  }
+
   sealed trait Severity
 
   object Severity {
@@ -454,6 +512,11 @@ package com.gilt.quality.models {
     implicit val jsonReadsQualityEnum_Publication = __.read[String].map(Publication.apply)
     implicit val jsonWritesQualityEnum_Publication = new Writes[Publication] {
       def writes(x: Publication) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsQualityEnum_Response = __.read[String].map(Response.apply)
+    implicit val jsonWritesQualityEnum_Response = new Writes[Response] {
+      def writes(x: Response) = JsString(x.toString)
     }
 
     implicit val jsonReadsQualityEnum_Severity = __.read[String].map(Severity.apply)
@@ -583,6 +646,40 @@ package com.gilt.quality.models {
         (__ \ "username").write[String] and
         (__ \ "password").write[String]
       )(unlift(ExternalServiceForm.unapply _))
+    }
+
+    implicit def jsonReadsQualityFollowup: play.api.libs.json.Reads[Followup] = {
+      (
+        (__ \ "key").read[String] and
+        (__ \ "plan").read[com.gilt.quality.models.Plan] and
+        (__ \ "sent_at").read[_root_.org.joda.time.DateTime]
+      )(Followup.apply _)
+    }
+
+    implicit def jsonWritesQualityFollowup: play.api.libs.json.Writes[Followup] = {
+      (
+        (__ \ "key").write[String] and
+        (__ \ "plan").write[com.gilt.quality.models.Plan] and
+        (__ \ "sent_at").write[_root_.org.joda.time.DateTime]
+      )(unlift(Followup.unapply _))
+    }
+
+    implicit def jsonReadsQualityFollowupResponse: play.api.libs.json.Reads[FollowupResponse] = {
+      (
+        (__ \ "followup").read[com.gilt.quality.models.Followup] and
+        (__ \ "response").read[com.gilt.quality.models.Response] and
+        (__ \ "created_at").read[_root_.org.joda.time.DateTime] and
+        (__ \ "created_by").read[com.gilt.quality.models.User]
+      )(FollowupResponse.apply _)
+    }
+
+    implicit def jsonWritesQualityFollowupResponse: play.api.libs.json.Writes[FollowupResponse] = {
+      (
+        (__ \ "followup").write[com.gilt.quality.models.Followup] and
+        (__ \ "response").write[com.gilt.quality.models.Response] and
+        (__ \ "created_at").write[_root_.org.joda.time.DateTime] and
+        (__ \ "created_by").write[com.gilt.quality.models.User]
+      )(unlift(FollowupResponse.unapply _))
     }
 
     implicit def jsonReadsQualityHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
@@ -962,7 +1059,7 @@ package com.gilt.quality {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
-    private val UserAgent = "apidoc:0.7.14 http://www.apidoc.me/gilt/code/quality/0.0.51/play_2_3_client"
+    private val UserAgent = "apidoc:0.7.14 http://www.apidoc.me/gilt/code/quality/0.1.3/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.quality.client")
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
@@ -2203,6 +2300,17 @@ package com.gilt.quality {
 
     implicit val queryStringBindableEnumPublication = new QueryStringBindable.Parsing[Publication](
       Publication.fromString(_).get, _.toString, enumPublicationNotFound
+    )
+
+    // Enum: Response
+    private val enumResponseNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Response.all.mkString(", ")}"
+
+    implicit val pathBindableEnumResponse = new PathBindable.Parsing[Response] (
+      Response.fromString(_).get, _.toString, enumResponseNotFound
+    )
+
+    implicit val queryStringBindableEnumResponse = new QueryStringBindable.Parsing[Response](
+      Response.fromString(_).get, _.toString, enumResponseNotFound
     )
 
     // Enum: Severity
