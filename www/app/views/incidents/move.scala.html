@@ -3,28 +3,32 @@
   incident: com.gilt.quality.models.Incident,
   form: Form[controllers.Incidents.MoveForm],
   organizations: Seq[com.gilt.quality.models.Organization],
-  errors: Option[String] = None)(implicit flash: Flash)
+  errorMessage: Option[String] = None)(implicit flash: Flash)
 
-@main(tpl.copy(title = Some(s"Move Incident ${incident.id} to another Organization"))) {
+@main(tpl.copy(title = Some(s"Move Incident ${incident.id} to another Organization")), errorMessage = errorMessage) {
 
   <div class="container">
 
     @helper.form(action = routes.Incidents.postMove(org.key, incident.id)) {
 
+      <fieldset>
+
         @helper.select(
-            form("organizationKey"),
+            form("new_organization_key"),
             Seq( ("" -> "-- select new organization --") ) ++ organizations.map( t => (t.key -> t.key) ),
             '_label -> "New Organization",
-            '_error -> form.error("newOrganizationKey")
+            '_error -> form.error("new_organization_key")
         )
+
+      </fieldset>
+
+      <div class="actions">
+        <button class="btn btn-large btn-primary" type="submit">Submit</button>
+        <a href="@routes.Incidents.show(org.key, incident.id)" class="btn">Cancel</a>
+      </div>
 
     }
 
-  </div>
-
-  <div class="actions">
-    <button class="btn btn-large btn-primary" type="submit">Submit</button>
-    <a href="@routes.Incidents.show(org.key, incident.id)" class="btn">Cancel</a>
   </div>
 
 }

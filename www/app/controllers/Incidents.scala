@@ -265,6 +265,7 @@ object Incidents extends Controller {
     org: String,
     id: Long
   ) = OrgAction.async { implicit request =>
+    println(s"post move org[$org] id[$id]")
     Api.instance.incidents.getByOrgAndId(org, id).flatMap {
       case None => Future {
         Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $org/$id not found")
@@ -275,17 +276,20 @@ object Incidents extends Controller {
         boundForm.fold (
 
           formWithErrors => Future {
+            println(" - errors")
             Ok(views.html.incidents.move(request.mainTemplate(), request.org, incident, formWithErrors, fetchOrgsToMove(request.org)))
           },
 
           moveForm => {
+            println(" - no errors")
+
             Api.instance.incidentOrganizationChanges.post(
               IncidentOrganizationChange(
                 incidentId = incident.id,
                 organizationKey = moveForm.newOrganizationKey
               )
             ).map { r =>
-              Redirect(routes.Incidents.show(org, incident.id)).flashing("success" -> s"Incident ${incident.id} moved to ${moveForm.newOrganizationKey}")
+              Redirect(routes.Incidents.index(org)).flashing("success" -> s"Incident ${incident.id} moved to ${moveForm.newOrganizationKey}")
             }.recover {
               case r: com.gilt.quality.error.ErrorsResponse => {
                 val errors = r.errors.map(_.message).mkString("\n")
