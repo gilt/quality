@@ -70,4 +70,24 @@ class IncidentOrganizationChangesSpec extends BaseSpec {
     }.errors.map(_.message) must be(Seq(s"Organization ${org.key}2 not found"))
   }
 
+  "POST /incident_organization_changes clears team" in new WithServer {
+    val org1 = createOrganization()
+    val org2 = createOrganization()
+    val org2Team = createTeam(org2)
+
+    val incident1 = createIncident(org1)
+    val incident2 = createIncident(org2, Some(createIncidentForm().copy(teamKey = Some(org2Team.key))))
+
+    await(
+      client.incidentOrganizationChanges.post(
+        IncidentOrganizationChange(
+          incidentId = incident2.id,
+          organizationKey = org1.key
+        )
+      )
+    )
+
+    await(client.incidents.getByOrgAndId(org1.key, incident2.id)).flatMap(_.team) must be(None)
+  }
+
 }

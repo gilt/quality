@@ -1,7 +1,9 @@
 package db
 
-import com.gilt.quality.models.{Error, IncidentOrganizationChange, User}
+import com.gilt.quality.models.{AgendaItem, Error, IncidentOrganizationChange, User}
 import lib.Validation
+import play.api.db._
+import play.api.Play.current
 
 object IncidentOrganizationChangesDao {
 
@@ -21,11 +23,25 @@ object IncidentOrganizationChangesDao {
     Validation.errors(incidentErrors ++ organizationErrors)
   }
 
-  def process(createdBy: User, form: IncidentOrganizationChange) {
+  def process(user: User, form: IncidentOrganizationChange) {
     val errors = validate(form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
-    IncidentsDao.updateOrganization(form.incidentId, form.organizationKey)
+    val incident = IncidentsDao.findById(form.incidentId).map { incident =>
+      DB.withTransaction { implicit c =>
+        Pager.eachPage[AgendaItem] { offset =>
+          AgendaItemsDao.findAll(
+            org = Some(incident.organization),
+            incidentId = Some(incident.id),
+            offset = offset
+          )
+        } { item =>
+          AgendaItemsDao.softDelete(c, user, item)
+        }
+
+        IncidentsDao.updateOrganization(c, user, form.incidentId, form.organizationKey)
+      }
+    }
   }
 
 }

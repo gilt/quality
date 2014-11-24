@@ -98,6 +98,10 @@ object AgendaItemsDao {
     SoftDelete.delete("agenda_items", deletedBy, agendaItem.id)
   }
 
+  private[db] def softDelete(implicit conn: java.sql.Connection, deletedBy: User, agendaItem: AgendaItem) {
+    SoftDelete.delete(conn, "agenda_items", deletedBy, agendaItem.id)
+  }
+
   private[db] def softDeleteAllForMeeting(
     implicit c: java.sql.Connection,
     deletedBy: User,

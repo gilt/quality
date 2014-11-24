@@ -89,7 +89,7 @@ object IncidentsDao {
 
   private val UpdateOrganizationQuery = """
     update incidents
-       set organization_id = {organization_id}
+       set organization_id = {organization_id}, team_id = null
      where id = {id}
   """
 
@@ -173,17 +173,15 @@ object IncidentsDao {
     findAll(id = Some(id), limit = 1).headOption.map { i => findDetails(i) }
   }
 
-  def updateOrganization(incidentId: Long, newOrgKey: String) {
+  def updateOrganization(implicit conn: java.sql.Connection, user: User, incidentId: Long, newOrgKey: String) {
     val orgId = OrganizationsDao.lookupId(newOrgKey).getOrElse {
       sys.error("Organization ID not found for key[$newOrgKey]")
     }
 
-    DB.withConnection { implicit c =>
-      SQL(UpdateOrganizationQuery).on(
-        'id -> incidentId,
-        'organization_id -> orgId
-      ).executeUpdate()
-    }
+    SQL(UpdateOrganizationQuery).on(
+      'id -> incidentId,
+      'organization_id -> orgId
+    ).executeUpdate()
   }
 
   def findByOrganizationAndId(
