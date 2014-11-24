@@ -36,6 +36,14 @@
 	    "values": [
 		{ "name": "jira", "description": "Atlassian JIRA. If integration is enabled, an incident can be created by listing the jira ISSUE number directly." }
 	    ]
+	},
+
+	"response": {
+	    "values": [
+		{ "name": "Complete" },
+		{ "name": "Not Yet" },
+		{ "name": "Will not complete" }
+	    ]
 	}
 
     },
@@ -309,7 +317,19 @@
 	"followup": {
 	    "description": "Every n days (e.g. 30) we follow up to see if a given plan has been implemented. This gives teams the ability to say: Yes, completed. Not yet. or No, won't do. After 3 consecutive no replies, we assume not doing.",
 	    "fields": [
-TODO
+		{ "name": "key", "type": "string", "description": "Unique token identifying this response" },
+		{ "name": "plan", "type": "plan" },
+		{ "name": "sent_at", "type": "date-time-iso8601" }
+	    ]
+	},
+
+	"followup_response": {
+	    "description": "Every n days (e.g. 30) we follow up to see if a given plan has been implemented. This gives teams the ability to say: Yes, completed. Not yet. or No, won't do. After 3 consecutive no replies, we assume not doing.",
+	    "fields": [
+		{ "name": "followup", "type": "followup" },
+		{ "name": "response", "type": "response" },
+		{ "name": "created_at", "type": "date-time-iso8601" },
+		{ "name": "created_by", "type": "user" }
 	    ]
 	}
 
