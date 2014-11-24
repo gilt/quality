@@ -11,7 +11,6 @@ class IncidentOrganizationChangesSpec extends BaseSpec {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-/*
   "POST /incident_organization_changes" in new WithServer {
     val org1 = createOrganization()
     val org2 = createOrganization()
@@ -40,33 +39,35 @@ class IncidentOrganizationChangesSpec extends BaseSpec {
     await(client.incidents.getByOrgAndId(org2.key, incident1.id)).map(_.id) must be(None)
     await(client.incidents.getByOrgAndId(org2.key, incident2.id)).map(_.id) must be(None)
   }
- */
 
   "POST /incident_organization_changes validates incident id" in new WithServer {
     val org = createOrganization()
     intercept[ErrorsResponse] {
-      client.incidentOrganizationChanges.post(
-        IncidentOrganizationChange(
-          incidentId = 0,
-          organizationKey = org.key
+      await(
+        client.incidentOrganizationChanges.post(
+          IncidentOrganizationChange(
+            incidentId = 0,
+            organizationKey = org.key
+          )
         )
       )
     }.errors.map(_.message) must be(Seq("Incident 0 not found"))
   }
 
-/*
   "POST /incident_organization_changes validates organization key" in new WithServer {
     val org = createOrganization()
     val incident = createIncident(org)
 
     intercept[ErrorsResponse] {
-      client.incidentOrganizationChanges.post(
-        IncidentOrganizationChange(
-          incidentId = incident.id,
-          organizationKey = org.key + "2"
+      await(
+        client.incidentOrganizationChanges.post(
+          IncidentOrganizationChange(
+            incidentId = incident.id,
+            organizationKey = org.key + "2"
+          )
         )
       )
     }.errors.map(_.message) must be(Seq(s"Organization ${org.key}2 not found"))
   }
- */
+
 }
