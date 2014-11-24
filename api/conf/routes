@@ -1,4 +1,5 @@
 GET        /_internal_/healthcheck                                controllers.Healthchecks.get()
+POST       /incident_organization_changes                         controllers.IncidentOrganizationChanges.post()
 GET        /organizations                                         controllers.Organizations.get(id: scala.Option[Long], key: scala.Option[String], limit: Int ?= 25, offset: Int ?= 0)
 GET        /organizations/:key                                    controllers.Organizations.getByKey(key: String)
 POST       /organizations                                         controllers.Organizations.post()

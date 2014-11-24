@@ -89,6 +89,14 @@ package com.gilt.quality.models {
     tags: Seq[String] = Nil
   )
 
+  /**
+   * Used to move an incident to another organization
+   */
+  case class IncidentOrganizationChange(
+    incidentId: Long,
+    organizationKey: String
+  )
+
   case class IncidentSummary(
     id: Long,
     severity: com.gilt.quality.models.Severity,
@@ -649,6 +657,20 @@ package com.gilt.quality.models {
       )(unlift(IncidentForm.unapply _))
     }
 
+    implicit def jsonReadsQualityIncidentOrganizationChange: play.api.libs.json.Reads[IncidentOrganizationChange] = {
+      (
+        (__ \ "incident_id").read[Long] and
+        (__ \ "organization_key").read[String]
+      )(IncidentOrganizationChange.apply _)
+    }
+
+    implicit def jsonWritesQualityIncidentOrganizationChange: play.api.libs.json.Writes[IncidentOrganizationChange] = {
+      (
+        (__ \ "incident_id").write[Long] and
+        (__ \ "organization_key").write[String]
+      )(unlift(IncidentOrganizationChange.unapply _))
+    }
+
     implicit def jsonReadsQualityIncidentSummary: play.api.libs.json.Reads[IncidentSummary] = {
       (
         (__ \ "id").read[Long] and
@@ -940,7 +962,7 @@ package com.gilt.quality {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
-    private val UserAgent = "apidoc:0.7.4 http://www.apidoc.me/gilt/code/quality/0.0.50/play_2_3_client"
+    private val UserAgent = "apidoc:0.7.14 http://www.apidoc.me/gilt/code/quality/0.0.51/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.quality.client")
 
     logger.info(s"Initializing com.gilt.quality.client for url $apiUrl")
@@ -952,6 +974,8 @@ package com.gilt.quality {
     def externalServices: ExternalServices = ExternalServices
 
     def healthchecks: Healthchecks = Healthchecks
+
+    def incidentOrganizationChanges: IncidentOrganizationChanges = IncidentOrganizationChanges
 
     def incidents: Incidents = Incidents
 
@@ -1109,6 +1133,18 @@ package com.gilt.quality {
         _executeRequest("GET", s"/_internal_/healthcheck").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.models.Healthcheck])
           case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
+    object IncidentOrganizationChanges extends IncidentOrganizationChanges {
+      override def post(incidentOrganizationChange: com.gilt.quality.models.IncidentOrganizationChange)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident] = {
+        val payload = play.api.libs.json.Json.toJson(incidentOrganizationChange)
+
+        _executeRequest("POST", s"/incident_organization_changes", body = Some(payload)).map {
+          case r if r.status == 200 => r.json.as[com.gilt.quality.models.Incident]
+          case r if r.status == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -1780,6 +1816,10 @@ package com.gilt.quality {
     def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]]
   }
 
+  trait IncidentOrganizationChanges {
+    def post(incidentOrganizationChange: com.gilt.quality.models.IncidentOrganizationChange)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.quality.models.Incident]
+  }
+
   trait Incidents {
     /**
      * Search all incidents. Results are always paginated.
@@ -2130,8 +2170,16 @@ package com.gilt.quality {
       ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
     )
 
+    implicit val queryStringBindableTypeDateTimeIso8601 = new QueryStringBindable.Parsing[DateTime](
+      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
+    )
+
     // Type: date-iso8601
     implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
+      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
+    )
+
+    implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[LocalDate](
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 

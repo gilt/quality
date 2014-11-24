@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import com.gilt.quality.models.{Incident, IncidentForm, Severity, Team}
+import com.gilt.quality.models.{Incident, IncidentForm, IncidentOrganizationChange, Organization, Severity, Team}
 import lib.{Pagination, PaginatedCollection}
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -19,6 +19,7 @@ object Incidents extends Controller {
 
   // Max number of teams we'll show in a drop down before switching to text input for team key
   private val MaxTeams = 1000
+  private val MaxOrgs = 1000
 
   def index(
     org: String,
@@ -69,7 +70,9 @@ object Incidents extends Controller {
       )
     } yield {
       incident match {
-        case None => Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $id not found")
+        case None => {
+          Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $org/$id not found")
+        }
         case Some(i) => {
           val pagerOption = meetingId.flatMap { mid =>
             Await.result(
@@ -168,7 +171,7 @@ object Incidents extends Controller {
     } yield {
       incidentOption match {
         case None => {
-          Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $id not found")
+          Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $org/$id not found")
         }
         case Some(incident: Incident) => {
           val form = uiForm.fill(
@@ -193,7 +196,7 @@ object Incidents extends Controller {
   ) = OrgAction.async { implicit request =>
     Api.instance.incidents.getByOrgAndId(org, id).flatMap {
       case None => Future {
-        Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $id not found")
+        Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $org/$id not found")
       }
 
       case Some(incident: Incident) => {
@@ -224,7 +227,73 @@ object Incidents extends Controller {
               Redirect(routes.Incidents.show(org, incident.id)).flashing("success" -> "Incident updated")
             }.recover {
               case r: com.gilt.quality.error.ErrorsResponse => {
-                Ok(views.html.incidents.create(request.mainTemplate(), request.org, boundForm, fetchTeamsOrEmpty(org), Some(r.errors.map(_.message).mkString("\n"))))
+                val errors = r.errors.map(_.message).mkString("\n")
+                Ok(views.html.incidents.create(request.mainTemplate(), request.org, boundForm, fetchTeamsOrEmpty(org), Some(errors)))
+              }
+            }
+          }
+        )
+      }
+    }
+  }
+
+  def move(
+    org: String,
+    id: Long
+  ) = OrgAction.async { implicit request =>
+    for {
+      incidentOption <- Api.instance.incidents.getByOrgAndId(org, id)
+    } yield {
+      incidentOption match {
+        case None => {
+          Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $org/$id not found")
+        }
+        case Some(incident: Incident) => {
+          val form = moveForm.fill(
+            MoveForm(
+              newOrganizationKey = ""
+            )
+          )
+
+          Ok(views.html.incidents.move(request.mainTemplate(), request.org, incident, form, fetchOrgsToMove(request.org)))
+        }
+      }
+    }
+  }
+
+  def postMove(
+    org: String,
+    id: Long
+  ) = OrgAction.async { implicit request =>
+    println(s"post move org[$org] id[$id]")
+    Api.instance.incidents.getByOrgAndId(org, id).flatMap {
+      case None => Future {
+        Redirect(routes.Incidents.index(org)).flashing("warning" -> s"Incident $org/$id not found")
+      }
+
+      case Some(incident: Incident) => {
+        val boundForm = moveForm.bindFromRequest
+        boundForm.fold (
+
+          formWithErrors => Future {
+            println(" - errors")
+            Ok(views.html.incidents.move(request.mainTemplate(), request.org, incident, formWithErrors, fetchOrgsToMove(request.org)))
+          },
+
+          moveForm => {
+            println(" - no errors")
+
+            Api.instance.incidentOrganizationChanges.post(
+              IncidentOrganizationChange(
+                incidentId = incident.id,
+                organizationKey = moveForm.newOrganizationKey
+              )
+            ).map { r =>
+              Redirect(routes.Incidents.index(org)).flashing("success" -> s"Incident ${incident.id} moved to ${moveForm.newOrganizationKey}")
+            }.recover {
+              case r: com.gilt.quality.error.ErrorsResponse => {
+                val errors = r.errors.map(_.message).mkString("\n")
+                Ok(views.html.incidents.move(request.mainTemplate(), request.org, incident, boundForm, fetchOrgsToMove(request.org), Some(errors)))
               }
             }
           }
@@ -265,6 +334,25 @@ object Incidents extends Controller {
       "severity" -> nonEmptyText,
       "tags" -> text
     )(UiForm.apply)(UiForm.unapply)
+  )
+
+  private def fetchOrgsToMove(currentOrg: Organization): Seq[Organization] = {
+    val orgs = Await.result(
+      Api.instance.organizations.get(limit = Some(MaxOrgs)),
+      1000.millis
+    )
+    // TODO: Fetch all
+    orgs.filter(_.key != currentOrg.key)
+  }
+
+  case class MoveForm(
+    newOrganizationKey: String
+  )
+
+  private val moveForm = Form(
+    mapping(
+      "new_organization_key" -> nonEmptyText
+    )(MoveForm.apply)(MoveForm.unapply)
   )
 
 }
