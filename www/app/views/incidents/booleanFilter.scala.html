@@ -2,10 +2,19 @@
   label: String,
   value: Option[String])
 
-<label for="@name">@label</label>
+<label class="filter-label" for="@name">@label:</label>
 
-<select name="@name">
-  <option value="">-- Select --</option>
-  <option value="0"@if(value == Some("0")) { selected }> No</option>
-  <option value="1"@if(value == Some("1")) { selected }> Yes</option>
-</select>
+<span class="input-fields-wrapper">
+  <input type="radio" name="@name" id="@{name}_none" value=""@if(value == None) { checked }>
+    <label for="@{name}_none">Either</label>
+  </input>
+    
+  <input type="radio" name="@name"  id="@{name}_1" value="1"@if(value == Some("1")) { checked }>
+    <label for="@{name}_1">Yes</label>
+  </input>
+
+  <input type="radio" name="@name"  id="@{name}_0" value="0"@if(value == Some("0")) { checked }>
+    <label for="@{name}_0">No</label>
+  </input>
+</span>
+
