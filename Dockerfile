@@ -1,4 +1,4 @@
-FROM giltarchitecture/play_scala_2_3_7:0.1
+FROM giltarchitecture/ubuntu-jvm:0.6
 
 MAINTAINER architecture@gilt.com
 
