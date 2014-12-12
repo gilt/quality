@@ -9,7 +9,7 @@ data = {
 }
 
 data.each do |target, path|
-  cmd = "curl --silent #{server}/gilt/code/#{project}/latest/#{target} > #{path}"
+  cmd = "curl --silent #{server}/gilt/#{project}/latest/#{target} > #{path}"
   puts cmd
   system(cmd)
 end
