@@ -12,6 +12,11 @@ object OrganizationsDao {
 
   val MinNameLength = 4
   val MinKeyLength = 4
+  val ReservedKeys = Seq(
+    "_internal_", "account", "accounts", "admin", "assets", "doc", "docs", "documentation", "generator", "generators",
+    "login", "logout", "org", "orgs", "organizations", "private", "session", "subaccount", "subaccounts",
+    "team", "teams", "user", "users"
+  )
 
   private val BaseQuery = """
     select organizations.id, organizations.name, organizations.key
@@ -49,7 +54,11 @@ object OrganizationsDao {
         if (key.length < MinKeyLength) {
           Seq(s"Key must be at least $MinKeyLength characters")
         } else if (key == generated) {
-          Seq.empty
+          if (ReservedKeys.contains(key)) {
+            Seq(s"Key $key is a reserved word and cannot be used for the key of an organization")
+          } else {
+            Seq.empty
+          }
         } else {
           Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
         }

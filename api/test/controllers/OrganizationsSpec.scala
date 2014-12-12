@@ -1,3 +1,4 @@
+
 package controllers
 
 import com.gilt.quality.models.{Organization, OrganizationForm}
@@ -30,6 +31,12 @@ class OrganizationsSpec extends BaseSpec {
     intercept[ErrorsResponse] {
       createOrganization(OrganizationForm(name = "a"))
     }.errors.map(_.message) must be(Seq(s"name must be at least ${db.OrganizationsDao.MinNameLength} characters"))
+  }
+
+  "POST /organizations validates key is not reserved" in new WithServer {
+    intercept[ErrorsResponse] {
+      createOrganization(OrganizationForm(name = UUID.randomUUID.toString, key = Some("user")))
+    }.errors.map(_.message) must be(Seq(s"Key user is a reserved word and cannot be used for the key of an organization"))
   }
 
   "POST /organizations validates key is valid" in new WithServer {
