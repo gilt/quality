@@ -50,7 +50,7 @@ class EmailActor extends Actor {
               Emails.deliver(
                 org = incident.organization,
                 publication = publication,
-                subject = s"Incident ${incident.id} Assigned to Team ${team.key}",
+                subject = s"Incident ${incident.id} Assigned to Team ${team.key}: ${incident.summary}",
                 body = views.html.emails.incident(incident).toString,
                 team = Some(team)
               )
@@ -67,7 +67,7 @@ class EmailActor extends Actor {
             Emails.deliver(
               org = incident.organization,
               publication = publication,
-              subject = s"Incident ${incident.id} Plan ${Emails.action(publication)}",
+              subject = s"Incident ${incident.id} Plan ${Emails.action(publication)}: ${incident.summary}",
               body = views.html.emails.incident(incident).toString
             )
           }
