@@ -5,7 +5,7 @@
 package com.gilt.quality.models {
 
   case class AdjournForm(
-    adjournedAt: scala.Option[_root_.org.joda.time.DateTime] = None
+    adjournedAt: _root_.scala.Option[_root_.org.joda.time.DateTime] = None
   )
 
   /**
@@ -100,19 +100,19 @@ package com.gilt.quality.models {
     id: Long,
     organization: com.gilt.quality.models.Organization,
     summary: String,
-    description: scala.Option[String] = None,
-    team: scala.Option[com.gilt.quality.models.Team] = None,
+    description: _root_.scala.Option[String] = None,
+    team: _root_.scala.Option[com.gilt.quality.models.Team] = None,
     severity: com.gilt.quality.models.Severity,
     tags: Seq[String] = Nil,
-    plan: scala.Option[com.gilt.quality.models.Plan] = None,
+    plan: _root_.scala.Option[com.gilt.quality.models.Plan] = None,
     createdAt: _root_.org.joda.time.DateTime
   )
 
   case class IncidentForm(
-    teamKey: scala.Option[String] = None,
+    teamKey: _root_.scala.Option[String] = None,
     severity: com.gilt.quality.models.Severity,
     summary: String,
-    description: scala.Option[String] = None,
+    description: _root_.scala.Option[String] = None,
     tags: Seq[String] = Nil
   )
 
@@ -141,7 +141,7 @@ package com.gilt.quality.models {
     id: Long,
     organization: com.gilt.quality.models.Organization,
     scheduledAt: _root_.org.joda.time.DateTime,
-    adjournedAt: scala.Option[_root_.org.joda.time.DateTime] = None
+    adjournedAt: _root_.scala.Option[_root_.org.joda.time.DateTime] = None
   )
 
   case class MeetingForm(
@@ -155,8 +155,8 @@ package com.gilt.quality.models {
    */
   case class MeetingPager(
     meeting: com.gilt.quality.models.Meeting,
-    priorIncident: scala.Option[com.gilt.quality.models.Incident] = None,
-    nextIncident: scala.Option[com.gilt.quality.models.Incident] = None
+    priorIncident: _root_.scala.Option[com.gilt.quality.models.Incident] = None,
+    nextIncident: _root_.scala.Option[com.gilt.quality.models.Incident] = None
   )
 
   /**
@@ -170,7 +170,7 @@ package com.gilt.quality.models {
 
   case class OrganizationForm(
     name: String,
-    key: scala.Option[String] = None
+    key: _root_.scala.Option[String] = None
   )
 
   /**
@@ -180,7 +180,7 @@ package com.gilt.quality.models {
     id: Long,
     incidentId: Long,
     body: String,
-    grade: scala.Option[Int] = None,
+    grade: _root_.scala.Option[Int] = None,
     createdAt: _root_.org.joda.time.DateTime
   )
 
@@ -195,7 +195,7 @@ package com.gilt.quality.models {
   case class Statistic(
     team: com.gilt.quality.models.Team,
     totalGrades: Long,
-    averageGrade: scala.Option[Int] = None,
+    averageGrade: _root_.scala.Option[Int] = None,
     totalOpenIncidents: Long,
     totalIncidents: Long,
     totalPlans: Long,
@@ -225,15 +225,15 @@ package com.gilt.quality.models {
   case class Team(
     organization: com.gilt.quality.models.Organization,
     key: String,
-    email: scala.Option[String] = None,
+    email: _root_.scala.Option[String] = None,
     icons: com.gilt.quality.models.Icons
   )
 
   case class TeamForm(
     key: String,
-    email: scala.Option[String] = None,
-    smileyUrl: scala.Option[String] = None,
-    frownyUrl: scala.Option[String] = None
+    email: _root_.scala.Option[String] = None,
+    smileyUrl: _root_.scala.Option[String] = None,
+    frownyUrl: _root_.scala.Option[String] = None
   )
 
   case class TeamMember(
@@ -250,9 +250,9 @@ package com.gilt.quality.models {
   )
 
   case class UpdateTeamForm(
-    email: scala.Option[String] = None,
-    smileyUrl: scala.Option[String] = None,
-    frownyUrl: scala.Option[String] = None
+    email: _root_.scala.Option[String] = None,
+    smileyUrl: _root_.scala.Option[String] = None,
+    frownyUrl: _root_.scala.Option[String] = None
   )
 
   /**
@@ -303,7 +303,7 @@ package com.gilt.quality.models {
 
     def apply(value: String): ExternalServiceName = fromString(value).getOrElse(UNDEFINED(value))
 
-    def fromString(value: String): scala.Option[ExternalServiceName] = byName.get(value)
+    def fromString(value: String): _root_.scala.Option[ExternalServiceName] = byName.get(value)
 
   }
 
@@ -363,7 +363,7 @@ package com.gilt.quality.models {
 
     def apply(value: String): Publication = fromString(value).getOrElse(UNDEFINED(value))
 
-    def fromString(value: String): scala.Option[Publication] = byName.get(value)
+    def fromString(value: String): _root_.scala.Option[Publication] = byName.get(value)
 
   }
 
@@ -398,7 +398,7 @@ package com.gilt.quality.models {
 
     def apply(value: String): Response = fromString(value).getOrElse(UNDEFINED(value))
 
-    def fromString(value: String): scala.Option[Response] = byName.get(value)
+    def fromString(value: String): _root_.scala.Option[Response] = byName.get(value)
 
   }
 
@@ -432,7 +432,7 @@ package com.gilt.quality.models {
 
     def apply(value: String): Severity = fromString(value).getOrElse(UNDEFINED(value))
 
-    def fromString(value: String): scala.Option[Severity] = byName.get(value)
+    def fromString(value: String): _root_.scala.Option[Severity] = byName.get(value)
 
   }
 
@@ -476,7 +476,7 @@ package com.gilt.quality.models {
 
     def apply(value: String): Task = fromString(value).getOrElse(UNDEFINED(value))
 
-    def fromString(value: String): scala.Option[Task] = byName.get(value)
+    def fromString(value: String): _root_.scala.Option[Task] = byName.get(value)
 
   }
 
@@ -1060,7 +1060,7 @@ package com.gilt.quality.models {
 
 package com.gilt.quality {
 
-  class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
+  class Client(apiUrl: String, apiToken: _root_.scala.Option[String] = None) {
     import com.gilt.quality.models.json._
 
     private val UserAgent = "apidoc:0.7.25 http://www.apidoc.me/gilt/quality/0.1.7/play_2_3_client"
@@ -1097,15 +1097,15 @@ package com.gilt.quality {
     object AgendaItems extends AgendaItems {
       override def getAgendaItemsByOrg(
         org: String,
-        id: scala.Option[Long] = None,
-        meetingId: scala.Option[Long] = None,
-        incidentId: scala.Option[Long] = None,
-        teamKey: scala.Option[String] = None,
-        userGuid: scala.Option[_root_.java.util.UUID] = None,
-        isAdjourned: scala.Option[Boolean] = None,
-        task: scala.Option[com.gilt.quality.models.Task] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
+        id: _root_.scala.Option[Long] = None,
+        meetingId: _root_.scala.Option[Long] = None,
+        incidentId: _root_.scala.Option[Long] = None,
+        teamKey: _root_.scala.Option[String] = None,
+        userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        isAdjourned: _root_.scala.Option[Boolean] = None,
+        task: _root_.scala.Option[com.gilt.quality.models.Task] = None,
+        limit: _root_.scala.Option[Int] = None,
+        offset: _root_.scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.AgendaItem]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
@@ -1176,10 +1176,10 @@ package com.gilt.quality {
     object ExternalServices extends ExternalServices {
       override def getExternalServicesByOrg(
         org: String,
-        id: scala.Option[Long] = None,
-        name: scala.Option[com.gilt.quality.models.ExternalServiceName] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
+        id: _root_.scala.Option[Long] = None,
+        name: _root_.scala.Option[com.gilt.quality.models.ExternalServiceName] = None,
+        limit: _root_.scala.Option[Int] = None,
+        offset: _root_.scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.ExternalService]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
@@ -1254,13 +1254,13 @@ package com.gilt.quality {
     object Incidents extends Incidents {
       override def getByOrg(
         org: String,
-        id: scala.Option[Long] = None,
-        teamKey: scala.Option[String] = None,
-        hasTeam: scala.Option[Boolean] = None,
-        hasPlan: scala.Option[Boolean] = None,
-        hasGrade: scala.Option[Boolean] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
+        id: _root_.scala.Option[Long] = None,
+        teamKey: _root_.scala.Option[String] = None,
+        hasTeam: _root_.scala.Option[Boolean] = None,
+        hasPlan: _root_.scala.Option[Boolean] = None,
+        hasGrade: _root_.scala.Option[Boolean] = None,
+        limit: _root_.scala.Option[Int] = None,
+        offset: _root_.scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Incident]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
@@ -1329,11 +1329,11 @@ package com.gilt.quality {
     object Meetings extends Meetings {
       override def getByOrg(
         org: String,
-        id: scala.Option[Long] = None,
-        incidentId: scala.Option[Long] = None,
-        agendaItemId: scala.Option[Long] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
+        id: _root_.scala.Option[Long] = None,
+        incidentId: _root_.scala.Option[Long] = None,
+        agendaItemId: _root_.scala.Option[Long] = None,
+        limit: _root_.scala.Option[Int] = None,
+        offset: _root_.scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Meeting]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
@@ -1411,10 +1411,10 @@ package com.gilt.quality {
 
     object Organizations extends Organizations {
       override def get(
-        id: scala.Option[Long] = None,
-        key: scala.Option[String] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
+        id: _root_.scala.Option[Long] = None,
+        key: _root_.scala.Option[String] = None,
+        limit: _root_.scala.Option[Int] = None,
+        offset: _root_.scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Organization]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
@@ -1463,11 +1463,11 @@ package com.gilt.quality {
     object Plans extends Plans {
       override def getByOrg(
         org: String,
-        id: scala.Option[Long] = None,
-        incidentId: scala.Option[Long] = None,
-        teamKey: scala.Option[String] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
+        id: _root_.scala.Option[Long] = None,
+        incidentId: _root_.scala.Option[Long] = None,
+        teamKey: _root_.scala.Option[String] = None,
+        limit: _root_.scala.Option[Int] = None,
+        offset: _root_.scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Plan]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
@@ -1550,8 +1550,8 @@ package com.gilt.quality {
     object Statistics extends Statistics {
       override def getByOrg(
         org: String,
-        teamKey: scala.Option[String] = None,
-        numberHours: scala.Option[Int] = None
+        teamKey: _root_.scala.Option[String] = None,
+        numberHours: _root_.scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Statistic]] = {
         val queryParameters = Seq(
           teamKey.map("team_key" -> _),
@@ -1567,12 +1567,12 @@ package com.gilt.quality {
 
     object Subscriptions extends Subscriptions {
       override def get(
-        id: scala.Option[Long] = None,
-        organizationKey: scala.Option[String] = None,
-        userGuid: scala.Option[_root_.java.util.UUID] = None,
-        publication: scala.Option[com.gilt.quality.models.Publication] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
+        id: _root_.scala.Option[Long] = None,
+        organizationKey: _root_.scala.Option[String] = None,
+        userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        publication: _root_.scala.Option[com.gilt.quality.models.Publication] = None,
+        limit: _root_.scala.Option[Int] = None,
+        offset: _root_.scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Subscription]] = {
         val queryParameters = Seq(
           id.map("id" -> _.toString),
@@ -1623,11 +1623,11 @@ package com.gilt.quality {
     object Teams extends Teams {
       override def getByOrg(
         org: String,
-        key: scala.Option[String] = None,
-        userGuid: scala.Option[_root_.java.util.UUID] = None,
-        excludeUserGuid: scala.Option[_root_.java.util.UUID] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
+        key: _root_.scala.Option[String] = None,
+        userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        excludeUserGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        limit: _root_.scala.Option[Int] = None,
+        offset: _root_.scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Team]] = {
         val queryParameters = Seq(
           key.map("key" -> _),
@@ -1704,9 +1704,9 @@ package com.gilt.quality {
       override def getMembersByOrgAndKey(
         org: String,
         key: String,
-        userGuid: scala.Option[_root_.java.util.UUID] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
+        userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        limit: _root_.scala.Option[Int] = None,
+        offset: _root_.scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.TeamMember]] = {
         val queryParameters = Seq(
           userGuid.map("user_guid" -> _.toString),
@@ -1747,8 +1747,8 @@ package com.gilt.quality {
 
     object Users extends Users {
       override def get(
-        guid: scala.Option[_root_.java.util.UUID] = None,
-        email: scala.Option[String] = None
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        email: _root_.scala.Option[String] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.User]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
@@ -1853,15 +1853,15 @@ package com.gilt.quality {
      */
     def getAgendaItemsByOrg(
       org: String,
-      id: scala.Option[Long] = None,
-      meetingId: scala.Option[Long] = None,
-      incidentId: scala.Option[Long] = None,
-      teamKey: scala.Option[String] = None,
-      userGuid: scala.Option[_root_.java.util.UUID] = None,
-      isAdjourned: scala.Option[Boolean] = None,
-      task: scala.Option[com.gilt.quality.models.Task] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
+      id: _root_.scala.Option[Long] = None,
+      meetingId: _root_.scala.Option[Long] = None,
+      incidentId: _root_.scala.Option[Long] = None,
+      teamKey: _root_.scala.Option[String] = None,
+      userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      isAdjourned: _root_.scala.Option[Boolean] = None,
+      task: _root_.scala.Option[com.gilt.quality.models.Task] = None,
+      limit: _root_.scala.Option[Int] = None,
+      offset: _root_.scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.AgendaItem]]
 
     def getAgendaItemsByOrgAndId(
@@ -1892,10 +1892,10 @@ package com.gilt.quality {
   trait ExternalServices {
     def getExternalServicesByOrg(
       org: String,
-      id: scala.Option[Long] = None,
-      name: scala.Option[com.gilt.quality.models.ExternalServiceName] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
+      id: _root_.scala.Option[Long] = None,
+      name: _root_.scala.Option[com.gilt.quality.models.ExternalServiceName] = None,
+      limit: _root_.scala.Option[Int] = None,
+      offset: _root_.scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.ExternalService]]
 
     def getExternalServicesByOrgAndId(
@@ -1927,13 +1927,13 @@ package com.gilt.quality {
      */
     def getByOrg(
       org: String,
-      id: scala.Option[Long] = None,
-      teamKey: scala.Option[String] = None,
-      hasTeam: scala.Option[Boolean] = None,
-      hasPlan: scala.Option[Boolean] = None,
-      hasGrade: scala.Option[Boolean] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
+      id: _root_.scala.Option[Long] = None,
+      teamKey: _root_.scala.Option[String] = None,
+      hasTeam: _root_.scala.Option[Boolean] = None,
+      hasPlan: _root_.scala.Option[Boolean] = None,
+      hasGrade: _root_.scala.Option[Boolean] = None,
+      limit: _root_.scala.Option[Int] = None,
+      offset: _root_.scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Incident]]
 
     /**
@@ -1971,11 +1971,11 @@ package com.gilt.quality {
      */
     def getByOrg(
       org: String,
-      id: scala.Option[Long] = None,
-      incidentId: scala.Option[Long] = None,
-      agendaItemId: scala.Option[Long] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
+      id: _root_.scala.Option[Long] = None,
+      incidentId: _root_.scala.Option[Long] = None,
+      agendaItemId: _root_.scala.Option[Long] = None,
+      limit: _root_.scala.Option[Int] = None,
+      offset: _root_.scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Meeting]]
 
     def getByOrgAndId(
@@ -2020,10 +2020,10 @@ package com.gilt.quality {
      * Search all organizations. Results are always paginated.
      */
     def get(
-      id: scala.Option[Long] = None,
-      key: scala.Option[String] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
+      id: _root_.scala.Option[Long] = None,
+      key: _root_.scala.Option[String] = None,
+      limit: _root_.scala.Option[Int] = None,
+      offset: _root_.scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Organization]]
 
     def getByKey(
@@ -2043,11 +2043,11 @@ package com.gilt.quality {
      */
     def getByOrg(
       org: String,
-      id: scala.Option[Long] = None,
-      incidentId: scala.Option[Long] = None,
-      teamKey: scala.Option[String] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
+      id: _root_.scala.Option[Long] = None,
+      incidentId: _root_.scala.Option[Long] = None,
+      teamKey: _root_.scala.Option[String] = None,
+      limit: _root_.scala.Option[Int] = None,
+      offset: _root_.scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Plan]]
 
     /**
@@ -2097,8 +2097,8 @@ package com.gilt.quality {
      */
     def getByOrg(
       org: String,
-      teamKey: scala.Option[String] = None,
-      numberHours: scala.Option[Int] = None
+      teamKey: _root_.scala.Option[String] = None,
+      numberHours: _root_.scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Statistic]]
   }
 
@@ -2107,12 +2107,12 @@ package com.gilt.quality {
      * Search for a specific subscription.
      */
     def get(
-      id: scala.Option[Long] = None,
-      organizationKey: scala.Option[String] = None,
-      userGuid: scala.Option[_root_.java.util.UUID] = None,
-      publication: scala.Option[com.gilt.quality.models.Publication] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
+      id: _root_.scala.Option[Long] = None,
+      organizationKey: _root_.scala.Option[String] = None,
+      userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      publication: _root_.scala.Option[com.gilt.quality.models.Publication] = None,
+      limit: _root_.scala.Option[Int] = None,
+      offset: _root_.scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Subscription]]
 
     /**
@@ -2138,11 +2138,11 @@ package com.gilt.quality {
      */
     def getByOrg(
       org: String,
-      key: scala.Option[String] = None,
-      userGuid: scala.Option[_root_.java.util.UUID] = None,
-      excludeUserGuid: scala.Option[_root_.java.util.UUID] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
+      key: _root_.scala.Option[String] = None,
+      userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      excludeUserGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      limit: _root_.scala.Option[Int] = None,
+      offset: _root_.scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.Team]]
 
     /**
@@ -2187,9 +2187,9 @@ package com.gilt.quality {
     def getMembersByOrgAndKey(
       org: String,
       key: String,
-      userGuid: scala.Option[_root_.java.util.UUID] = None,
-      limit: scala.Option[Int] = None,
-      offset: scala.Option[Int] = None
+      userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      limit: _root_.scala.Option[Int] = None,
+      offset: _root_.scala.Option[Int] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.TeamMember]]
 
     /**
@@ -2217,8 +2217,8 @@ package com.gilt.quality {
      * guid or email - and will receive back either 0 or 1 users.
      */
     def get(
-      guid: scala.Option[_root_.java.util.UUID] = None,
-      email: scala.Option[String] = None
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      email: _root_.scala.Option[String] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.models.User]]
 
     /**
