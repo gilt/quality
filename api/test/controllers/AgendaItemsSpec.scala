@@ -112,7 +112,7 @@ class AgendaItemsSpec extends BaseSpec {
   "GET /agenda_items is 404 if org not found" in new WithServer {
     intercept[FailedRequest] {
       await(client.agendaItems.getByOrg(UUID.randomUUID.toString))
-    }.response.status must be(404)
+    }.responseCode must be(404)
   }
 
   "GET /agenda_items paginates" in new WithServer {

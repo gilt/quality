@@ -147,7 +147,7 @@ class SubscriptionsSpec extends BaseSpec {
 
     intercept[FailedRequest] {
       await(client.subscriptions.get(publication = Some(Publication(UUID.randomUUID.toString)))) must be(Seq.empty)
-    }.response.status must be(400)
+    }.responseCode must be(400)
   }
 
 }

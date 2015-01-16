@@ -488,6 +488,7 @@ package com.gilt.quality.v0.models {
     import play.api.libs.json.JsString
     import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
+    import com.gilt.quality.v0.models.json._
 
     private[v0] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
@@ -1121,7 +1122,7 @@ package com.gilt.quality.v0 {
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/agenda_items", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.v0.models.AgendaItem]]
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1132,7 +1133,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/agenda_items/${id}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.AgendaItem])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1145,7 +1146,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/agenda_items", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.v0.models.AgendaItem]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
 
@@ -1156,7 +1157,7 @@ package com.gilt.quality.v0 {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/agenda_items/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1169,7 +1170,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/email_messages/meeting_adjourned/${meetingId}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.EmailMessage])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
     }
@@ -1191,7 +1192,7 @@ package com.gilt.quality.v0 {
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/external_services", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.v0.models.ExternalService]]
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1202,7 +1203,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/external_services/${id}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.ExternalService])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1215,7 +1216,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/external_services", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.v0.models.ExternalService]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
 
@@ -1226,7 +1227,7 @@ package com.gilt.quality.v0 {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/external_services/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1236,7 +1237,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/_internal_/healthcheck").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.Healthcheck])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
     }
@@ -1264,7 +1265,7 @@ package com.gilt.quality.v0 {
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/incidents", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.v0.models.Incident]]
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1275,7 +1276,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/incidents/${id}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.Incident])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1288,7 +1289,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/incidents", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.v0.models.Incident]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
 
@@ -1302,7 +1303,7 @@ package com.gilt.quality.v0 {
         _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/incidents/${id}", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.quality.v0.models.Incident]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1313,7 +1314,7 @@ package com.gilt.quality.v0 {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/incidents/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1327,7 +1328,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/incident_organization_changes", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.quality.v0.models.Incident]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
     }
@@ -1351,7 +1352,7 @@ package com.gilt.quality.v0 {
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.v0.models.Meeting]]
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1362,7 +1363,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${id}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.Meeting])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1375,7 +1376,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.v0.models.Meeting]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
 
@@ -1389,7 +1390,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${id}/adjourn", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.quality.v0.models.Meeting]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1400,7 +1401,7 @@ package com.gilt.quality.v0 {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
 
@@ -1412,7 +1413,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/meetings/${id}/pager/${incidentId}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.MeetingPager])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
     }
@@ -1433,7 +1434,7 @@ package com.gilt.quality.v0 {
 
         _executeRequest("GET", s"/organizations", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.v0.models.Organization]]
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1443,7 +1444,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.Organization])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1455,7 +1456,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/organizations", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.v0.models.Organization]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
 
@@ -1465,7 +1466,7 @@ package com.gilt.quality.v0 {
         _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1489,7 +1490,7 @@ package com.gilt.quality.v0 {
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.v0.models.Plan]]
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1502,7 +1503,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.v0.models.Plan]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
 
@@ -1516,7 +1517,7 @@ package com.gilt.quality.v0 {
         _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans/${id}", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.quality.v0.models.Plan]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1532,7 +1533,7 @@ package com.gilt.quality.v0 {
         _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans/${id}/grade", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.quality.v0.models.Plan]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1543,7 +1544,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans/${id}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.Plan])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1554,7 +1555,7 @@ package com.gilt.quality.v0 {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/plans/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1572,7 +1573,7 @@ package com.gilt.quality.v0 {
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/statistics", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.v0.models.Statistic]]
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
     }
@@ -1597,7 +1598,7 @@ package com.gilt.quality.v0 {
 
         _executeRequest("GET", s"/subscriptions", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.v0.models.Subscription]]
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1607,7 +1608,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/subscriptions/${id}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.Subscription])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1619,7 +1620,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/subscriptions", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.v0.models.Subscription]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
 
@@ -1629,7 +1630,7 @@ package com.gilt.quality.v0 {
         _executeRequest("DELETE", s"/subscriptions/${id}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1653,7 +1654,7 @@ package com.gilt.quality.v0 {
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.v0.models.Team]]
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1664,7 +1665,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.Team])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1677,7 +1678,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.v0.models.Team]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
 
@@ -1691,7 +1692,7 @@ package com.gilt.quality.v0 {
         _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.quality.v0.models.Team]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1702,7 +1703,7 @@ package com.gilt.quality.v0 {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
 
@@ -1713,7 +1714,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/member_summary").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.TeamMemberSummary])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1732,7 +1733,7 @@ package com.gilt.quality.v0 {
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/members", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.v0.models.TeamMember]]
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1744,7 +1745,7 @@ package com.gilt.quality.v0 {
         _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/members/${userGuid}").map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.v0.models.TeamMember]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
 
@@ -1756,7 +1757,7 @@ package com.gilt.quality.v0 {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/teams/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/members/${userGuid}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1773,7 +1774,7 @@ package com.gilt.quality.v0 {
 
         _executeRequest("GET", s"/users", queryParameters = queryParameters).map {
           case r if r.status == 200 => r.json.as[Seq[com.gilt.quality.v0.models.User]]
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1783,7 +1784,7 @@ package com.gilt.quality.v0 {
         _executeRequest("GET", s"/users/${guid}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.quality.v0.models.User])
           case r if r.status == 404 => None
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1795,7 +1796,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/users/authenticate", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.quality.v0.models.User]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1807,7 +1808,7 @@ package com.gilt.quality.v0 {
         _executeRequest("POST", s"/users", body = Some(payload)).map {
           case r if r.status == 201 => r.json.as[com.gilt.quality.v0.models.User]
           case r if r.status == 409 => throw new com.gilt.quality.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.quality.v0.error.FailedRequest(r)
+          case r => throw new com.gilt.quality.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
     }
@@ -2292,14 +2293,10 @@ package com.gilt.quality.v0 {
       response: play.api.libs.ws.WSResponse,
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
-      import com.gilt.quality.v0.models.json._
       lazy val errors = response.json.as[Seq[com.gilt.quality.v0.models.Error]]
     }
 
-    case class FailedRequest(
-      response: play.api.libs.ws.WSResponse,
-      message: Option[String] = None
-    ) extends Exception(message.getOrElse(response.status + ": " + response.body))
+    case class FailedRequest(responseCode: Int, message: String) extends Exception(s"HTTP $responseCode: $message")
 
   }
 

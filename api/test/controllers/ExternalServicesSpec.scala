@@ -88,7 +88,7 @@ class ExternalServicesSpec extends BaseSpec {
 
     intercept[FailedRequest] {
       await(client.externalServices.getByOrg(org.key, name = Some(ExternalServiceName("foo")))) must be(Seq.empty)
-    }.response.status must be(400)
+    }.responseCode must be(400)
   }
 
 }
