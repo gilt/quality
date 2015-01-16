@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.quality.v0.FailedRequest
+import com.gilt.quality.v0.error.FailedRequest
 import com.gilt.quality.v0.models.{AdjournForm, AgendaItem, AgendaItemForm, Task, Team}
 import com.gilt.quality.v0.error.ErrorsResponse
 import org.joda.time.DateTime

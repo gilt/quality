@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.quality.v0.FailedRequest
+import com.gilt.quality.v0.error.FailedRequest
 import com.gilt.quality.v0.models.{Publication, Subscription, SubscriptionForm}
 import com.gilt.quality.v0.error.ErrorsResponse
 import java.util.UUID
