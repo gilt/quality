@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import com.gilt.quality.v0.error.ErrorsResponse
+import com.gilt.quality.v0.errors.ErrorsResponse
 import com.gilt.quality.v0.models.{AuthenticationForm, UserForm}
 import lib.MainTemplate
 import play.api._

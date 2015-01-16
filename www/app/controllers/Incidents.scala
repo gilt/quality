@@ -153,7 +153,7 @@ object Incidents extends Controller {
         ).map { incident =>
           Redirect(routes.Incidents.show(org, incident.id)).flashing("success" -> "Incident created")
         }.recover {
-          case response: com.gilt.quality.v0.error.ErrorsResponse => {
+          case response: com.gilt.quality.v0.errors.ErrorsResponse => {
             Ok(views.html.incidents.create(request.mainTemplate(), request.org, boundForm, fetchTeamsOrEmpty(org), Some(response.errors.map(_.message).mkString("\n"))))
           }
         }
@@ -226,7 +226,7 @@ object Incidents extends Controller {
             ).map { r =>
               Redirect(routes.Incidents.show(org, incident.id)).flashing("success" -> "Incident updated")
             }.recover {
-              case r: com.gilt.quality.v0.error.ErrorsResponse => {
+              case r: com.gilt.quality.v0.errors.ErrorsResponse => {
                 val errors = r.errors.map(_.message).mkString("\n")
                 Ok(views.html.incidents.create(request.mainTemplate(), request.org, boundForm, fetchTeamsOrEmpty(org), Some(errors)))
               }
@@ -287,7 +287,7 @@ object Incidents extends Controller {
             ).map { r =>
               Redirect(routes.Incidents.index(org)).flashing("success" -> s"Incident ${incident.id} moved to ${moveForm.newOrganizationKey}")
             }.recover {
-              case r: com.gilt.quality.v0.error.ErrorsResponse => {
+              case r: com.gilt.quality.v0.errors.ErrorsResponse => {
                 val errors = r.errors.map(_.message).mkString("\n")
                 Ok(views.html.incidents.move(request.mainTemplate(), request.org, incident, boundForm, fetchOrgsToMove(request.org), Some(errors)))
               }

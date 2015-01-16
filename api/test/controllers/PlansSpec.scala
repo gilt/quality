@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.quality.v0.models.{Plan, PlanForm}
-import com.gilt.quality.v0.error.ErrorsResponse
+import com.gilt.quality.v0.errors.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._

@@ -1,9 +1,9 @@
 package controllers
 
 import db.ExternalServicesDao
-import com.gilt.quality.v0.error.FailedRequest
+import com.gilt.quality.v0.errors.FailedRequest
 import com.gilt.quality.v0.models.{ExternalService, ExternalServiceForm, ExternalServiceName, Organization}
-import com.gilt.quality.v0.error.ErrorsResponse
+import com.gilt.quality.v0.errors.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._

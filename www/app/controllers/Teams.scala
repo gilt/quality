@@ -112,7 +112,7 @@ object Teams extends Controller {
         Api.instance.teams.postByOrg(org = org, teamForm = form).map { team =>
           Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
         }.recover {
-          case response: com.gilt.quality.v0.error.ErrorsResponse => {
+          case response: com.gilt.quality.v0.errors.ErrorsResponse => {
             Ok(views.html.teams.create(request.mainTemplate(), request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
           }
         }
@@ -163,7 +163,7 @@ object Teams extends Controller {
         Api.instance.teams.putByOrgAndKey(org = org, key = request.team.key, updateTeamForm = form).map { team =>
           Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
         }.recover {
-          case response: com.gilt.quality.v0.error.ErrorsResponse => {
+          case response: com.gilt.quality.v0.errors.ErrorsResponse => {
             Ok(views.html.teams.create(request.mainTemplate(), request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
           }
         }
