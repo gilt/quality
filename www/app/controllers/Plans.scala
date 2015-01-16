@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import com.gilt.quality.models.{Error, Incident, Organization, Plan, PlanForm}
+import com.gilt.quality.v0.models.{Error, Incident, Organization, Plan, PlanForm}
 import lib.GradeImage
 
 import play.api._
@@ -90,7 +90,7 @@ object Plans extends Controller {
                     createPlan(request.org, incident, uiForm.body).map { plan =>
                       Redirect(routes.Incidents.show(org, plan.incidentId)).flashing("success" -> "Plan created")
                     }.recover {
-                      case response: com.gilt.quality.error.ErrorsResponse => {
+                      case response: com.gilt.quality.v0.error.ErrorsResponse => {
                         Ok(views.html.plans.upload(request.mainTemplate(), request.org, incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
                       }
                     }
@@ -110,7 +110,7 @@ object Plans extends Controller {
                     ).map { plan =>
                       Redirect(routes.Incidents.show(org, plan.incidentId)).flashing("success" -> "Plan updated")
                     }.recover {
-                      case response: com.gilt.quality.error.ErrorsResponse => {
+                      case response: com.gilt.quality.v0.error.ErrorsResponse => {
                         Ok(views.html.plans.upload(request.mainTemplate(), request.org, incident, boundForm, Some(response.errors.map(_.message).mkString("\n"))))
                       }
                     }

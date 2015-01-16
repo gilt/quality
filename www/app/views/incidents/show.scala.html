@@ -1,9 +1,9 @@
 @(tpl: lib.MainTemplate,
-  org: com.gilt.quality.models.Organization,
-  incident: com.gilt.quality.models.Incident,
-  plan: Option[com.gilt.quality.models.Plan],
-  agendaItems: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem],
-  pagerOption: Option[com.gilt.quality.models.MeetingPager]
+  org: com.gilt.quality.v0.models.Organization,
+  incident: com.gilt.quality.v0.models.Incident,
+  plan: Option[com.gilt.quality.v0.models.Plan],
+  agendaItems: lib.PaginatedCollection[com.gilt.quality.v0.models.AgendaItem],
+  pagerOption: Option[com.gilt.quality.v0.models.MeetingPager]
 )(implicit flash: Flash)
 
 @main(tpl) {

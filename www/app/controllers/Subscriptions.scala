@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import com.gilt.quality.models.{Publication, Subscription, SubscriptionForm}
+import com.gilt.quality.v0.models.{Publication, Subscription, SubscriptionForm}
 import java.util.UUID
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._

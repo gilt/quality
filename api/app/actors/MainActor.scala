@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.quality.models.Publication
+import com.gilt.quality.v0.models.Publication
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
 import akka.actor._

@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import com.gilt.quality.models.Team
+import com.gilt.quality.v0.models.Team
 import lib.{ Pagination, PaginatedCollection }
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -64,7 +64,7 @@ object TeamMembers extends Controller {
             ).map { member =>
               Redirect(routes.Teams.show(request.org.key, request.team.key)).flashing("success" -> "Member added")
             }.recover {
-              case response: com.gilt.quality.error.ErrorsResponse => {
+              case response: com.gilt.quality.v0.error.ErrorsResponse => {
                 Ok(views.html.team_members.add(request.mainTemplate(), request.team, boundForm, Some(response.errors.map(_.message).mkString(", "))))
               }
             }

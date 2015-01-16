@@ -1,8 +1,8 @@
 package controllers
 
 import actors.Database
-import com.gilt.quality.models.{AdjournForm, Meeting, MeetingForm}
-import com.gilt.quality.error.ErrorsResponse
+import com.gilt.quality.v0.models.{AdjournForm, Meeting, MeetingForm}
+import com.gilt.quality.v0.error.ErrorsResponse
 import java.util.UUID
 import org.joda.time.DateTime
 

@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import com.gilt.quality.models.{AdjournForm, Meeting, Task}
+import com.gilt.quality.v0.models.{AdjournForm, Meeting, Task}
 import lib.{ Pagination, PaginatedCollection }
 import java.util.UUID
 import scala.concurrent.{ Await, Future }
@@ -39,14 +39,14 @@ object Meetings extends Controller {
   ) = OrgAction.async { implicit request =>
     for {
       meeting <- Api.instance.meetings.getByOrgAndId(org, id)
-      reviewTeams <- Api.instance.agendaItems.getAgendaItemsByOrg(
+      reviewTeams <- Api.instance.agendaItems.getByOrg(
         org = org,
         meetingId = Some(id),
         task = Some(Task.ReviewTeam),
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(reviewTeamsPage * Pagination.DefaultLimit)
       )
-      reviewPlans <- Api.instance.agendaItems.getAgendaItemsByOrg(
+      reviewPlans <- Api.instance.agendaItems.getByOrg(
         org = org,
         meetingId = Some(id),
         task = Some(Task.ReviewPlan),
@@ -92,7 +92,7 @@ object Meetings extends Controller {
       result <- Api.instance.meetings.postAdjournByOrgAndId(
         org = org,
         id = id,
-        adjournForm = com.gilt.quality.models.AdjournForm()
+        adjournForm = com.gilt.quality.v0.models.AdjournForm()
       )
     } yield {
       Redirect(routes.Meetings.show(org, id)).flashing("success" -> s"Meeting $id adjourned")

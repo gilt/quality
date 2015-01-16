@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.quality.models.Task
+import com.gilt.quality.v0.models.Task
 
 object Defaults {
 
@@ -11,7 +11,7 @@ object Defaults {
     value >= 50
   }
 
-  val Icons = com.gilt.quality.models.Icons(
+  val Icons = com.gilt.quality.v0.models.Icons(
     smileyUrl = "/assets/images/smiley.png",
     frownyUrl = "/assets/images/frowny.png"
   )

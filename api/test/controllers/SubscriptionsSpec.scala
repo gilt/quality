@@ -1,8 +1,8 @@
 package controllers
 
-import com.gilt.quality.FailedRequest
-import com.gilt.quality.models.{Publication, Subscription, SubscriptionForm}
-import com.gilt.quality.error.ErrorsResponse
+import com.gilt.quality.v0.FailedRequest
+import com.gilt.quality.v0.models.{Publication, Subscription, SubscriptionForm}
+import com.gilt.quality.v0.error.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._

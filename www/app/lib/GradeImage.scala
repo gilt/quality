@@ -1,7 +1,7 @@
 package lib
 
 import core.Defaults
-import com.gilt.quality.models.Team
+import com.gilt.quality.v0.models.Team
 
 object GradeImage {
 

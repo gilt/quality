@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{AdjournForm, Task}
+import com.gilt.quality.v0.models.{AdjournForm, Task}
 
 import org.joda.time.DateTime
 import org.scalatest.{FunSpec, Matchers}

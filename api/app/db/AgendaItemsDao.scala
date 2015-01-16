@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{AgendaItem, AgendaItemForm, Error, Incident, Meeting, Organization, Plan, Severity, Task, Team, User}
+import com.gilt.quality.v0.models.{AgendaItem, AgendaItemForm, Error, Incident, Meeting, Organization, Plan, Severity, Task, Team, User}
 import lib.Validation
 import java.util.UUID
 import anorm._

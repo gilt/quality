@@ -1,8 +1,8 @@
 @(tpl: lib.MainTemplate,
-  org: com.gilt.quality.models.Organization,
+  org: com.gilt.quality.v0.models.Organization,
   filters: controllers.Incidents.Filters,
-  incidents: lib.PaginatedCollection[com.gilt.quality.models.Incident],
-  teams: Seq[com.gilt.quality.models.Team]
+  incidents: lib.PaginatedCollection[com.gilt.quality.v0.models.Incident],
+  teams: Seq[com.gilt.quality.v0.models.Team]
 )(implicit flash: Flash)
 
 @main(tpl.copy(title = Some("Perfect Day Incidents")), section = Some("incidents")) {

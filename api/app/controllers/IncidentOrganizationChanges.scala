@@ -2,8 +2,8 @@ package controllers
 
 import db.{IncidentOrganizationChangesDao, IncidentsDao, UsersDao}
 import lib.Validation
-import com.gilt.quality.models.{IncidentOrganizationChange, User}
-import com.gilt.quality.models.json._
+import com.gilt.quality.v0.models.{IncidentOrganizationChange, User}
+import com.gilt.quality.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 

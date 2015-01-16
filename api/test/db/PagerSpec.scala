@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.Team
+import com.gilt.quality.v0.models.Team
 
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._

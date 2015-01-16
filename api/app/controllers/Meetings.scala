@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.quality.models.{AdjournForm, Error, Meeting, MeetingPager, MeetingForm, User}
-import com.gilt.quality.models.json._
+import com.gilt.quality.v0.models.{AdjournForm, Error, Meeting, MeetingPager, MeetingForm, User}
+import com.gilt.quality.v0.models.json._
 
 import play.api.mvc._
 import play.api.libs.json._

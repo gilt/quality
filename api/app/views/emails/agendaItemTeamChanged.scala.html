@@ -1,5 +1,5 @@
-@(meeting: com.gilt.quality.models.Meeting,
-  item: com.gilt.quality.models.AgendaItem
+@(meeting: com.gilt.quality.v0.models.Meeting,
+  item: com.gilt.quality.v0.models.AgendaItem
 )
 
 <p>
@@ -9,7 +9,7 @@
   @core.DateHelper.mediumDateTime(meeting.organization, meeting.scheduledAt).
 </p>
 
-@if(item.task == com.gilt.quality.models.Task.ReviewTeam) {
+@if(item.task == com.gilt.quality.v0.models.Task.ReviewTeam) {
   <p>
     Prior to the meeting, please review this incident to make sure
     your team is the best team to create a plan for future
@@ -19,7 +19,7 @@
   </p>
 }
 
-@if(item.task == com.gilt.quality.models.Task.ReviewPlan) {
+@if(item.task == com.gilt.quality.v0.models.Task.ReviewPlan) {
   @if(item.incident.plan.isEmpty) {
     <p>
       Prior to the meeting, your team should upload a plan to prevent

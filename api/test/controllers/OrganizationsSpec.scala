@@ -1,8 +1,8 @@
 
 package controllers
 
-import com.gilt.quality.models.{Organization, OrganizationForm}
-import com.gilt.quality.error.ErrorsResponse
+import com.gilt.quality.v0.models.{Organization, OrganizationForm}
+import com.gilt.quality.v0.error.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._

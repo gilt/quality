@@ -1,9 +1,9 @@
 package controllers
 
 import db.ExternalServicesDao
-import com.gilt.quality.FailedRequest
-import com.gilt.quality.models.{ExternalService, ExternalServiceForm, ExternalServiceName, Organization}
-import com.gilt.quality.error.ErrorsResponse
+import com.gilt.quality.v0.FailedRequest
+import com.gilt.quality.v0.models.{ExternalService, ExternalServiceForm, ExternalServiceName, Organization}
+import com.gilt.quality.v0.error.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._
@@ -19,7 +19,7 @@ class ExternalServicesSpec extends BaseSpec {
     url: String = "http://localhost"
   ): ExternalService = {
     await(
-      client.externalServices.postExternalServicesByOrg(
+      client.externalServices.postByOrg(
         org = org.key,
         externalServiceForm = ExternalServiceForm(
           name = name,
@@ -63,31 +63,31 @@ class ExternalServicesSpec extends BaseSpec {
 
   "GET /:org/external_services/:id" in new WithServer {
     val service = createExternalService()
-    await(client.externalServices.getExternalServicesByOrgAndId(service.organization.key, service.id)).map(_.id) must be(Some(service.id))
+    await(client.externalServices.getByOrgAndId(service.organization.key, service.id)).map(_.id) must be(Some(service.id))
   }
 
   "DELETE /:org/external_services/:id" in new WithServer {
     val service = createExternalService()
-    await(client.externalServices.deleteExternalServicesByOrgAndId(service.organization.key, service.id)) must be(Some(()))
-    await(client.externalServices.getExternalServicesByOrgAndId(service.organization.key, service.id)) must be(None)
+    await(client.externalServices.deleteByOrgAndId(service.organization.key, service.id)) must be(Some(()))
+    await(client.externalServices.getByOrgAndId(service.organization.key, service.id)) must be(None)
   }
 
   "GET /:org/external_services by id" in new WithServer {
     val org = createOrganization()
     val service1 = createExternalService(org)
 
-    await(client.externalServices.getExternalServicesByOrg(org.key, id = Some(0))) must be(Seq.empty)
-    await(client.externalServices.getExternalServicesByOrg(org.key, id = Some(service1.id))).head must be(service1)
+    await(client.externalServices.getByOrg(org.key, id = Some(0))) must be(Seq.empty)
+    await(client.externalServices.getByOrg(org.key, id = Some(service1.id))).head must be(service1)
   }
 
   "GET /:org/external_services by name" in new WithServer {
     val org = createOrganization()
     val service = createExternalService(org)
 
-    await(client.externalServices.getExternalServicesByOrg(org.key, name = Some(service.name))) must be(Seq(service))
+    await(client.externalServices.getByOrg(org.key, name = Some(service.name))) must be(Seq(service))
 
     intercept[FailedRequest] {
-      await(client.externalServices.getExternalServicesByOrg(org.key, name = Some(ExternalServiceName("foo")))) must be(Seq.empty)
+      await(client.externalServices.getByOrg(org.key, name = Some(ExternalServiceName("foo")))) must be(Seq.empty)
     }.response.status must be(400)
   }
 

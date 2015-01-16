@@ -1,6 +1,6 @@
 @(
   tpl: lib.MainTemplate,
-  orgs: lib.PaginatedCollection[com.gilt.quality.models.Organization]
+  orgs: lib.PaginatedCollection[com.gilt.quality.v0.models.Organization]
 )(implicit flash: Flash)
 
 @main(tpl.copy(title = Some("Organizations"))) {

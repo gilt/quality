@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.quality.models.{EmailMessage, Publication, Subscription}
+import com.gilt.quality.v0.models.{EmailMessage, Publication, Subscription}
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
 import db.{IncidentsDao, Pager, PlansDao, SubscriptionsDao}

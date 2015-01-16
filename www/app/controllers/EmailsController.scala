@@ -15,7 +15,7 @@ object EmailsController extends Controller {
     meetingId: Long
   ) = OrgAction.async { implicit request =>
     for {
-      em <- Api.instance.emailMessages.getEmailMessagesAndMeetingAdjournedByOrgAndMeetingId(org, meetingId)
+      em <- Api.instance.emailMessages.getMeetingAdjournedByOrgAndMeetingId(org, meetingId)
     } yield {
       em match {
         case None => {
