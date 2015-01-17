@@ -1,6 +1,6 @@
 package actors
 
-import org.joda.time.{DateTime, DateTimeConstants}
+import org.joda.time.{DateTime, DateTimeConstants, DateTimeZone}
 
 import java.util.UUID
 import play.api.test._
@@ -11,7 +11,7 @@ class MeetingScheduleSpec extends FunSpec with ShouldMatchers {
 
   it("upcomingDates on thursdays at noon") {
     val now = new DateTime()
-    val nextDates = MeetingSchedule(DayOfWeek.Thursday, 12, 0).upcomingDates
+    val nextDates = MeetingSchedule.newYork(DayOfWeek.Thursday, 12, 0).upcomingDates
     nextDates.size should be(2)
     nextDates.find(_.isBefore(now)) should be(None)
     nextDates.foreach { d =>
@@ -24,7 +24,7 @@ class MeetingScheduleSpec extends FunSpec with ShouldMatchers {
 
   it("upcomingDates on tuesdays at 3:14 pm") {
     val now = new DateTime()
-    val nextDates = MeetingSchedule(DayOfWeek.Tuesday, 15, 14).upcomingDates
+    val nextDates = MeetingSchedule.newYork(DayOfWeek.Tuesday, 15, 14).upcomingDates
     nextDates.size should be(2)
     nextDates.find(_.isBefore(now)) should be(None)
 
@@ -37,27 +37,27 @@ class MeetingScheduleSpec extends FunSpec with ShouldMatchers {
   }
 
   it("validates minute") {
-    MeetingSchedule(DayOfWeek.Thursday, 12, 0).beginningMinute should be(0)
-    MeetingSchedule(DayOfWeek.Thursday, 12, 59).beginningMinute should be(59)
+    MeetingSchedule.newYork(DayOfWeek.Thursday, 12, 0).beginningMinute should be(0)
+    MeetingSchedule.newYork(DayOfWeek.Thursday, 12, 59).beginningMinute should be(59)
 
     intercept[IllegalArgumentException] {
-      MeetingSchedule(DayOfWeek.Thursday, 12, 60)
+      MeetingSchedule.newYork(DayOfWeek.Thursday, 12, 60)
     }.getMessage should be("requirement failed: Invalid beginningMinute[60]")
 
     intercept[IllegalArgumentException] {
-      MeetingSchedule(DayOfWeek.Thursday, 12, -1)
+      MeetingSchedule.newYork(DayOfWeek.Thursday, 12, -1)
     }.getMessage should be("requirement failed: Invalid beginningMinute[-1]")
   }
 
   it("validates hour") {
-    MeetingSchedule(DayOfWeek.Thursday, 0).beginningHourUTC should be(0)
+    MeetingSchedule.newYork(DayOfWeek.Thursday, 0).beginningHour should be(0)
     intercept[IllegalArgumentException] {
-      MeetingSchedule(DayOfWeek.Thursday, 24)
-    }.getMessage should be("requirement failed: Invalid beginningHourUTC[24]")
+      MeetingSchedule.newYork(DayOfWeek.Thursday, 24)
+    }.getMessage should be("requirement failed: Invalid beginningHour[24]")
 
     intercept[IllegalArgumentException] {
-      MeetingSchedule(DayOfWeek.Thursday, -1)
-    }.getMessage should be("requirement failed: Invalid beginningHourUTC[-1]")
+      MeetingSchedule.newYork(DayOfWeek.Thursday, -1)
+    }.getMessage should be("requirement failed: Invalid beginningHour[-1]")
   }
 
 }
