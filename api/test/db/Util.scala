@@ -1,7 +1,7 @@
 package db
 
 import actors.{MeetingSchedule, DayOfWeek}
-import com.gilt.quality.models._
+import com.gilt.quality.v0.models._
 import java.util.UUID
 
 object Util {

@@ -1,8 +1,8 @@
 package controllers
 
 import db.{AgendaItemsDao, FullAgendaItemForm, MeetingsDao}
-import com.gilt.quality.models.{AgendaItemForm, User}
-import com.gilt.quality.models.json._
+import com.gilt.quality.v0.models.{AgendaItemForm, User}
+import com.gilt.quality.v0.models.json._
 import lib.Validation
 import java.util.UUID
 import play.api.mvc._
@@ -21,7 +21,7 @@ trait AgendaItems {
     teamKey: Option[String],
     userGuid: Option[UUID],
     isAdjourned: Option[Boolean],
-    task: Option[com.gilt.quality.models.Task],
+    task: Option[com.gilt.quality.v0.models.Task],
     limit: Int = 25,
     offset: Int = 0
   ) = OrgAction { request =>

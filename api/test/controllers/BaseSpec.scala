@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.quality.models._
+import com.gilt.quality.v0.models._
 import db._
 import java.util.UUID
 import org.joda.time.DateTime
@@ -16,7 +16,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   implicit override lazy val port = 8002
   implicit override lazy val app: FakeApplication = FakeApplication()
 
-  val client = new com.gilt.quality.Client(s"http://localhost:$port")
+  val client = new com.gilt.quality.v0.Client(s"http://localhost:$port")
 
   def createUser(
     form: UserForm = createUserForm()
@@ -131,7 +131,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     form: Option[AgendaItemForm] = None
   ): AgendaItem = {
     await(
-      client.agendaItems.postAgendaItemsByOrg(
+      client.agendaItems.postByOrg(
         org = org.key,
         agendaItemForm = form.getOrElse(createAgendaItemForm(org))
       )

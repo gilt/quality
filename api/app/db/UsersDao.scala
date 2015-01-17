@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{AuthenticationForm, Error, User, UserForm}
+import com.gilt.quality.v0.models.{AuthenticationForm, Error, User, UserForm}
 import anorm._
 import lib.Validation
 import play.api.db._
@@ -13,7 +13,7 @@ object UsersDao {
   /**
     * Represents changes created by the background actors
     */
-  val Actor = com.gilt.quality.models.User(
+  val Actor = com.gilt.quality.v0.models.User(
     guid = UUID.fromString("9472ae70-30c2-012c-8f71-0015177442e6"),
     email = "otto@gilt.com"
   )

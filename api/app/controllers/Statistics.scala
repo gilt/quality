@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.quality.models.json._
+import com.gilt.quality.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import db.StatisticsDao

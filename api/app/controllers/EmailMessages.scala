@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.quality.models.{EmailMessage, Meeting}
-import com.gilt.quality.models.json._
+import com.gilt.quality.v0.models.{EmailMessage, Meeting}
+import com.gilt.quality.v0.models.json._
 import actors.MeetingAdjournedEmail
 import db.MeetingsDao
 

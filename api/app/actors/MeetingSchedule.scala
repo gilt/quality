@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.quality.models.Organization
+import com.gilt.quality.v0.models.Organization
 import org.joda.time.{DateTime, DateTimeConstants, DateTimeZone}
 
 sealed trait DayOfWeek {

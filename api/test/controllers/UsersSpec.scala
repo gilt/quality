@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.quality.models.{AuthenticationForm, User, UserForm}
-import com.gilt.quality.error.ErrorsResponse
+import com.gilt.quality.v0.models.{AuthenticationForm, User, UserForm}
+import com.gilt.quality.v0.errors.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._

@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.quality.models.{Organization, Publication, Subscription, Task, Team}
+import com.gilt.quality.v0.models.{Organization, Publication, Subscription, Task, Team}
 import db.{Pager, SubscriptionsDao}
 import lib.{Email, Person}
 import akka.actor._

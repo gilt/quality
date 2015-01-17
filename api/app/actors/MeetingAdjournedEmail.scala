@@ -4,7 +4,7 @@ import core.{DateHelper, Defaults}
 import db.{AgendaItemsDao, MeetingsDao, Pager, TeamsDao}
 import lib.{Email, Person}
 import java.util.UUID
-import com.gilt.quality.models.{AgendaItem, EmailMessage, Incident, Meeting, Publication, Task, Team, User}
+import com.gilt.quality.v0.models.{AgendaItem, EmailMessage, Incident, Meeting, Publication, Task, Team, User}
 import play.api.Logger
 
 case class MeetingIncidents(incidents: Seq[Incident]) {

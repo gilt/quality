@@ -1,8 +1,8 @@
 @(tpl: lib.MainTemplate,
-  org: com.gilt.quality.models.Organization,
+  org: com.gilt.quality.v0.models.Organization,
   filters: controllers.Teams.Filters,
-  myTeams: lib.PaginatedCollection[com.gilt.quality.models.Team],
-  otherTeams: lib.PaginatedCollection[com.gilt.quality.models.Team]
+  myTeams: lib.PaginatedCollection[com.gilt.quality.v0.models.Team],
+  otherTeams: lib.PaginatedCollection[com.gilt.quality.v0.models.Team]
 )(implicit flash: Flash)
 
 @main(tpl.copy(title = Some("Teams")), section = Some("teams"), jsFiles = Seq("teams.js")) {

@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.quality.models._
+import com.gilt.quality.v0.models._
 import core.DateHelper
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat

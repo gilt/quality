@@ -1,6 +1,6 @@
 package lib
 
-import com.gilt.quality.models.Error
+import com.gilt.quality.v0.models.Error
 import play.api.libs.json.Json
 import play.api.libs.json.JsError
 

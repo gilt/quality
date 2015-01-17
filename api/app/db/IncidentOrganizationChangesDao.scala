@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{AgendaItem, Error, IncidentOrganizationChange, User}
+import com.gilt.quality.v0.models.{AgendaItem, Error, IncidentOrganizationChange, User}
 import lib.Validation
 import play.api.db._
 import play.api.Play.current

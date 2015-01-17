@@ -1,11 +1,11 @@
 @(
-  user: com.gilt.quality.models.User,
-  meeting: com.gilt.quality.models.Meeting,
+  user: com.gilt.quality.v0.models.User,
+  meeting: com.gilt.quality.v0.models.Meeting,
   incidents: actors.MeetingIncidents,
-  allItems: Seq[com.gilt.quality.models.AgendaItem],
-  userTeams: Seq[com.gilt.quality.models.Team],
-  userItems: Seq[com.gilt.quality.models.AgendaItem],
-  otherItems: Seq[com.gilt.quality.models.AgendaItem]
+  allItems: Seq[com.gilt.quality.v0.models.AgendaItem],
+  userTeams: Seq[com.gilt.quality.v0.models.Team],
+  userItems: Seq[com.gilt.quality.v0.models.AgendaItem],
+  otherItems: Seq[com.gilt.quality.v0.models.AgendaItem]
 )
 
 <p>
@@ -21,9 +21,9 @@
 
 <ul>
 
-  @com.gilt.quality.models.Task.all.map { task =>
+  @com.gilt.quality.v0.models.Task.all.map { task =>
     <li> # of incidents in @core.Defaults.taskLabel(task): @java.text.NumberFormat.getIntegerInstance.format(allItems.filter(_.task == task).size) </li>
-    @if(task == com.gilt.quality.models.Task.ReviewPlan) {
+    @if(task == com.gilt.quality.v0.models.Task.ReviewPlan) {
       <ul>
         <li> Smileys: @java.text.NumberFormat.getIntegerInstance.format(incidents.withSmiley.size)</li>
         <li> Frownies: @java.text.NumberFormat.getIntegerInstance.format(incidents.withFrowny.size)</li>
@@ -61,7 +61,7 @@
 @if(otherItems.isEmpty) {
   <p><em>There were no other team assignments</em></p>
 } else {
-  @otherItems.filter(_.task == com.gilt.quality.models.Task.ReviewTeam).groupBy(_.incident.team).map { case (team, items) =>
+  @otherItems.filter(_.task == com.gilt.quality.v0.models.Task.ReviewTeam).groupBy(_.incident.team).map { case (team, items) =>
     @meetingAdjournedTeamAssignment(meeting, team, items)
   }
 }

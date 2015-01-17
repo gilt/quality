@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import com.gilt.quality.models.Team
+import com.gilt.quality.v0.models.Team
 import lib.{ Pagination, PaginatedCollection }
 import java.util.UUID
 import scala.concurrent.{Await, Future}
@@ -53,7 +53,7 @@ object Teams extends Controller {
   ) = TeamAction.async { implicit request =>
     for {
       stats <- Api.instance.Statistics.getByOrg(org = org, teamKey = Some(key), numberHours = Some(Dashboard.OneWeekInHours * 12))
-      agendaItems <- Api.instance.agendaItems.getAgendaItemsByOrg(
+      agendaItems <- Api.instance.agendaItems.getByOrg(
         org = org,
         teamKey = Some(key),
         isAdjourned = Some(false),
@@ -103,7 +103,7 @@ object Teams extends Controller {
       },
 
       teamForm => {
-        val form = com.gilt.quality.models.TeamForm(
+        val form = com.gilt.quality.v0.models.TeamForm(
           key = teamForm.key,
           email = teamForm.email,
           smileyUrl = teamForm.smileyUrl,
@@ -112,7 +112,7 @@ object Teams extends Controller {
         Api.instance.teams.postByOrg(org = org, teamForm = form).map { team =>
           Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
         }.recover {
-          case response: com.gilt.quality.error.ErrorsResponse => {
+          case response: com.gilt.quality.v0.errors.ErrorsResponse => {
             Ok(views.html.teams.create(request.mainTemplate(), request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
           }
         }
@@ -155,7 +155,7 @@ object Teams extends Controller {
       },
 
       teamForm => {
-        val form = com.gilt.quality.models.UpdateTeamForm(
+        val form = com.gilt.quality.v0.models.UpdateTeamForm(
           email = teamForm.email,
           smileyUrl = teamForm.smileyUrl,
           frownyUrl = teamForm.frownyUrl
@@ -163,7 +163,7 @@ object Teams extends Controller {
         Api.instance.teams.putByOrgAndKey(org = org, key = request.team.key, updateTeamForm = form).map { team =>
           Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
         }.recover {
-          case response: com.gilt.quality.error.ErrorsResponse => {
+          case response: com.gilt.quality.v0.errors.ErrorsResponse => {
             Ok(views.html.teams.create(request.mainTemplate(), request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))
           }
         }

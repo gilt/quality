@@ -1,7 +1,7 @@
 @(tpl: lib.MainTemplate,
-  org: com.gilt.quality.models.Organization,
-  statistics: Seq[com.gilt.quality.models.Statistic],
-  agendaItems: lib.PaginatedCollection[com.gilt.quality.models.AgendaItem]
+  org: com.gilt.quality.v0.models.Organization,
+  statistics: Seq[com.gilt.quality.v0.models.Statistic],
+  agendaItems: lib.PaginatedCollection[com.gilt.quality.v0.models.AgendaItem]
 )(implicit flash: Flash)
 
 @main(tpl, section = Some("dashboard")) {

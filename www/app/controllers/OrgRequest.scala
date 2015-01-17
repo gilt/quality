@@ -1,7 +1,7 @@
 package controllers
 
 import client.Api
-import com.gilt.quality.models.{Organization, User, Team}
+import com.gilt.quality.v0.models.{Organization, User, Team}
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import play.api.mvc._

@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{AdjournForm, AgendaItem, AgendaItemForm, Incident, Meeting, MeetingForm, MeetingPager, Organization, Task, User}
+import com.gilt.quality.v0.models.{AdjournForm, AgendaItem, AgendaItemForm, Incident, Meeting, MeetingForm, MeetingPager, Organization, Task, User}
 import org.joda.time.DateTime
 import anorm._
 import anorm.ParameterValue._

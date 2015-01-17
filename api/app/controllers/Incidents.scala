@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.quality.models.{Error, Incident, IncidentForm, Plan, User}
-import com.gilt.quality.models.json._
+import com.gilt.quality.v0.models.{Error, Incident, IncidentForm, Plan, User}
+import com.gilt.quality.v0.models.json._
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._

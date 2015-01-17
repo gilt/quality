@@ -2,7 +2,7 @@ package core
 
 import org.joda.time.{DateTime, DateTimeZone}
 import org.joda.time.format.DateTimeFormat
-import com.gilt.quality.models.Organization
+import com.gilt.quality.v0.models.Organization
 
 object DateHelper {
 

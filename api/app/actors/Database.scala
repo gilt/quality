@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.quality.models.{AdjournForm, Incident, Meeting, MeetingForm, Organization, Task}
+import com.gilt.quality.v0.models.{AdjournForm, Incident, Meeting, MeetingForm, Organization, Task}
 import db.{AgendaItemsDao, IncidentsDao, FullMeetingForm, MeetingsDao, OrganizationsDao, Pager, UsersDao}
 import org.joda.time.DateTime
 

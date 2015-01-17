@@ -27,7 +27,7 @@ lazy val api = project
       "com.sendgrid" % "sendgrid-java" % "2.1.0",
       "net.rcarz" % "jira-client" % "0.5"
     ),
-    routesImport += "com.gilt.quality.Bindables._"
+    routesImport += "com.gilt.quality.v0.Bindables._"
   )
 
 lazy val www = project
@@ -37,7 +37,7 @@ lazy val www = project
   .settings(commonSettings: _*)
   .settings(
     version := "1.0-SNAPSHOT",
-    routesImport += "com.gilt.quality.Bindables._"
+    routesImport += "com.gilt.quality.v0.Bindables._"
   )
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(

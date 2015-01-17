@@ -1,5 +1,5 @@
 import actors.MainActor
-import com.gilt.quality.models.json._
+import com.gilt.quality.v0.models.json._
 
 import play.api._
 import play.api.mvc._

@@ -20,7 +20,7 @@ object Dashboard extends Controller {
   ) = OrgAction.async { implicit request =>
     for {
       stats <- Api.instance.Statistics.getByOrg(org, numberHours = Some(OneWeekInHours))
-      agendaItems <- Api.instance.agendaItems.getAgendaItemsByOrg(
+      agendaItems <- Api.instance.agendaItems.getByOrg(
         org = org,
         userGuid = Some(request.user.guid),
         isAdjourned = Some(false),

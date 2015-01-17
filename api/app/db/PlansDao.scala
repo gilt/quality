@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{Error, Incident, Organization, Plan, PlanForm, User}
+import com.gilt.quality.v0.models.{Error, Incident, Organization, Plan, PlanForm, User}
 import lib.Validation
 import anorm._
 import anorm.ParameterValue._

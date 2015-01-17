@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.quality.models.{Error, Publication, Subscription, SubscriptionForm, Team, User}
+import com.gilt.quality.v0.models.{Error, Publication, Subscription, SubscriptionForm, Team, User}
 import anorm._
 import lib.Validation
 import play.api.db._

@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.quality.models.{Meeting, Organization, User}
+import com.gilt.quality.v0.models.{Meeting, Organization, User}
 import db.{MeetingsDao, OrganizationsDao, UsersDao}
 import scala.concurrent.Future
 import play.api.mvc._

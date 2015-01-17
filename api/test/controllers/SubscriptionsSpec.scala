@@ -1,8 +1,8 @@
 package controllers
 
-import com.gilt.quality.FailedRequest
-import com.gilt.quality.models.{Publication, Subscription, SubscriptionForm}
-import com.gilt.quality.error.ErrorsResponse
+import com.gilt.quality.v0.errors.FailedRequest
+import com.gilt.quality.v0.models.{Publication, Subscription, SubscriptionForm}
+import com.gilt.quality.v0.errors.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._
@@ -147,7 +147,7 @@ class SubscriptionsSpec extends BaseSpec {
 
     intercept[FailedRequest] {
       await(client.subscriptions.get(publication = Some(Publication(UUID.randomUUID.toString)))) must be(Seq.empty)
-    }.response.status must be(400)
+    }.responseCode must be(400)
   }
 
 }
