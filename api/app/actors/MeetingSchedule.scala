@@ -40,15 +40,16 @@ object DayOfWeek {
 
 case class MeetingSchedule(
   dayOfWeek: DayOfWeek,
-  beginningHourUTC: Int,
-  beginningMinute: Int = 0
+  beginningHour: Int,
+  beginningMinute: Int = 0,
+  timeZone: DateTimeZone
 ) {
-  require(beginningHourUTC >= 0 && beginningHourUTC <= 23, s"Invalid beginningHourUTC[$beginningHourUTC]")
+  require(beginningHour >= 0 && beginningHour <= 23, s"Invalid beginningHour[$beginningHour]")
   require(beginningMinute >= 0 && beginningMinute <= 59, s"Invalid beginningMinute[$beginningMinute]")
 
   def upcomingDates(): Seq[DateTime] = {
-    val now = new DateTime(DateTimeZone.UTC).withTime(beginningHourUTC, beginningMinute, 0, 0)
-    val dow = now.weekOfWeekyear().roundFloorCopy().plusDays(dayOfWeek.jodaValue-1).withTime(beginningHourUTC, beginningMinute, 0, 0)
+    val now = new DateTime(timeZone).withTime(beginningHour, beginningMinute, 0, 0)
+    val dow = now.weekOfWeekyear().roundFloorCopy().plusDays(dayOfWeek.jodaValue-1).withTime(beginningHour, beginningMinute, 0, 0)
     if (dow.isBefore(now.plusHours(12))) {
       Seq(dow.plusWeeks(1), dow.plusWeeks(2))
     } else {
@@ -60,7 +61,23 @@ case class MeetingSchedule(
 
 object MeetingSchedule {
 
-  val DefaultMeetingSchedule = MeetingSchedule(DayOfWeek.Thursday, 15)
+  val DefaultMeetingSchedule = MeetingSchedule.newYork(
+    dayOfWeek = DayOfWeek.Thursday,
+    beginningHour = 11
+  )
+
+  def newYork(
+    dayOfWeek: DayOfWeek,
+    beginningHour: Int,
+    beginningMinute: Int = 0
+  ): MeetingSchedule = {
+    MeetingSchedule(
+      dayOfWeek = dayOfWeek,
+      beginningHour = beginningHour,
+      beginningMinute = beginningMinute,
+      timeZone = DateTimeZone.forID("America/New_York")
+    )
+  }
 
   def findByOrganization(org: Organization): Option[MeetingSchedule] = {
     Some(DefaultMeetingSchedule)

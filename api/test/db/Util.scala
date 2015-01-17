@@ -17,9 +17,9 @@ object Util {
   def createMeeting(
     org: Organization = createOrganization()
   ): Meeting = {
-    val dateTime = MeetingSchedule(
+    val dateTime = MeetingSchedule.newYork(
       dayOfWeek = DayOfWeek.Thursday,
-      beginningHourUTC = 15
+      beginningHour = 15
     ).upcomingDates().head
 
     MeetingsDao.upsert(org, dateTime)
