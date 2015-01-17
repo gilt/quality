@@ -1,6 +1,7 @@
 @(tpl: lib.MainTemplate,
   org: com.gilt.quality.v0.models.Organization,
   statistics: Seq[com.gilt.quality.v0.models.Statistic],
+  nextMeeting: Option[com.gilt.quality.v0.models.Meeting],
   agendaItems: lib.PaginatedCollection[com.gilt.quality.v0.models.AgendaItem]
 )(implicit flash: Flash)
 
@@ -27,6 +28,13 @@
         }
       </ul>
     }
+  }
+
+  <h3>Next Meeting</h3>
+  @if(nextMeeting.isEmpty) {
+    <em>There is no upcoming meeting scheduled at this time.</em>
+  } else {
+    <a href="@routes.Meetings.show(org.key, nextMeeting.get.id)">@core.DateHelper.mediumDateTime(org, nextMeeting.get.scheduledAt)</a>
   }
 
   <h3>Team Summary over Past Week</h3>
