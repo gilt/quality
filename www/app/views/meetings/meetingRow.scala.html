@@ -1,0 +1,5 @@
+@(org: com.gilt.quality.v0.models.Organization,
+  meeting: com.gilt.quality.v0.models.Meeting
+)
+
+<a href="@routes.Meetings.show(org.key, meeting.id)">@core.DateHelper.mediumDateTime(org, meeting.scheduledAt)</a>
