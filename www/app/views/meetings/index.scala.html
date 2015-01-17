@@ -12,7 +12,14 @@
       <tbody>
         @meetings.items.map { meeting =>
          <tr>
-           <td><a href="@routes.Meetings.show(org.key, meeting.id)">@core.DateHelper.mediumDateTime(org, meeting.scheduledAt)</a></td>
+           <td>@lib.Util.meetingStatus(meeting)</td>
+           <td>
+           @if(lib.Util.isAroundNow(meeting.scheduledAt)) {
+             <b>@meetingRow(org, meeting) @lib.Util.meetingLabel(meeting).getOrElse("")</b>
+           } else {
+             @meetingRow(org, meeting)
+           }
+           </td>
          </tr>
        }
       </tbody>
