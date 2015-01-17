@@ -27,12 +27,19 @@ object Dashboard extends Controller {
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(agendaItemsPage * Pagination.DefaultLimit)
       )
+      meetings <- Api.instance.meetings.getByOrg(
+        org = org,
+        isAdjourned = Some(false),
+        isUpcoming = Some(true),
+        limit = Some(1)
+      )
     } yield {
       Ok(
         views.html.dashboard.index(
           request.mainTemplate(),
           request.org,
           stats,
+          meetings.headOption,
           PaginatedCollection(agendaItemsPage, agendaItems)
         )
       )

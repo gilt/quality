@@ -16,6 +16,8 @@ object Meetings extends Controller {
     id: Option[Long],
     incidentId: Option[Long],
     agendaItemId: Option[Long],
+    isUpcoming: Option[Boolean] = None,
+    isAdjourned: Option[Boolean] = None,
     limit: Int = 25,
     offset: Int = 0
   ) = OrgAction { request =>
@@ -24,6 +26,8 @@ object Meetings extends Controller {
       id = id,
       incidentId = incidentId,
       agendaItemId = agendaItemId,
+      isUpcoming = isUpcoming,
+      isAdjourned = isAdjourned,
       limit = limit,
       offset = offset
     )

@@ -648,6 +648,8 @@
                         { "name": "id", "type": "long", "description": "Find meeting with this id. Exact match", "required": false },
                         { "name": "incident_id", "type": "long", "description": "Find meetings where this incident_id is on the agenda", "required": false },
                         { "name": "agenda_item_id", "type": "long", "description": "Find meeting based on this agenda item", "required": false },
+                        { "name": "is_adjourned", "type": "boolean", "description": "Find meetings that have or have not been adjourned", "required": false },
+                        { "name": "is_upcoming", "type": "boolean", "description": "Find meetings that are upcoming (true) or have passed (false)", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
