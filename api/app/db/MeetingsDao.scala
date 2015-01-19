@@ -8,6 +8,7 @@ import db.AnormHelper._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
+import lib.OrderBy
 
 case class FullMeetingForm(
   org: Organization,
@@ -166,6 +167,7 @@ object MeetingsDao {
     scheduledOnOrBefore: Option[DateTime] = None,
     isUpcoming: Option[Boolean] = None,
     isAdjourned: Option[Boolean] = None,
+    orderBy: Option[OrderBy] = None,
     limit: Int = 50,
     offset: Int = 0
   ): Seq[Meeting] = {
@@ -190,10 +192,9 @@ object MeetingsDao {
           case false => "and meeting_adjournments.adjourned_at is null"
         }
       },
-      Some("order by meetings.scheduled_at desc"),
+      Some("order by " + orderBy.getOrElse(OrderBy.descending("meetings.scheduled_at")).sql),
       Some(s"limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
-
 
     val bind = Seq(
       org.map { v => NamedParameter("org_key", toParameterValue(v.key)) },

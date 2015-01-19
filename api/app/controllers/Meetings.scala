@@ -7,7 +7,7 @@ import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 import db.{AgendaItemsDao, FullMeetingForm, MeetingsDao, OrganizationsDao}
-import lib.Validation
+import lib.{OrderBy, Validation}
 
 object Meetings extends Controller {
 
@@ -16,8 +16,9 @@ object Meetings extends Controller {
     id: Option[Long],
     incidentId: Option[Long],
     agendaItemId: Option[Long],
-    isUpcoming: Option[Boolean] = None,
-    isAdjourned: Option[Boolean] = None,
+    isAdjourned: Option[Boolean],
+    isUpcoming: Option[Boolean],
+    orderBy: Option[String] = None,
     limit: Int = 25,
     offset: Int = 0
   ) = OrgAction { request =>
@@ -28,6 +29,7 @@ object Meetings extends Controller {
       agendaItemId = agendaItemId,
       isUpcoming = isUpcoming,
       isAdjourned = isAdjourned,
+      orderBy = orderBy.map(OrderBy(_).getOrElse(sys.error("Invalid order by"))),
       limit = limit,
       offset = offset
     )

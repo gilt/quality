@@ -31,6 +31,7 @@ object Dashboard extends Controller {
         org = org,
         isAdjourned = Some(false),
         isUpcoming = Some(true),
+        orderBy = Some("meetings.scheduled_at:asc"),
         limit = Some(1)
       )
     } yield {
