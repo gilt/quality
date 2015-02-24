@@ -29,7 +29,21 @@ in situ for a nice development experience.
 
 Updating generated code
 =======================
-script/update-generated-code
+
+First setup the (apidoc CLI)[https://github.com/gilt/apidoc-cli]. Make
+sure your local environment has access to the gilt organization. If
+you need an API token, visit http://www.apidoc.me/tokens/
+
+Configuration data for apidoc is stored in the .apidoc file.
+
+To sync all code (uploads currenty api.json file, then downloads code):
+
+  /web/apidoc-cli/bin/apidoc update
+
+To upload latest API to apidoc (without also downloading the generated code):
+
+  /web/apidoc-cli/bin/apidoc upload ./api/api.json gilt quality --version x.y.z
+
 
 Deploying schema
 ================
