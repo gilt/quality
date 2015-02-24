@@ -1,0 +1,14 @@
+upload:
+  gilt:
+    quality:
+      path: api/api.json
+
+code:
+  gilt:
+    quality:
+      version: latest
+      generators:
+        - play_2_3_client: core/src/main/scala/GeneratedClient.scala
+        - play_2_x_routes: api/conf/routes
+
+
