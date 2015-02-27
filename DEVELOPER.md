@@ -57,13 +57,11 @@ Private IP will look like: 172.16.16.183 and can be obtained from
 
   https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances:search=i-530d35bd;sort=desc:launchTime
 
-  sudo apt-get install postgresql-client
-  sudo apt-get install git
-  sudo apt-get install ruby
+  sudo apt-get install postgresql-client git ruby
 
   git clone git://github.com/gilt/schema-evolution-manager.git
   cd schema-evolution-manager
-  git checkout 0.9.13
+  git checkout 0.9.16
   ruby ./configure.rb
   sudo ruby ./install.rb
 
