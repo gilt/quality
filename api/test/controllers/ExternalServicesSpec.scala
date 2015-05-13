@@ -63,7 +63,7 @@ class ExternalServicesSpec extends BaseSpec {
 
   "GET /:org/external_services/:id" in new WithServer {
     val service = createExternalService()
-    await(client.externalServices.getByOrgAndId(service.organization.key, service.id)).map(_.id) must be(Some(service.id))
+    await(client.externalServices.getByOrgAndId(service.organization.key, service.id)).id must be(service.id)
   }
 
   "DELETE /:org/external_services/:id" in new WithServer {

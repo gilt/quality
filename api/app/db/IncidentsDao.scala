@@ -117,7 +117,9 @@ object IncidentsDao {
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
 
-      IncidentTagsDao.doUpdate(c, user, id, Seq.empty, fullForm.form.tags)
+      fullForm.form.tags.map { tags =>
+        IncidentTagsDao.doUpdate(c, user, id, Seq.empty, tags)
+      }
 
       id
     }
@@ -149,7 +151,9 @@ object IncidentsDao {
         'user_guid -> user.guid
       ).executeUpdate()
 
-      IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags, fullForm.form.tags)
+      fullForm.form.tags.map { tags =>
+        IncidentTagsDao.doUpdate(c, user, incident.id, incident.tags.getOrElse(Nil), tags)
+      }
     }
 
     global.Actors.mainActor ! actors.MainActor.IncidentUpdated(incident.id)
@@ -192,7 +196,11 @@ object IncidentsDao {
   }
 
   private def findDetails(incident: Incident): Incident = {
-    incident.copy(tags = IncidentTagsDao.findAll(incidentId = Some(incident.id)).map(_.tag))
+    incident.copy(
+      tags = Some(
+        IncidentTagsDao.findAll(incidentId = Some(incident.id)).map(_.tag)
+      )
+    )
   }
 
   def findAll(
@@ -277,7 +285,7 @@ object IncidentsDao {
       severity = Severity(row[String](s"${p}severity")),
       summary = row[String](s"${p}summary"),
       description = row[Option[String]](s"${p}description"),
-      tags = Seq.empty,
+      tags = None,
       plan = row[Option[Long]](s"${planPrefix}_id").map { _ => PlansDao.fromRow(row, incidentId, Some(planPrefix)) },
       createdAt = row[DateTime](s"${p}created_at")
     )

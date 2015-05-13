@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.quality.v0.models.{IncidentOrganizationChange}
-import com.gilt.quality.v0.errors.ErrorsResponse
+import com.gilt.quality.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
 
 import play.api.test._
@@ -18,11 +18,17 @@ class IncidentOrganizationChangesSpec extends BaseSpec {
     val incident1 = createIncident(org1)
     val incident2 = createIncident(org2)
 
-    await(client.incidents.getByOrgAndId(org1.key, incident1.id)).map(_.id) must be(Some(incident1.id))
-    await(client.incidents.getByOrgAndId(org1.key, incident2.id)).map(_.id) must be(None)
+    await(client.incidents.getByOrgAndId(org1.key, incident1.id)).id must be(incident1.id)
 
-    await(client.incidents.getByOrgAndId(org2.key, incident1.id)).map(_.id) must be(None)
-    await(client.incidents.getByOrgAndId(org2.key, incident2.id)).map(_.id) must be(Some(incident2.id))
+    intercept[UnitResponse] {
+      await(client.incidents.getByOrgAndId(org1.key, incident2.id))
+    }.status must be(404)
+
+    intercept[UnitResponse] {
+      await(client.incidents.getByOrgAndId(org2.key, incident1.id))
+    }.status must be(404)
+
+    await(client.incidents.getByOrgAndId(org2.key, incident2.id)).id must be(incident2.id)
 
     await(
       client.incidentOrganizationChanges.post(
@@ -33,11 +39,16 @@ class IncidentOrganizationChangesSpec extends BaseSpec {
       )
     )
 
-    await(client.incidents.getByOrgAndId(org1.key, incident1.id)).map(_.id) must be(Some(incident1.id))
-    await(client.incidents.getByOrgAndId(org1.key, incident2.id)).map(_.id) must be(Some(incident2.id))
+    await(client.incidents.getByOrgAndId(org1.key, incident1.id)).id must be(incident1.id)
+    await(client.incidents.getByOrgAndId(org1.key, incident2.id)).id must be(incident2.id)
 
-    await(client.incidents.getByOrgAndId(org2.key, incident1.id)).map(_.id) must be(None)
-    await(client.incidents.getByOrgAndId(org2.key, incident2.id)).map(_.id) must be(None)
+    intercept[UnitResponse] {
+      await(client.incidents.getByOrgAndId(org2.key, incident1.id))
+    }.status must be(404)
+
+    intercept[UnitResponse] {
+      await(client.incidents.getByOrgAndId(org2.key, incident2.id))
+    }.status must be(404)
   }
 
   "POST /incident_organization_changes validates incident id" in new WithServer {
@@ -87,7 +98,7 @@ class IncidentOrganizationChangesSpec extends BaseSpec {
       )
     )
 
-    await(client.incidents.getByOrgAndId(org1.key, incident2.id)).flatMap(_.team) must be(None)
+    await(client.incidents.getByOrgAndId(org1.key, incident2.id)).team must be(None)
   }
 
 }

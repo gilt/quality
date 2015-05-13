@@ -81,7 +81,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     severity = Severity.Low,
     summary = "Test",
     description = None,
-    tags = Seq.empty
+    tags = None
   )
 
   def createPlan(
@@ -110,7 +110,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     grade: Int = 100
   ): Plan = {
     await(client.plans.putGradeByOrgAndId(org.key, plan.id, 100))
-    await(client.plans.getByOrgAndId(org.key, plan.id)).get
+    await(client.plans.getByOrgAndId(org.key, plan.id))
   }
 
   def createMeeting(

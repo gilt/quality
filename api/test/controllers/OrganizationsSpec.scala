@@ -1,8 +1,7 @@
-
 package controllers
 
 import com.gilt.quality.v0.models.{Organization, OrganizationForm}
-import com.gilt.quality.v0.errors.ErrorsResponse
+import com.gilt.quality.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
 
 import play.api.test._
@@ -53,7 +52,7 @@ class OrganizationsSpec extends BaseSpec {
 
   "DELETE /organizations/:key" in new WithServer {
     val org = createOrganization()
-    await(client.organizations.deleteByKey(org.key)) must be(Some(()))
+    await(client.organizations.deleteByKey(org.key)) must be(())
     await(client.organizations.get(key = Some(org.key))) must be(Seq.empty)
   }
 
@@ -68,8 +67,11 @@ class OrganizationsSpec extends BaseSpec {
 
   "GET /organizations/:key" in new WithServer {
     val org = createOrganization()
-    await(client.organizations.getByKey(org.key)) must be(Some(org))
-    await(client.organizations.getByKey(UUID.randomUUID.toString)) must be(None)
+    await(client.organizations.getByKey(org.key)) must be(org)
+
+    intercept[UnitResponse] {
+      await(client.organizations.getByKey(UUID.randomUUID.toString))
+    }.status must be(404)
   }
 
 }

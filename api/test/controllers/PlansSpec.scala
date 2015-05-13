@@ -40,7 +40,7 @@ class PlansSpec extends BaseSpec {
       )
     )
 
-    val updated = await(client.plans.getByOrgAndId(org.key, plan.id)).get
+    val updated = await(client.plans.getByOrgAndId(org.key, plan.id))
     updated.incidentId must be(incident.id)
     updated.body must be("updated")
   }
@@ -101,7 +101,7 @@ class PlansSpec extends BaseSpec {
     val plan = createPlan(org)
     plan.grade must be(None)
     await(client.plans.putGradeByOrgAndId(org.key, plan.id, 100))
-    await(client.plans.getByOrgAndId(org.key, plan.id)).get.grade must be(Some(100))
+    await(client.plans.getByOrgAndId(org.key, plan.id)).grade must be(Some(100))
   }
 
 }

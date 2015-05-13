@@ -189,16 +189,16 @@ class TeamsSpec extends BaseSpec {
     val user1 = createUser()
     val user2 = createUser()
 
-    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).get.numberMembers must be(0)
-    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).get.numberMembers must be(0)
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).numberMembers must be(0)
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).numberMembers must be(0)
 
     await(client.teams.putMembersByOrgAndKeyAndUserGuid(org.key, team.key, user1.guid))
-    await(client.teams.getMemberSummaryByOrgAndKey(org.key, otherTeam.key)).get.numberMembers must be(0)
-    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).get.numberMembers must be(1)
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, otherTeam.key)).numberMembers must be(0)
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).numberMembers must be(1)
 
     await(client.teams.putMembersByOrgAndKeyAndUserGuid(org.key, team.key, user2.guid))
-    await(client.teams.getMemberSummaryByOrgAndKey(org.key, otherTeam.key)).get.numberMembers must be(0)
-    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).get.numberMembers must be(2)
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, otherTeam.key)).numberMembers must be(0)
+    await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).numberMembers must be(2)
 
     await(client.teams.getMemberSummaryByOrgAndKey(org.key, UUID.randomUUID.toString)) must be(None)
   }

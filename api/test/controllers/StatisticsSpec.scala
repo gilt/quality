@@ -32,7 +32,7 @@ class StatisticsSpec extends BaseSpec {
       client.statistics.getByOrg(
         org = org.key,
         teamKey = Some(team.key),
-        numberHours = Some(24)
+        numberHours = 24
       )
     ).filter(_.team.key == team.key)
 

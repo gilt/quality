@@ -70,17 +70,17 @@ class MeetingsSpec extends BaseSpec {
     val item2 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
     val item3 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
 
-    val pager1 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item1.incident.id)).get
+    val pager1 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item1.incident.id))
     pager1.meeting must be(meeting)
     pager1.priorIncident.map(_.id) must be(None)
     pager1.nextIncident.map(_.id) must be(Some(item2.incident.id))
 
-    val pager2 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item2.incident.id)).get
+    val pager2 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item2.incident.id))
     pager2.meeting must be(meeting)
     pager2.priorIncident.map(_.id) must be(Some(item1.incident.id))
     pager2.nextIncident.map(_.id) must be(Some(item3.incident.id))
 
-    val pager3 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item3.incident.id)).get
+    val pager3 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item3.incident.id))
     pager3.meeting must be(meeting)
     pager3.priorIncident.map(_.id) must be(Some(item2.incident.id))
     pager3.nextIncident.map(_.id) must be(None)

@@ -58,7 +58,7 @@ object Util {
     severity = Severity.Low,
     summary = "Test",
     description = None,
-    tags = Seq.empty
+    tags = None
   )
 
   def createPlan(
