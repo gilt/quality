@@ -125,7 +125,7 @@ class IncidentsSpec extends BaseSpec {
     val incident = createIncident(org)
     val plan = createPlanForIncident(org, incident)
 
-    await(client.incidents.getByOrg(org.key, id = Some(incident.id))).head.plan must be(plan)
+    await(client.incidents.getByOrg(org.key, id = Some(incident.id))).head.plan must be(Some(plan))
   }
 
   "GET /:org/incidents respects teamKey filtering" in new WithServer {
