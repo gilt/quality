@@ -152,12 +152,13 @@ object Teams extends Controller {
 
       teamForm => {
         val form = com.gilt.quality.v0.models.UpdateTeamForm(
+          key = Some(teamForm.key),
           email = teamForm.email,
           smileyUrl = teamForm.smileyUrl,
           frownyUrl = teamForm.frownyUrl
         )
         Api.instance.teams.putByOrgAndKey(org = org, key = request.team.key, updateTeamForm = form).map { team =>
-          Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team created")
+          Redirect(routes.Teams.show(org, team.key)).flashing("success" -> "Team updated")
         }.recover {
           case response: com.gilt.quality.v0.errors.ErrorsResponse => {
             Ok(views.html.teams.create(request.mainTemplate(), request.org, boundForm, Some(response.errors.map(_.message).mkString(", "))))

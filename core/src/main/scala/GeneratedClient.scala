@@ -251,6 +251,7 @@ package com.gilt.quality.v0.models {
   )
 
   case class UpdateTeamForm(
+    key: _root_.scala.Option[String] = None,
     email: _root_.scala.Option[String] = None,
     smileyUrl: _root_.scala.Option[String] = None,
     frownyUrl: _root_.scala.Option[String] = None
@@ -1022,6 +1023,7 @@ package com.gilt.quality.v0.models {
 
     implicit def jsonReadsQualityUpdateTeamForm: play.api.libs.json.Reads[UpdateTeamForm] = {
       (
+        (__ \ "key").readNullable[String] and
         (__ \ "email").readNullable[String] and
         (__ \ "smiley_url").readNullable[String] and
         (__ \ "frowny_url").readNullable[String]
@@ -1030,6 +1032,7 @@ package com.gilt.quality.v0.models {
 
     implicit def jsonWritesQualityUpdateTeamForm: play.api.libs.json.Writes[UpdateTeamForm] = {
       (
+        (__ \ "key").writeNullable[String] and
         (__ \ "email").writeNullable[String] and
         (__ \ "smiley_url").writeNullable[String] and
         (__ \ "frowny_url").writeNullable[String]

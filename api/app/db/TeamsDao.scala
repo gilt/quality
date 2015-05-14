@@ -21,24 +21,25 @@ case class FullTeamForm(
   }
 
   lazy val validate: Seq[Error] = {
-    val keyErrors = existing match {
-      case Some(t) => {
-        assert(t.key == form.key, "Form key must match team key for updates")
-        Seq.empty
-      }
-      case None => {
-        TeamsDao.findByKey(org, form.key) match {
-          case Some(team) => {
-            Seq(s"Team with key[${form.key}] already exists")
-          }
-          case None => {
-            val generated = UrlKey.generate(form.key)
-            if (form.key == generated) {
-              Seq.empty
+    val keyErrors = TeamsDao.findByKey(org, form.key) match {
+      case Some(team) => {
+        existing match {
+          case None => Seq(s"Team with key[${form.key}] already exists")
+          case Some(e) => {
+            if (e.key == form.key) {
+              Nil
             } else {
-              Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
+              Seq(s"Team with key[${form.key}] already exists")
             }
           }
+        }
+      }
+      case None => {
+        val generated = UrlKey.generate(form.key)
+        if (form.key == generated) {
+          Seq.empty
+        } else {
+          Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
         }
       }
     }
@@ -87,7 +88,8 @@ object TeamsDao {
 
   private val UpdateQuery = """
     update teams
-       set email = {email},
+       set key = {key},
+           email = {email},
            updated_by_guid = {user_guid}::uuid
      where id = {id}
   """
@@ -107,7 +109,7 @@ object TeamsDao {
     val id: Long = DB.withTransaction { implicit c =>
       val id = SQL(InsertQuery).on(
         'organization_id -> fullForm.orgId,
-        'key -> fullForm.form.key.trim.toLowerCase,
+        'key -> UrlKey.generate(fullForm.form.key),
         'email -> fullForm.form.email.map(_.trim),
         'user_guid -> user.guid
       ).executeInsert().getOrElse(sys.error("Missing id"))
@@ -130,8 +132,11 @@ object TeamsDao {
       sys.error(s"Could not find team[${team.organization.key}/${team.key}] to update")
     }
 
+    val key = UrlKey.generate(fullForm.form.key)
+
     DB.withTransaction { implicit c =>
       SQL(UpdateQuery).on(
+        'key -> key,
         'email -> fullForm.form.email.map(_.trim),
         'user_guid -> user.guid,
         'id -> id
@@ -141,7 +146,7 @@ object TeamsDao {
       updateIcons(c, user, id, fullForm.form)
     }
 
-    findByKey(team.organization, team.key).getOrElse {
+    findByKey(team.organization, key).getOrElse {
       sys.error("Failed to update team")
     }
   }
