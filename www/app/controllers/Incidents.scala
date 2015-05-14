@@ -180,7 +180,7 @@ object Incidents extends Controller {
             description = incident.description,
             teamKey = incident.team.map(_.key),
             severity = incident.severity.toString,
-            tags = incident.tags.mkString(" ")
+            tags = incident.tags.getOrElse(Nil).mkString(" ")
           )
         )
         val teamsOrEmpty = if (teams.size >= MaxTeams) { Seq.empty } else { teams }
