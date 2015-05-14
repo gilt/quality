@@ -3,7 +3,7 @@ import play.PlayImport.PlayKeys._
 
 name := "quality"
 
-scalaVersion in ThisBuild := "2.11.4"
+scalaVersion in ThisBuild := "2.11.6"
 
 lazy val core = project
   .in(file("core"))
@@ -24,7 +24,7 @@ lazy val api = project
       jdbc,
       anorm,
       "org.postgresql" % "postgresql" % "9.3-1101-jdbc4",
-      "com.sendgrid" % "sendgrid-java" % "2.1.0",
+      "com.sendgrid" % "sendgrid-java" % "2.2.0",
       "net.rcarz" % "jira-client" % "0.5"
     ),
     routesImport += "com.gilt.quality.v0.Bindables._"
@@ -46,6 +46,6 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     ws,
     "org.commonjava.googlecode.markdown4j" % "markdown4j" % "2.2-cj-1.0",
     "org.scalatestplus" %% "play" % "1.1.0" % "test",
-    "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
+    "com.typesafe.akka" %% "akka-testkit" % "2.3.11" % "test"
   )
 )
