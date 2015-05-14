@@ -1,6 +1,7 @@
 package controllers
 
 import client.Api
+import com.gilt.quality.v0.errors.UnitResponse
 import com.gilt.quality.v0.models.Team
 import lib.{ Pagination, PaginatedCollection }
 import scala.concurrent.{Await, Future}
@@ -23,10 +24,9 @@ object TeamMembers extends Controller {
     key: String
   ) = OrgAction.async { implicit request =>
     for {
-      memberSummary <- Api.instance.teams.getMemberSummaryByOrgAndKey(
-        org = org,
-        key = key
-      )
+      memberSummary <- Api.instance.teams.getMemberSummaryByOrgAndKey(org, key).map { summary => Some(summary) }.recover {
+        case UnitResponse(404) => None
+      }
     } yield {
       val numberMembers = memberSummary.map(_.numberMembers).getOrElse(0l)
       Ok(Json.toJson(Map("number_members" -> NumberFormat.getIntegerInstance.format(numberMembers))))

@@ -49,7 +49,7 @@
           Total Open Incidents: <a href="@routes.Incidents.index(org.key, team_key = Some(statistic.team.key), has_plan = Some("0"))">@statistic.totalOpenIncidents</a><br />
         </td>
         <td>
-          @statistic.plans.map { plan =>
+          @statistic.plans.getOrElse(Nil).map { plan =>
             <a href="@routes.Incidents.show(org.key, plan.incidentId)">@Html(lib.GradeImage.imageTag(Some(statistic.team), plan.grade))</a>
           }
         </td>

@@ -2,10 +2,8 @@ package controllers
 
 import client.Api
 import com.gilt.quality.v0.models.{AdjournForm, Meeting, Task}
-import lib.{ Pagination, PaginatedCollection }
-import java.util.UUID
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration._
+import com.gilt.quality.v0.errors.UnitResponse
+import lib.{Pagination, PaginatedCollection}
 
 import play.api._
 import play.api.mvc._
@@ -23,11 +21,11 @@ object Meetings extends Controller {
     for {
       meetings <- Api.instance.meetings.getByOrg(
         org = org,
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(page * Pagination.DefaultLimit)
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
       )
     } yield {
-      Ok(views.html.meetings.index(request.mainTemplate(), request.org, PaginatedCollection(page, meetings)))
+     Ok(views.html.meetings.index(request.mainTemplate(), request.org, PaginatedCollection(page, meetings)))
     }
   }
 
@@ -37,38 +35,36 @@ object Meetings extends Controller {
     reviewTeamsPage: Int = 0,
     reviewPlansPage: Int = 0
   ) = OrgAction.async { implicit request =>
-    for {
-      meeting <- Api.instance.meetings.getByOrgAndId(org, id)
-      reviewTeams <- Api.instance.agendaItems.getByOrg(
-        org = org,
-        meetingId = Some(id),
-        task = Some(Task.ReviewTeam),
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(reviewTeamsPage * Pagination.DefaultLimit)
-      )
-      reviewPlans <- Api.instance.agendaItems.getByOrg(
-        org = org,
-        meetingId = Some(id),
-        task = Some(Task.ReviewPlan),
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(reviewPlansPage * Pagination.DefaultLimit)
-      )
-    } yield {
-      meeting match {
-        case None => {
-          Redirect(routes.Meetings.index(org)).flashing("warning" -> s"Meeting $id not found")
-        }
-        case Some(meeting: Meeting) => {
-          Ok(
-            views.html.meetings.show(
-              request.mainTemplate(),
-              request.org,
-              meeting,
-              PaginatedCollection(reviewTeamsPage, reviewTeams),
-              PaginatedCollection(reviewPlansPage, reviewPlans)
-            )
+    Api.instance.meetings.getByOrgAndId(org, id).flatMap { meeting =>
+      for {
+        reviewTeams <- Api.instance.agendaItems.getByOrg(
+          org = org,
+          meetingId = Some(id),
+          task = Some(Task.ReviewTeam),
+          limit = Pagination.DefaultLimit+1,
+          offset = reviewTeamsPage * Pagination.DefaultLimit
+        )
+        reviewPlans <- Api.instance.agendaItems.getByOrg(
+          org = org,
+          meetingId = Some(id),
+          task = Some(Task.ReviewPlan),
+          limit = Pagination.DefaultLimit+1,
+          offset = reviewPlansPage * Pagination.DefaultLimit
+        )
+      } yield {
+        Ok(
+          views.html.meetings.show(
+            request.mainTemplate(),
+            request.org,
+            meeting,
+            PaginatedCollection(reviewTeamsPage, reviewTeams),
+            PaginatedCollection(reviewPlansPage, reviewPlans)
           )
-        }
+        )
+      }
+    }.recover {
+      case UnitResponse(404) => {
+        Redirect(routes.Meetings.index(org)).flashing("warning" -> s"Meeting $id not found")
       }
     }
   }

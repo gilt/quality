@@ -2,6 +2,7 @@ package controllers
 
 import client.Api
 import com.gilt.quality.v0.models.{Organization, User, Team}
+import com.gilt.quality.v0.errors.UnitResponse
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import play.api.mvc._
@@ -19,7 +20,12 @@ case class RequestHelper[A](request: Request[A]) {
     team match {
       case None => {
         pathParts.headOption.flatMap { orgKey =>
-          Await.result(Api.instance.organizations.getByKey(orgKey), 1000.millis).headOption
+          Await.result(
+            Api.instance.organizations.getByKey(orgKey).map { org => Some(org) }.recover {
+              case UnitResponse(404) => None
+            },
+            1000.millis
+          )
         }
       }
       case Some(t) => {
@@ -32,7 +38,12 @@ case class RequestHelper[A](request: Request[A]) {
     val orgKey = pathParts.headOption
     if (pathParts.length >= 3 && pathParts(1) == "teams") {
       val teamKey = pathParts(2)
-      Await.result(Api.instance.teams.getByOrgAndKey(orgKey.get, teamKey), 1000.millis).headOption
+      Await.result(
+        Api.instance.teams.getByOrgAndKey(orgKey.get, teamKey).map { t => Some(t) }.recover {
+          case UnitResponse(404) => None
+        },
+        1000.millis
+      )
     } else {
       None
     }
@@ -40,7 +51,12 @@ case class RequestHelper[A](request: Request[A]) {
 
   lazy val user: Option[User] = {
     request.session.get("user_guid").flatMap { userGuid =>
-      Await.result(Api.instance.users.getByGuid(UUID.fromString(userGuid)), 1000.millis)
+      Await.result(
+        Api.instance.users.getByGuid(UUID.fromString(userGuid)).map { u => Some(u) }.recover {
+          case UnitResponse(404) => None
+        },
+        1000.millis
+      )
     }
   }
 
