@@ -34,7 +34,7 @@ object Subscriptions extends Controller {
       subscriptions <- Api.instance.subscriptions.get(
         organizationKey = Some(request.org.key),
         userGuid = Some(request.user.guid),
-        limit = Some(Publication.all.size + 1)
+        limit = Publication.all.size + 1
       )
     } yield {
       val userPublications = Publication.all.map { p =>

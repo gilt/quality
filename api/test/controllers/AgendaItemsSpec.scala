@@ -2,7 +2,7 @@ package controllers
 
 import com.gilt.quality.v0.errors.FailedRequest
 import com.gilt.quality.v0.models.{AdjournForm, AgendaItem, AgendaItemForm, Task, Team}
-import com.gilt.quality.v0.errors.ErrorsResponse
+import com.gilt.quality.v0.errors.{ErrorsResponse, UnitResponse}
 import org.joda.time.DateTime
 import java.util.UUID
 
@@ -110,9 +110,9 @@ class AgendaItemsSpec extends BaseSpec {
   }
 
   "GET /agenda_items is 404 if org not found" in new WithServer {
-    intercept[FailedRequest] {
+    intercept[UnitResponse] {
       await(client.agendaItems.getByOrg(UUID.randomUUID.toString))
-    }.responseCode must be(404)
+    }.status must be(404)
   }
 
   "GET /agenda_items paginates" in new WithServer {
@@ -121,24 +121,30 @@ class AgendaItemsSpec extends BaseSpec {
     val item1 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
     val item2 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
 
-    await(client.agendaItems.getByOrg(org.key, meetingId = Some(meeting.id), limit = Some(1))).map(_.id) must be(Seq(item1.id))
-    await(client.agendaItems.getByOrg(org.key, meetingId = Some(meeting.id), limit = Some(1), offset = Some(1))).map(_.id) must be(Seq(item2.id))
-    await(client.agendaItems.getByOrg(org.key, meetingId = Some(meeting.id), limit = Some(1), offset = Some(2))) must be(Seq.empty)
+    await(client.agendaItems.getByOrg(org.key, meetingId = Some(meeting.id), limit = 1)).map(_.id) must be(Seq(item1.id))
+    await(client.agendaItems.getByOrg(org.key, meetingId = Some(meeting.id), limit = 1, offset = 1)).map(_.id) must be(Seq(item2.id))
+    await(client.agendaItems.getByOrg(org.key, meetingId = Some(meeting.id), limit = 1, offset = 2)) must be(Seq.empty)
   }
 
   "GET /agenda_items/:id" in new WithServer {
     val item = createAgendaItem(org)
 
-    await(client.agendaItems.getByOrgAndId(org.key, item.id)).map(_.id) must be(Some(item.id))
-    await(client.agendaItems.getByOrgAndId(org.key, -1)) must be(None)
+    await(client.agendaItems.getByOrgAndId(org.key, item.id)).id must be(item.id)
+
+    intercept[UnitResponse] {
+      await(client.agendaItems.getByOrgAndId(org.key, -1))
+    }.status must be(404)
   }
 
   "DELETE /agenda_items/:id" in new WithServer {
     val item = createAgendaItem(org)
 
-    await(client.agendaItems.getByOrgAndId(org.key, item.id)).map(_.id) must be(Some(item.id))
+    await(client.agendaItems.getByOrgAndId(org.key, item.id)).id must be(item.id)
     await(client.agendaItems.deleteByOrgAndId(org.key, item.id))
-    await(client.agendaItems.getByOrgAndId(org.key, item.id)) must be(None)
+
+    intercept[UnitResponse] {
+      await(client.agendaItems.getByOrgAndId(org.key, item.id))
+    }.status must be(404)
   }
 
 }

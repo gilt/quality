@@ -19,20 +19,20 @@ object Dashboard extends Controller {
     agendaItemsPage: Int = 0
   ) = OrgAction.async { implicit request =>
     for {
-      stats <- Api.instance.Statistics.getByOrg(org, numberHours = Some(OneWeekInHours))
+      stats <- Api.instance.Statistics.getByOrg(org, numberHours = OneWeekInHours)
       agendaItems <- Api.instance.agendaItems.getByOrg(
         org = org,
         userGuid = Some(request.user.guid),
         isAdjourned = Some(false),
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(agendaItemsPage * Pagination.DefaultLimit)
+        limit = Pagination.DefaultLimit+1,
+        offset = agendaItemsPage * Pagination.DefaultLimit
       )
       meetings <- Api.instance.meetings.getByOrg(
         org = org,
         isAdjourned = Some(false),
         isUpcoming = Some(true),
         orderBy = Some("meetings.scheduled_at:asc"),
-        limit = Some(1)
+        limit = 1
       )
     } yield {
       Ok(

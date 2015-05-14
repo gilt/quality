@@ -32,10 +32,10 @@
     </li>
     <li>Severity: @incident.severity</li>
     <li>Tags:
-      @if(incident.tags.isEmpty) {
+      @if(incident.tags.getOrElse(Nil).isEmpty) {
         <em>N/A</em>
       } else {
-        @Html(incident.tags.mkString("<ul><li>", "</li><li>", "</li></ul>"))
+        @Html(incident.tags.getOrElse(Nil).mkString("<ul><li>", "</li><li>", "</li></ul>"))
       }
     </li>
     <li>Created: @core.DateHelper.longDateTime(org, incident.createdAt)</li>

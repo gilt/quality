@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.quality.v0.models.{Incident, IncidentForm, Severity}
-import com.gilt.quality.v0.errors.ErrorsResponse
+import com.gilt.quality.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
 
 import play.api.test._
@@ -22,7 +22,7 @@ class IncidentsSpec extends BaseSpec {
           severity = Severity.Low,
           summary = "Test",
           description = Some("desc"),
-          tags = Seq("a", "b")
+          tags = Some(Seq("a", "b"))
         )
       )
     )
@@ -31,7 +31,7 @@ class IncidentsSpec extends BaseSpec {
     incident.team.map(_.key) must be(Some(team.key))
     incident.summary must be("Test")
     incident.description must be(Some("desc"))
-    incident.tags must be(Seq("a", "b"))
+    incident.tags must be(Some(Seq("a", "b")))
   }
 
   "POST /:org/incidents validates team exists" in new WithServer {
@@ -55,7 +55,7 @@ class IncidentsSpec extends BaseSpec {
 
   "DELETE /:org/incidents/:id" in new WithServer {
     val incident = createIncident(org)
-    await(client.incidents.deleteByOrgAndId(org.key, incident.id)) must be(Some(()))
+    await(client.incidents.deleteByOrgAndId(org.key, incident.id)) must be(())
     await(client.incidents.getByOrg(org.key, id = Some(incident.id))) must be(Seq.empty)
   }
 
@@ -70,7 +70,7 @@ class IncidentsSpec extends BaseSpec {
           severity = Severity.Low,
           summary = "Test",
           description = None,
-          tags = Seq.empty
+          tags = None
         )
       )
     )
@@ -79,7 +79,7 @@ class IncidentsSpec extends BaseSpec {
     incident.team.map(_.key) must be(None)
     incident.summary must be("Test")
     incident.description must be(None)
-    incident.tags must be(Seq.empty)
+    incident.tags must be(Some(Nil))
 
     val fetched = await(
       client.incidents.putByOrgAndId(
@@ -90,7 +90,7 @@ class IncidentsSpec extends BaseSpec {
           severity = Severity.High,
           summary = "Test 2",
           description = Some("foo"),
-          tags = Seq("a tag")
+          tags = Some(Seq("a tag"))
         )
       )
     )
@@ -100,7 +100,7 @@ class IncidentsSpec extends BaseSpec {
     fetched.team.map(_.key) must be(Some(team.key))
     fetched.summary must be("Test 2")
     fetched.description must be(Some("foo"))
-    fetched.tags must be(Seq("a tag"))
+    fetched.tags must be(Some(Seq("a tag")))
   }
 
   "GET /:org/incidents" in new WithServer {
@@ -108,14 +108,17 @@ class IncidentsSpec extends BaseSpec {
     val incident2 = createIncident(org)
 
     await(client.incidents.getByOrg(org.key, id = Some(-1))) must be(Seq.empty)
-    await(client.incidents.getByOrg(org.key, id = Some(incident1.id))).head must be(incident1)
-    await(client.incidents.getByOrg(org.key, id = Some(incident2.id))).head must be(incident2)
+    await(client.incidents.getByOrg(org.key, id = Some(incident1.id))).map(_.id) must be(Seq(incident1.id))
+    await(client.incidents.getByOrg(org.key, id = Some(incident2.id))).map(_.id) must be(Seq(incident2.id))
   }
 
   "GET /:org/incidents/:id" in new WithServer {
     val incident = createIncident(org)
-    await(client.incidents.getByOrgAndId(org.key, incident.id)) must be(Some(incident))
-    await(client.incidents.getByOrgAndId(org.key, -1)) must be(None)
+    await(client.incidents.getByOrgAndId(org.key, incident.id)).id must be(incident.id)
+
+    intercept[UnitResponse] {
+      await(client.incidents.getByOrgAndId(org.key, -1)) must be(None)
+    }.status must be(404)
   }
 
   "GET /:org/incidents includes plan if available" in new WithServer {

@@ -1,6 +1,7 @@
 package controllers
 
 import client.Api
+import com.gilt.quality.v0.errors.UnitResponse
 import com.gilt.quality.v0.models.Team
 import lib.{ Pagination, PaginatedCollection }
 import java.util.UUID
@@ -30,15 +31,15 @@ object Teams extends Controller {
         org = org,
         key = filters.key,
         userGuid = Some(request.user.guid),
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(myPage * Pagination.DefaultLimit)
+        limit = Pagination.DefaultLimit+1,
+        offset = myPage * Pagination.DefaultLimit
       )
       otherTeams <- Api.instance.teams.getByOrg(
         org = org,
         key = filters.key,
         excludeUserGuid = Some(request.user.guid),
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(otherPage * Pagination.DefaultLimit)
+        limit = Pagination.DefaultLimit+1,
+        offset = otherPage * Pagination.DefaultLimit
       )
     } yield {
       Ok(views.html.teams.index(request.mainTemplate(), request.org, filters, PaginatedCollection(myPage, myTeams), PaginatedCollection(otherPage, otherTeams)))
@@ -52,19 +53,19 @@ object Teams extends Controller {
     membersPage: Int = 0
   ) = TeamAction.async { implicit request =>
     for {
-      stats <- Api.instance.Statistics.getByOrg(org = org, teamKey = Some(key), numberHours = Some(Dashboard.OneWeekInHours * 12))
+      stats <- Api.instance.Statistics.getByOrg(org = org, teamKey = Some(key), numberHours = Dashboard.OneWeekInHours * 12)
       agendaItems <- Api.instance.agendaItems.getByOrg(
         org = org,
         teamKey = Some(key),
         isAdjourned = Some(false),
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(agendaItemsPage * Pagination.DefaultLimit)
+        limit = Pagination.DefaultLimit+1,
+        offset = agendaItemsPage * Pagination.DefaultLimit
       )
       members <- Api.instance.teams.getMembersByOrgAndKey(
         org = org,
         key = key,
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(membersPage * Pagination.DefaultLimit)
+        limit = Pagination.DefaultLimit+1,
+        offset = membersPage * Pagination.DefaultLimit
       )
       isMemberCollection <- Api.instance.teams.getMembersByOrgAndKey(
         org = org,
@@ -74,7 +75,7 @@ object Teams extends Controller {
       memberSummary <- Api.instance.teams.getMemberSummaryByOrgAndKey(
         org = org,
         key = key
-      )
+      ).map { s => Some(s) }.recover { case UnitResponse(404) => None }
     } yield {
       Ok(
         views.html.teams.show(
@@ -122,25 +123,20 @@ object Teams extends Controller {
   }
 
   def edit(org: String, key: String) = OrgAction.async { implicit request =>
-    for {
-      team <- Api.instance.teams.getByOrgAndKey(org, key)
-    } yield {
-      team match {
-        case None => {
-          Redirect(routes.Teams.index(org)).flashing("success" -> s"Team not found")
-        }
-        case Some(t) => {
-          val form = teamForm.fill(
-            TeamForm(
-              key = t.key,
-              email = t.email,
-              smileyUrl = Some(t.icons.smileyUrl),
-              frownyUrl = Some(t.icons.frownyUrl)
-            )
-          )
+    Api.instance.teams.getByOrgAndKey(org, key).map { team =>
+      val form = teamForm.fill(
+        TeamForm(
+          key = team.key,
+          email = team.email,
+          smileyUrl = Some(team.icons.smileyUrl),
+          frownyUrl = Some(team.icons.frownyUrl)
+        )
+      )
 
-          Ok(views.html.teams.edit(request.mainTemplate(), t, form))
-        }
+      Ok(views.html.teams.edit(request.mainTemplate(), team, form))
+    }.recover {
+      case UnitResponse(404) => {
+        Redirect(routes.Teams.index(org)).flashing("success" -> s"Team not found")
       }
     }
   }

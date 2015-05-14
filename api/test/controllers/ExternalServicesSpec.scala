@@ -1,9 +1,8 @@
 package controllers
 
 import db.ExternalServicesDao
-import com.gilt.quality.v0.errors.FailedRequest
+import com.gilt.quality.v0.errors.{ErrorsResponse, FailedRequest, UnitResponse}
 import com.gilt.quality.v0.models.{ExternalService, ExternalServiceForm, ExternalServiceName, Organization}
-import com.gilt.quality.v0.errors.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._
@@ -63,13 +62,16 @@ class ExternalServicesSpec extends BaseSpec {
 
   "GET /:org/external_services/:id" in new WithServer {
     val service = createExternalService()
-    await(client.externalServices.getByOrgAndId(service.organization.key, service.id)).map(_.id) must be(Some(service.id))
+    await(client.externalServices.getByOrgAndId(service.organization.key, service.id)).id must be(service.id)
   }
 
   "DELETE /:org/external_services/:id" in new WithServer {
     val service = createExternalService()
-    await(client.externalServices.deleteByOrgAndId(service.organization.key, service.id)) must be(Some(()))
-    await(client.externalServices.getByOrgAndId(service.organization.key, service.id)) must be(None)
+    await(client.externalServices.deleteByOrgAndId(service.organization.key, service.id)) must be(())
+
+    intercept[UnitResponse] {
+      await(client.externalServices.getByOrgAndId(service.organization.key, service.id))
+    }.status must be(404)
   }
 
   "GET /:org/external_services by id" in new WithServer {

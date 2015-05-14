@@ -14,8 +14,8 @@ object Application extends Controller {
   def index(page: Int = 0) = AuthenticatedAction.async { implicit request =>
     for {
       orgs <- Api.instance.Organizations.get(
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(page * Pagination.DefaultLimit)
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
       )
     } yield {
       if (page == 0 && orgs.size == 1) {

@@ -42,7 +42,7 @@ To sync all code (uploads currenty api.json file, then downloads code):
 
 To upload latest API to apidoc (without also downloading the generated code):
 
-  /web/apidoc-cli/bin/apidoc upload ./api/api.json gilt quality --version x.y.z
+  /web/apidoc-cli/bin/apidoc upload gilt quality ./api/api.json --version 0.1.10
 
 
 Deploying schema

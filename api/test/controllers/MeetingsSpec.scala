@@ -2,7 +2,7 @@ package controllers
 
 import actors.Database
 import com.gilt.quality.v0.models.{AdjournForm, Meeting, MeetingForm}
-import com.gilt.quality.v0.errors.ErrorsResponse
+import com.gilt.quality.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
 import org.joda.time.DateTime
 
@@ -23,7 +23,7 @@ class MeetingsSpec extends BaseSpec {
 
   "DELETE /:org/meetings/:id" in new WithServer {
     val meeting = createMeeting(org)
-    await(client.meetings.deleteByOrgAndId(org.key, meeting.id)) must be(Some(()))
+    await(client.meetings.deleteByOrgAndId(org.key, meeting.id)) must be(())
     await(client.meetings.getByOrg(org.key, id = Some(meeting.id))) must be(Seq.empty)
   }
 
@@ -38,8 +38,11 @@ class MeetingsSpec extends BaseSpec {
 
   "GET /:org/meetings/:id" in new WithServer {
     val meeting = createMeeting(org)
-    await(client.meetings.getByOrgAndId(org.key, meeting.id)) must be(Some(meeting))
-    await(client.meetings.getByOrgAndId(org.key, -1)) must be(None)
+    await(client.meetings.getByOrgAndId(org.key, meeting.id)).id must be(meeting.id)
+
+    intercept[UnitResponse] {
+      await(client.meetings.getByOrgAndId(org.key, -1))
+    }.status must be(404)
   }
 
   "GET /:org/meetings for an incident" in new WithServer {
@@ -70,17 +73,17 @@ class MeetingsSpec extends BaseSpec {
     val item2 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
     val item3 = createAgendaItem(org, Some(createAgendaItemForm(org, meeting = Some(meeting))))
 
-    val pager1 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item1.incident.id)).get
+    val pager1 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item1.incident.id))
     pager1.meeting must be(meeting)
     pager1.priorIncident.map(_.id) must be(None)
     pager1.nextIncident.map(_.id) must be(Some(item2.incident.id))
 
-    val pager2 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item2.incident.id)).get
+    val pager2 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item2.incident.id))
     pager2.meeting must be(meeting)
     pager2.priorIncident.map(_.id) must be(Some(item1.incident.id))
     pager2.nextIncident.map(_.id) must be(Some(item3.incident.id))
 
-    val pager3 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item3.incident.id)).get
+    val pager3 = await(client.meetings.getPagerByOrgAndIdAndIncidentId(org.key, meeting.id, item3.incident.id))
     pager3.meeting must be(meeting)
     pager3.priorIncident.map(_.id) must be(Some(item2.incident.id))
     pager3.nextIncident.map(_.id) must be(None)

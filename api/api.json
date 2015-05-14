@@ -1,7 +1,7 @@
 {
     "name": "Quality",
     "apidoc": {
-	"version": "0.9.10"
+	"version": "0.9.11"
     },
     "description": "Application to track perfect day and quality at gilt",
     "base_url": "http://api.quality.architecture.giltaws.com",
@@ -372,7 +372,8 @@
 		    "method": "GET",
 		    "path": "/:key",
                     "responses": {
-                        "200": { "type": "organization" }
+                        "200": { "type": "organization" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -408,7 +409,8 @@
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-                        "200": { "type": "[team]" }
+                        "200": { "type": "[team]" },
+                        "404": { "type": "unit", "description": "404 if org is not found / or user does not have access to the specified org" }
                     }
                 },
 
@@ -417,7 +419,8 @@
                     "description": "Returns information about the team with this specific key.",
                     "path": "/:key",
                     "responses": {
-                        "200": { "type": "team" }
+                        "200": { "type": "team" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -452,7 +455,8 @@
 		    "path": "/:key/member_summary",
                     "description": "Summary information about this teams members",
                     "responses": {
-                        "200": { "type": "team_member_summary" }
+                        "200": { "type": "team_member_summary" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -506,7 +510,8 @@
                     { "name": "number_hours", "type": "integer", "description": "Number of hours in the past to retrieve requested statistics. Default is 1 week.", "default": 168}
                 ],
                 "responses": {
-                    "200": {"type": "[statistic]"}
+                    "200": {"type": "[statistic]"},
+                    "404": { "type": "unit", "description": "404 if org is not found / or user does not have access to the specified org" }
                 }
             }
         ]
@@ -529,7 +534,8 @@
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-                        "200": { "type": "[incident]" }
+                        "200": { "type": "[incident]" },
+                        "404": { "type": "unit", "description": "404 if org is not found / or user does not have access to the specified org" }
                     }
                 },
 
@@ -538,7 +544,8 @@
                     "description": "Returns information about the incident with this specific id.",
                     "path": "/:id",
                     "responses": {
-                        "200": { "type": "incident" }
+                        "200": { "type": "incident" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -585,7 +592,8 @@
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-                        "200": { "type": "[plan]" }
+                        "200": { "type": "[plan]" },
+                        "404": { "type": "unit", "description": "404 if org is not found / or user does not have access to the specified org" }
                     }
                 },
 
@@ -628,7 +636,8 @@
                     "description": "Get a single plan.",
                     "path": "/:id",
                     "responses": {
-                        "200": { "type": "plan" }
+                        "200": { "type": "plan" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -658,7 +667,8 @@
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-                        "200": { "type": "[meeting]" }
+                        "200": { "type": "[meeting]" },
+                        "404": { "type": "unit", "description": "404 if org is not found / or user does not have access to the specified org" }
                     }
                 },
 
@@ -666,7 +676,8 @@
 		    "method": "GET",
 		    "path": "/:id",
                     "responses": {
-                        "200": { "type": "meeting" }
+                        "200": { "type": "meeting" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -705,7 +716,8 @@
 		    ],
 		    "description": "Get information on paging through incidents (e.g. the prior or next incident in a given meeting)",
                     "responses": {
-                        "200": { "type": "meeting_pager" }
+                        "200": { "type": "meeting_pager" },
+                        "404": { "type": "unit" }
                     }
                 }
 
@@ -731,7 +743,8 @@
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-                        "200": { "type": "[agenda_item]" }
+                        "200": { "type": "[agenda_item]" },
+                        "404": { "type": "unit", "description": "404 if org is not found / or user does not have access to the specified org" }
                     }
                 },
 
@@ -739,7 +752,8 @@
 		    "method": "GET",
 		    "path": "/:id",
                     "responses": {
-                        "200": { "type": "agenda_item" }
+                        "200": { "type": "agenda_item" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -781,7 +795,8 @@
                     "description": "Returns information about the user with this guid.",
                     "path": "/:guid",
                     "responses": {
-                        "200": { "type": "user" }
+                        "200": { "type": "user" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -831,7 +846,8 @@
                     "description": "Returns information about this subscription.",
                     "path": "/:id",
                     "responses": {
-                        "200": { "type": "subscription" }
+                        "200": { "type": "subscription" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -862,7 +878,8 @@
 			{ "name": "meeting_id", "type": "long" }
 		    ],
 		    "responses": {
-			"200": { "type": "email_message" }
+			"200": { "type": "email_message" },
+                        "404": { "type": "unit" }
 		    }
 		}
 	    ]
@@ -881,7 +898,8 @@
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
 		    ],
 		    "responses": {
-			"200": { "type": "[external_service]" }
+			"200": { "type": "[external_service]" },
+                        "404": { "type": "unit", "description": "404 if org is not found / or user does not have access to the specified org" }
 		    }
 		},
 
@@ -889,7 +907,8 @@
 		    "method": "GET",
 		    "path": "/:id",
 		    "responses": {
-			"200": { "type": "external_service" }
+			"200": { "type": "external_service" },
+                        "404": { "type": "unit" }
 		    }
 		},
 
