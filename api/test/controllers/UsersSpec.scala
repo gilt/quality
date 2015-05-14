@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.quality.v0.models.{AuthenticationForm, User, UserForm}
-import com.gilt.quality.v0.errors.ErrorsResponse
+import com.gilt.quality.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
 
 import play.api.test._
@@ -51,8 +51,11 @@ class UsersSpec extends BaseSpec {
 
   "GET /users/:guid" in new WithServer {
     val user = createUser()
-    await(client.users.getByGuid(user.guid)) must be(Some(user))
-    await(client.users.getByGuid(UUID.randomUUID)) must be(None)
+    await(client.users.getByGuid(user.guid)) must be(user)
+
+    intercept[UnitResponse] {
+      await(client.users.getByGuid(UUID.randomUUID))
+    }.status must be(404)
   }
 
   "POST /users/authenticate w/ invalid email" in new WithServer {

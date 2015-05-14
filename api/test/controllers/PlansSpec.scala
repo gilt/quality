@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.quality.v0.models.{Plan, PlanForm}
-import com.gilt.quality.v0.errors.ErrorsResponse
+import com.gilt.quality.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
 
 import play.api.test._
@@ -72,8 +72,11 @@ class PlansSpec extends BaseSpec {
 
   "GET /:org/plans/:id" in new WithServer {
     val plan = createPlan(org)
-    await(client.plans.getByOrgAndId(org.key, plan.id)) must be(Some(plan))
-    await(client.plans.getByOrgAndId(org.key, -1)) must be(None)
+    await(client.plans.getByOrgAndId(org.key, plan.id)) must be(plan)
+
+    intercept[UnitResponse] {
+      await(client.plans.getByOrgAndId(org.key, -1))
+    }.status must be(404)
   }
 
   "GET /:org/plans by team key" in new WithServer {

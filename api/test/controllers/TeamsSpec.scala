@@ -2,7 +2,7 @@ package controllers
 
 import core.Defaults
 import com.gilt.quality.v0.models.{Icons, Team, TeamForm, TeamMemberSummary, UpdateTeamForm}
-import com.gilt.quality.v0.errors.ErrorsResponse
+import com.gilt.quality.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
 
 import play.api.test._
@@ -99,7 +99,7 @@ class TeamsSpec extends BaseSpec {
 
   "DELETE /:org/teams/:key" in new WithServer {
     val team = createTeam(org)
-    await(client.teams.deleteByOrgAndKey(org.key, team.key)) must be(Some(()))
+    await(client.teams.deleteByOrgAndKey(org.key, team.key)) must be(())
     await(client.teams.getByOrg(org.key, key = Some(team.key))) must be(Seq.empty)
   }
 
@@ -114,8 +114,11 @@ class TeamsSpec extends BaseSpec {
 
   "GET /:org/teams/:key" in new WithServer {
     val team = createTeam(org)
-    await(client.teams.getByOrgAndKey(org.key, team.key)) must be(Some(team))
-    await(client.teams.getByOrgAndKey(org.key, UUID.randomUUID.toString)) must be(None)
+    await(client.teams.getByOrgAndKey(org.key, team.key)) must be(team)
+
+    intercept[UnitResponse] {
+      await(client.teams.getByOrgAndKey(org.key, UUID.randomUUID.toString))
+    }.status must be(404)
   }
 
   "GET /:org/teams by userGuid" in new WithServer {
@@ -200,7 +203,9 @@ class TeamsSpec extends BaseSpec {
     await(client.teams.getMemberSummaryByOrgAndKey(org.key, otherTeam.key)).numberMembers must be(0)
     await(client.teams.getMemberSummaryByOrgAndKey(org.key, team.key)).numberMembers must be(2)
 
-    await(client.teams.getMemberSummaryByOrgAndKey(org.key, UUID.randomUUID.toString)) must be(None)
+    intercept[UnitResponse] {
+      await(client.teams.getMemberSummaryByOrgAndKey(org.key, UUID.randomUUID.toString))
+    }.status must be(404)
   }
 
 }
