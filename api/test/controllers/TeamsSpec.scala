@@ -85,6 +85,23 @@ class TeamsSpec extends BaseSpec {
     updated.email must be(Some("foo@gilt.com"))
   }
 
+  "PUT /:org/teams updates key" in new WithServer {
+    val team = createTeam(org)
+    val newKey = team.key + "-2"
+
+    val updated = await(
+      client.teams.putByOrgAndKey(
+        org = org.key,
+        key = team.key,
+        updateTeamForm = UpdateTeamForm(
+          key = Some(newKey)
+        )
+      )
+    )
+
+    updated.key must be(newKey)
+  }
+
   "POST /:org/teams use default icons" in new WithServer {
     createTeam(org).icons must be(Defaults.Icons)
   }

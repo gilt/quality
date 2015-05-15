@@ -73,7 +73,7 @@ object Teams extends Controller {
             val fullForm = FullTeamForm(
               request.org,
               TeamForm(
-                key = team.key,
+                key = s.get.key.getOrElse(team.key),
                 email = s.get.email,
                 smileyUrl = s.get.smileyUrl,
                 frownyUrl = s.get.frownyUrl

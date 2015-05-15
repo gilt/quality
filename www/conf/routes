@@ -31,8 +31,8 @@ POST    /:org/plans/grade/:id                                     controllers.Pl
 GET     /:org/teams/                                              controllers.Teams.index(org: String, key: Option[String] ?= None, myPage: Int ?= 0, otherPage: Int ?= 0)
 GET     /:org/teams/create                                        controllers.Teams.create(org: String)
 POST    /:org/teams/postCreate                                    controllers.Teams.postCreate(org: String)
-GET     /:org/teams/edit                                          controllers.Teams.edit(org: String, key: String)
-POST    /:org/teams/postEdit                                      controllers.Teams.postEdit(org: String, key: String)
+GET     /:org/teams/:key/edit                                     controllers.Teams.edit(org: String, key: String)
+POST    /:org/teams/:key/postEdit                                 controllers.Teams.postEdit(org: String, key: String)
 GET     /:org/teams/:key                                          controllers.Teams.show(org: String, key: String, agendaItemsPage: Int ?= 0, membersPage: Int ?= 0)
 POST    /:org/teams/delete/:key                                   controllers.Teams.postDeleteByKey(org: String, key: String)
 
