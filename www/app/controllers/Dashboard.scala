@@ -11,15 +11,12 @@ object Dashboard extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val OneDayInHours = 24
-  val OneWeekInHours = OneDayInHours * 7
-
   def index(
     org: String,
     agendaItemsPage: Int = 0
   ) = OrgAction.async { implicit request =>
     for {
-      stats <- Api.instance.Statistics.getByOrg(org, numberHours = OneWeekInHours)
+      myStats <- Api.instance.Statistics.getByOrg(org, userGuid = Some(request.user.guid))
       agendaItems <- Api.instance.agendaItems.getByOrg(
         org = org,
         userGuid = Some(request.user.guid),
@@ -39,7 +36,7 @@ object Dashboard extends Controller {
         views.html.dashboard.index(
           request.mainTemplate(),
           request.org,
-          stats,
+          myStats,
           meetings.headOption,
           PaginatedCollection(agendaItemsPage, agendaItems)
         )

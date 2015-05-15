@@ -1671,12 +1671,12 @@ package com.gilt.quality.v0 {
     object Statistics extends Statistics {
       override def getByOrg(
         org: String,
-        teamKey: _root_.scala.Option[String] = None,
-        numberHours: Int = 168
+        userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        teamKey: _root_.scala.Option[String] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.v0.models.Statistic]] = {
         val queryParameters = Seq(
-          teamKey.map("team_key" -> _),
-          Some("number_hours" -> numberHours.toString)
+          userGuid.map("user_guid" -> _.toString),
+          teamKey.map("team_key" -> _)
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/statistics", queryParameters = queryParameters).map {
@@ -2274,8 +2274,8 @@ package com.gilt.quality.v0 {
      */
     def getByOrg(
       org: String,
-      teamKey: _root_.scala.Option[String] = None,
-      numberHours: Int = 168
+      userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      teamKey: _root_.scala.Option[String] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.quality.v0.models.Statistic]]
   }
 

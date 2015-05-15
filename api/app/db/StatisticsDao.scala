@@ -6,6 +6,7 @@ import anorm.ParameterValue._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
+import java.util.UUID
 
 object StatisticsDao {
 
@@ -29,7 +30,7 @@ object StatisticsDao {
 
   def findAll(
     org: Organization,
-    numberHours: Int,
+    userGuid: Option[UUID] = None,
     teamKey: Option[String] = None
   ): Seq[Statistic] = {
     OrganizationsDao.lookupId(org.key) match {
@@ -38,15 +39,15 @@ object StatisticsDao {
         val sql = Seq(
           Some(BaseQuery.trim),
           teamKey.map { v => "and teams.key = lower(trim({team_key}))" },
-          Some("and incidents.created_at >= current_timestamp - ({number_hours} * interval '1 hour')"),
+          userGuid.map { v => "and teams.id in (select team_id from team_members where team_members.deleted_at is null and team_members.user_guid = {user_guid}::uuid)" },
           Some("group by organizations.key, organizations.name, teams.id, teams.key"),
-          Some("order by organizations.key, teams.key desc")
+          Some("order by organizations.key, teams.key")
         ).flatten.mkString("\n   ")
 
         val bind = Seq(
           Some(NamedParameter("organization_id", orgId)),
           teamKey.map { v => NamedParameter("team_key", toParameterValue(v)) },
-          Some(NamedParameter("number_hours", toParameterValue(numberHours)))
+          userGuid.map { v => NamedParameter("user_guid", toParameterValue(v)) }
         ).flatten
 
         DB.withConnection { implicit c =>

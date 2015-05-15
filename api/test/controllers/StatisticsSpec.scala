@@ -31,8 +31,7 @@ class StatisticsSpec extends BaseSpec {
     val statistics = await(
       client.statistics.getByOrg(
         org = org.key,
-        teamKey = Some(team.key),
-        numberHours = 24
+        teamKey = Some(team.key)
       )
     ).filter(_.team.key == team.key)
 
@@ -65,6 +64,27 @@ class StatisticsSpec extends BaseSpec {
 
     val plan3 = createPlanForTeam(org, team)
     verifyStats(team, 2, 100, 4, 1, 3)
+  }
+
+  "GET /:org/statistics by userGuid" in new WithServer {
+    val team = createTeam(org)
+    val user1 = createUser()
+    await(client.teams.putMembersByOrgAndKeyAndUserGuid(org.key, team.key, user1.guid))
+    val user2 = createUser()
+
+    await(
+      client.statistics.getByOrg(
+        org = org.key,
+        userGuid = Some(user1.guid)
+      )
+    ).map(_.team.key) must be(Seq(team.key))
+
+    await(
+      client.statistics.getByOrg(
+        org = org.key,
+        userGuid = Some(user2.guid)
+      )
+    ) must be(Nil)
   }
 
 }

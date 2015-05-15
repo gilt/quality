@@ -42,7 +42,7 @@ PUT        /:org/plans/:id                                        controllers.Pl
 PUT        /:org/plans/:id/grade                                  controllers.Plans.putGradeByOrgAndId(org: String, id: Long)
 GET        /:org/plans/:id                                        controllers.Plans.getByOrgAndId(org: String, id: Long)
 DELETE     /:org/plans/:id                                        controllers.Plans.deleteByOrgAndId(org: String, id: Long)
-GET        /:org/statistics                                       controllers.Statistics.getByOrg(org: String, team_key: _root_.scala.Option[String], number_hours: Int ?= 168)
+GET        /:org/statistics                                       controllers.Statistics.getByOrg(org: String, user_guid: _root_.scala.Option[_root_.java.util.UUID], team_key: _root_.scala.Option[String])
 GET        /:org/teams                                            controllers.Teams.getByOrg(org: String, key: _root_.scala.Option[String], user_guid: _root_.scala.Option[_root_.java.util.UUID], exclude_user_guid: _root_.scala.Option[_root_.java.util.UUID], limit: Int ?= 25, offset: Int ?= 0)
 GET        /:org/teams/:key                                       controllers.Teams.getByOrgAndKey(org: String, key: String)
 POST       /:org/teams                                            controllers.Teams.postByOrg(org: String)

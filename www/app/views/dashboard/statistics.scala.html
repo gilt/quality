@@ -1,0 +1,30 @@
+@(org: com.gilt.quality.v0.models.Organization,
+  statistics: Seq[com.gilt.quality.v0.models.Statistic]
+)(implicit flash: Flash)
+
+@if(statistics.isEmpty) {
+  <em>You are not a member of any teams</em>
+
+} else {
+
+  <table class="table table-hover table-condensed">
+    <tbody>
+      @statistics.map { statistic =>
+       <tr>
+        <td>
+          <a href="@routes.Teams.show(org.key, statistic.team.key)">@statistic.team.key</a><br />
+          Average Grade: @Html(lib.GradeImage.imageTag(Some(statistic.team), statistic.averageGrade))<br/>
+          Total Incidents: <a href="@routes.Incidents.index(org.key, team_key = Some(statistic.team.key))">@statistic.totalIncidents</a><br />
+          Total Open Incidents: <a href="@routes.Incidents.index(org.key, team_key = Some(statistic.team.key), has_plan = Some("0"))">@statistic.totalOpenIncidents</a><br />
+        </td>
+        <td>
+          @statistic.plans.getOrElse(Nil).map { plan =>
+            <a href="@routes.Incidents.show(org.key, plan.incidentId)">@Html(lib.GradeImage.imageTag(Some(statistic.team), plan.grade))</a>
+          }
+        </td>
+       </tr>
+     }
+    </tbody>
+  </table>
+
+}

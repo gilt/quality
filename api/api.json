@@ -507,8 +507,8 @@
                 "method": "GET",
                 "description": "Retrieve team statistics for all or one team.",
                 "parameters": [
-                    { "name": "team_key", "type": "string", "description": "Find stats for this team. Leave blank to retrieve all teams", "required": false},
-                    { "name": "number_hours", "type": "integer", "description": "Number of hours in the past to retrieve requested statistics. Default is 1 week.", "default": 168}
+                    { "name": "user_guid", "type": "uuid", "description": "Find stats for teams that this user belongs to. If not provided, we find stats for all teams.", "required": false},
+                    { "name": "team_key", "type": "string", "description": "Find stats for this team. Leave blank to retrieve all teams", "required": false}
                 ],
                 "responses": {
                     "200": {"type": "[statistic]"},
