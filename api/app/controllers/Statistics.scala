@@ -4,18 +4,19 @@ import com.gilt.quality.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import db.StatisticsDao
+import java.util.UUID
 
 object Statistics extends Controller {
 
   def getByOrg(
     org: String,
-    team_key: Option[String],
-    number_hours: Int = 168
+    userGuid: Option[UUID],
+    teamKey: Option[String]
   ) = OrgAction { request =>
     val matches = StatisticsDao.findAll(
       org = request.org,
-      teamKey = team_key,
-      numberHours = number_hours
+      teamKey = teamKey,
+      userGuid = userGuid
     )
 
     Ok(Json.toJson(matches.toSeq))

@@ -53,7 +53,7 @@ object Teams extends Controller {
     membersPage: Int = 0
   ) = TeamAction.async { implicit request =>
     for {
-      stats <- Api.instance.Statistics.getByOrg(org = org, teamKey = Some(key), numberHours = Dashboard.OneWeekInHours * 12)
+      stats <- Api.instance.Statistics.getByOrg(org = org, teamKey = Some(key))
       agendaItems <- Api.instance.agendaItems.getByOrg(
         org = org,
         teamKey = Some(key),
