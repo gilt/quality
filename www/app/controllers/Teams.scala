@@ -75,7 +75,7 @@ object Teams extends Controller {
       memberSummary <- Api.instance.teams.getMemberSummaryByOrgAndKey(
         org = org,
         key = key
-      ).map { s => Some(s) }.recover { case UnitResponse(404) => None }
+      ).map { Some(_) }.recover { case UnitResponse(404) => None }
     } yield {
       Ok(
         views.html.teams.show(

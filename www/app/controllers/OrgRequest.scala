@@ -21,7 +21,7 @@ case class RequestHelper[A](request: Request[A]) {
       case None => {
         pathParts.headOption.flatMap { orgKey =>
           Await.result(
-            Api.instance.organizations.getByKey(orgKey).map { org => Some(org) }.recover {
+            Api.instance.organizations.getByKey(orgKey).map { Some(_) }.recover {
               case UnitResponse(404) => None
             },
             1000.millis
@@ -39,7 +39,7 @@ case class RequestHelper[A](request: Request[A]) {
     if (pathParts.length >= 3 && pathParts(1) == "teams") {
       val teamKey = pathParts(2)
       Await.result(
-        Api.instance.teams.getByOrgAndKey(orgKey.get, teamKey).map { t => Some(t) }.recover {
+        Api.instance.teams.getByOrgAndKey(orgKey.get, teamKey).map { Some(_) }.recover {
           case UnitResponse(404) => None
         },
         1000.millis
@@ -52,7 +52,7 @@ case class RequestHelper[A](request: Request[A]) {
   lazy val user: Option[User] = {
     request.session.get("user_guid").flatMap { userGuid =>
       Await.result(
-        Api.instance.users.getByGuid(UUID.fromString(userGuid)).map { u => Some(u) }.recover {
+        Api.instance.users.getByGuid(UUID.fromString(userGuid)).map { Some(_) }.recover {
           case UnitResponse(404) => None
         },
         1000.millis

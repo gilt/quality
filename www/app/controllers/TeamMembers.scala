@@ -24,7 +24,7 @@ object TeamMembers extends Controller {
     key: String
   ) = OrgAction.async { implicit request =>
     for {
-      memberSummary <- Api.instance.teams.getMemberSummaryByOrgAndKey(org, key).map { summary => Some(summary) }.recover {
+      memberSummary <- Api.instance.teams.getMemberSummaryByOrgAndKey(org, key).map { Some(_) }.recover {
         case UnitResponse(404) => None
       }
     } yield {

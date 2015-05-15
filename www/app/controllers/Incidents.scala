@@ -73,10 +73,8 @@ object Incidents extends Controller {
       } yield {
         val pagerOption = meetingId.flatMap { mid =>
           Await.result(
-            Api.instance.meetings.getPagerByOrgAndIdAndIncidentId(request.org.key, mid, incident.id).map { r => Some(r) }.recover {
-              case UnitResponse(404) => {
-                None
-              }
+            Api.instance.meetings.getPagerByOrgAndIdAndIncidentId(request.org.key, mid, incident.id).map { Some(_) }.recover {
+              case UnitResponse(404) => None
             },
             1000.millis
           )
