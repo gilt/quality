@@ -42,7 +42,7 @@ To sync all code (uploads currenty api.json file, then downloads code):
 
 To upload latest API to apidoc (without also downloading the generated code):
 
-  /web/apidoc-cli/bin/apidoc upload gilt quality ./api/api.json --version 0.1.10
+  /web/apidoc-cli/bin/apidoc upload gilt quality ./api/api.json --version 0.1.13
 
 
 Deploying schema
@@ -65,19 +65,17 @@ Private IP will look like: 172.16.16.183 and can be obtained from
   ruby ./configure.rb
   sudo ruby ./install.rb
 
-  echo "master.db.quality.architecture.giltaws.com:5432:quality:web:PASSWORD" > ~/.pgpass
+  echo "quality.cwuud87mporv.us-east-1.rds.amazonaws.com:5432:quality:web:PASSWORD" > ~/.pgpass
   chmod 0600 ~/.pgpass
 
-  sem-apply --host master.db.quality.architecture.giltaws.com --name quality --user web
+  sem-apply --host quality.cwuud87mporv.us-east-1.rds.amazonaws.com --name quality --user web
 
-To get the postgresql password:
+All credentials are stored in ionroller:
 
-  aws --profile gilt-architecture s3 cp s3://metadata-gilt-architecture/ionblaster/quality.json .
+  http://ionroller.tools.gilt.com/services/quality-api/config
+  http://ionroller.tools.gilt.com/services/quality-www/config
 
-Releasing code
-==============
-Install ionblaster:
-  curl -s https://s3.amazonaws.com/ionblaster/install | sh
-
-Release to ec2:
-  /web/metadata-gilt-architecture/bin/exec /web/apidoc/script/release-and-deploy [--tag x.y.z] api www
+Releasing
+=========
+ionroller release quality-api 0.1.13
+ionroller release quality-www 0.1.13
