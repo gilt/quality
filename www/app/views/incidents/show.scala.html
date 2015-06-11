@@ -6,7 +6,7 @@
   pagerOption: Option[com.gilt.quality.v0.models.MeetingPager]
 )(implicit flash: Flash)
 
-@main(tpl) {
+@main(tpl.copy(title = Some(s"Quality incident #${incident.id}: ${incident.summary}"))) {
 
   @pagerOption.map { pager =>
     <ul class="pager">
